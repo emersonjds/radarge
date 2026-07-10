@@ -166,13 +166,49 @@ export function seedDb(): Db {
     };
   });
 
-  const enrollments = alunos.map((aluno) => ({
-    id: `matricula-${aluno.id}-${alunoGroupById[aluno.id]}`,
-    studentId: aluno.id,
-    groupId: alunoGroupById[aluno.id],
-    joinedAt: SEED_DATE,
-    active: true,
-  }));
+  const alunosDeBorda = [
+    {
+      id: "aluno-sem-aula",
+      name: "Otávio Prado",
+      birthDate: "2013-04-09",
+      guardianName: "Mãe de Prado",
+      guardianPhone: "(11) 98812-4477",
+      active: true,
+    },
+    {
+      id: "aluno-inativo",
+      name: "Priscila Amaral",
+      birthDate: "2012-09-21",
+      guardianName: "Pai de Amaral",
+      guardianPhone: "(11) 99145-6032",
+      active: false,
+    },
+  ];
+
+  const enrollments = [
+    ...alunos.map((aluno) => ({
+      id: `matricula-${aluno.id}-${alunoGroupById[aluno.id]}`,
+      studentId: aluno.id,
+      groupId: alunoGroupById[aluno.id],
+      joinedAt: SEED_DATE,
+      active: true,
+    })),
+    // Aluno em duas aulas (N:N) e matrícula desativada (soft delete).
+    {
+      id: "matricula-aluno-1-turma-fis-a",
+      studentId: "aluno-1",
+      groupId: "turma-fis-a",
+      joinedAt: "2026-07-01",
+      active: true,
+    },
+    {
+      id: "matricula-aluno-4-turma-cie-c",
+      studentId: "aluno-4",
+      groupId: "turma-cie-c",
+      joinedAt: SEED_DATE,
+      active: false,
+    },
+  ];
 
   const chamadas: Db["attendanceSessions"] = [];
   const presencas: Db["attendanceRecords"] = [];
@@ -305,7 +341,7 @@ export function seedDb(): Db {
           id: `eg-${homeworkId}-${aluno.id}`,
           evaluationId: homeworkId,
           studentId: aluno.id,
-          score: homeworkScore,
+          score: aluno.id === "aluno-1" && assignment.id === "assign-matb-mat" ? null : homeworkScore,
         },
       );
     }
@@ -314,7 +350,7 @@ export function seedDb(): Db {
   return {
     profiles: perfis,
     groups: turmas,
-    students: alunos,
+    students: [...alunos, ...alunosDeBorda],
     attendanceSessions: chamadas,
     attendanceRecords: presencas,
     schoolEvents: eventosEscolares,
