@@ -13,7 +13,7 @@ export default function RelatoriosPage() {
   if (!permitido) return null;
 
   if (studentId) {
-    return <StudentDetail studentId={studentId} />;
+    return <StudentDetail studentId={studentId} backHref="/reports" backLabel="Relatórios" />;
   }
 
   return <ReportsCenter />;

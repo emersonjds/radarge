@@ -103,7 +103,9 @@ export function StudentList() {
   });
 
   const semTurmas = isProfessor && turmasDoProfessor.length === 0;
-  const colunas = isProfessor ? 6 : 8;
+  const colunas = isProfessor ? 7 : 8;
+  const detalheHref = (alunoId: string) =>
+    isProfessor ? `/students?aluno=${alunoId}` : `/reports?studentId=${alunoId}`;
   const titulo = filtroRisco ? "Alunos em risco" : isProfessor ? "Meus alunos" : "Alunos";
   const subtitulo = filtroRisco
     ? `${alunosEscopo.length} aluno${alunosEscopo.length === 1 ? "" : "s"} com ${LIMITE_FALTAS_RISCO} ou mais faltas`
@@ -147,7 +149,7 @@ export function StudentList() {
                 <TableHead className={th}>Frequência</TableHead>
                 <TableHead className={th}>Faltas</TableHead>
                 <TableHead className={th}>Situação</TableHead>
-                {!isProfessor && <TableHead className={th}>Ação</TableHead>}
+                <TableHead className={th}>Ação</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -211,33 +213,35 @@ export function StudentList() {
                           {emRisco ? "Em risco" : "Regular"}
                         </Badge>
                       </TableCell>
-                      {!isProfessor && (
-                        <TableCell className={td}>
-                          <div className="flex items-center gap-1">
-                            <IconButton
-                              icon={Eye}
-                              label={`Ver relatório de ${aluno.name}`}
-                              href={"/reports/" + aluno.id}
-                            />
-                            <IconButton
-                              icon={Pencil}
-                              label={`Editar ${aluno.name}`}
-                              onClick={() => setFormAluno(aluno)}
-                            />
-                            <IconButton
-                              icon={Trash2}
-                              label={`Excluir ${aluno.name}`}
-                              tone="destructive"
-                              disabled={deleteStudent.isPending}
-                              onClick={() => {
-                                if (window.confirm(`Excluir o aluno ${aluno.name}?`)) {
-                                  deleteStudent.mutate(aluno.id);
-                                }
-                              }}
-                            />
-                          </div>
-                        </TableCell>
-                      )}
+                      <TableCell className={td}>
+                        <div className="flex items-center gap-1">
+                          <IconButton
+                            icon={Eye}
+                            label={`Ver detalhes de ${aluno.name}`}
+                            href={detalheHref(aluno.id)}
+                          />
+                          {!isProfessor && (
+                            <>
+                              <IconButton
+                                icon={Pencil}
+                                label={`Editar ${aluno.name}`}
+                                onClick={() => setFormAluno(aluno)}
+                              />
+                              <IconButton
+                                icon={Trash2}
+                                label={`Excluir ${aluno.name}`}
+                                tone="destructive"
+                                disabled={deleteStudent.isPending}
+                                onClick={() => {
+                                  if (window.confirm(`Excluir o aluno ${aluno.name}?`)) {
+                                    deleteStudent.mutate(aluno.id);
+                                  }
+                                }}
+                              />
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
