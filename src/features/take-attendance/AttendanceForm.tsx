@@ -16,7 +16,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { CalenderIcon } from "@tailadmin/icons";
 import { StudentRow, STATUS_OPTIONS } from "./StudentRow";
-import { groupsForRegente } from "./scope";
+import { groupsForRegente } from "@/entities/group/scope";
 
 const HOJE = new Date().toISOString().slice(0, 10);
 
