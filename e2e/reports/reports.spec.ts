@@ -41,16 +41,17 @@ test("ficha do aluno traz frequência e bloco acadêmico com aptidão", async ({
 
   const linhaMarcus = page.getByRole("row").filter({ hasText: "Marcus Thorne" });
   await linhaMarcus.getByRole("link", { name: "Abrir relatório de Marcus Thorne" }).click();
+  await expect(page).toHaveURL(/\/reports\?studentId=aluno-1/);
 
-  await expect(page.getByRole("heading", { name: "Desempenho & Presença" })).toBeVisible();
-  await expect(page.getByText("Resumo de presença")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Marcus Thorne" })).toBeVisible();
+  await expect(page.getByRole("main").getByRole("link", { name: "Relatórios" })).toBeVisible();
+  await expect(page.getByText("Frequência")).toBeVisible();
+  await expect(page.getByText("Faltas")).toBeVisible();
 
+  await page.getByRole("tab", { name: "Notas" }).click();
   await expect(page.getByRole("heading", { name: "Desempenho acadêmico" })).toBeVisible();
   await expect(page.getByText("Aptidão: Exatas")).toBeVisible();
   await expect(page.getByText("Notas por matéria")).toBeVisible();
-
-  const trilha = page.getByRole("navigation", { name: "Trilha de navegação" });
-  await expect(trilha.getByText("Relatórios")).toBeVisible();
 
   await page.screenshot({ path: "e2e/reports/evidencias/ficha-aluno.png", fullPage: true });
 });
