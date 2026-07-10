@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useStudent } from "@/entities/student/queries";
 import { useAttendanceSessions } from "@/entities/attendance-session/queries";
 import { datesInRange } from "@/entities/school-event/model";
@@ -7,21 +8,22 @@ import { useSchoolEvents } from "@/entities/school-event/queries";
 import type { AttendanceStatus } from "@/entities/attendance-record/model";
 import { useAttendanceRecordsByStudent } from "@/entities/attendance-record/queries";
 import { useGroups } from "@/entities/group/queries";
+import { visibleGroups } from "@/entities/group/scope";
+import { useAssignmentsByTeacher } from "@/entities/assignment/queries";
 import { useEnrollmentsByStudent } from "@/entities/enrollment/queries";
 import { useGradesByStudent } from "@/entities/grade/queries";
 import { useSubjects } from "@/entities/subject/queries";
+import { useSession } from "@/features/session/use-session";
 import { countAbsences, attendanceRate } from "@/features/analytics/model";
 import { computeAgeAt, todayIso } from "@/entities/student/age";
 import { formatPercent } from "@/shared/lib/format";
 import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { DownloadIcon } from "@tailadmin/icons";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { ArrowLeft } from "lucide-react";
 import { AttendanceCalendar, type DayEvent } from "./AttendanceCalendar";
 import { AcademicPanel } from "./AcademicPanel";
-
-const control =
-  "h-11 w-full rounded-lg border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20";
 
 function mesComMaisRegistros(datas: string[]): string | null {
   if (datas.length === 0) return null;
@@ -30,14 +32,19 @@ function mesComMaisRegistros(datas: string[]): string | null {
     const mes = data.slice(0, 7);
     contagem.set(mes, (contagem.get(mes) ?? 0) + 1);
   }
-  return [...contagem.entries()].sort((mesA, mesB) => mesB[1] - mesA[1])[0][0];
+  return [...contagem.entries()].sort(
+    (mesA, mesB) => mesB[1] - mesA[1],
+  )[0][0];
 }
 
 export interface StudentDetailProps {
   studentId: string;
+  backHref: string;
+  backLabel: string;
 }
 
-export function StudentDetail({ studentId }: StudentDetailProps) {
+export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailProps) {
+  const { role, profileId } = useSession();
   const { data: aluno, isLoading: carregandoAluno } = useStudent(studentId);
   const { data: turmas } = useGroups();
   const { data: enrollments } = useEnrollmentsByStudent(studentId);
@@ -47,23 +54,63 @@ export function StudentDetail({ studentId }: StudentDetailProps) {
   const { data: eventosEscolares } = useSchoolEvents();
   const { data: notas } = useGradesByStudent(studentId);
   const { data: materias } = useSubjects();
+  const { data: assignmentsDoProfessor } = useAssignmentsByTeacher(profileId ?? "");
+
+  const voltar = (
+    <Link
+      href={backHref}
+      className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+    >
+      <ArrowLeft className="size-4" />
+      {backLabel}
+    </Link>
+  );
 
   if (carregandoAluno) {
     return <p className="text-sm text-muted-foreground">Carregando aluno…</p>;
   }
 
   if (!aluno) {
-    return <p className="text-sm text-muted-foreground">Aluno não encontrado</p>;
+    return (
+      <div className="flex flex-col items-center gap-4 py-16 text-center">
+        <p className="text-sm text-muted-foreground">Aluno não encontrado.</p>
+        <Button asChild variant="outline">
+          <Link href={backHref}>Voltar para {backLabel}</Link>
+        </Button>
+      </div>
+    );
   }
 
+  const aulasVisiveis = visibleGroups(turmas ?? [], role, profileId);
+  const idsVisiveis = new Set(aulasVisiveis.map((aula) => aula.id));
+
   const aulasDoAluno = (enrollments ?? [])
-    .filter((enrollment) => enrollment.active)
-    .map((enrollment) => turmas?.find((turma) => turma.id === enrollment.groupId))
-    .filter((turma): turma is NonNullable<typeof turma> => Boolean(turma));
-  const chamadaPorId = new Map((chamadas ?? []).map((chamada) => [chamada.id, chamada]));
+    .filter((enrollment) => enrollment.active && idsVisiveis.has(enrollment.groupId))
+    .map((enrollment) => aulasVisiveis.find((aula) => aula.id === enrollment.groupId))
+    .filter((aula): aula is NonNullable<typeof aula> => Boolean(aula));
+
+  const chamadaPorId = new Map(
+    (chamadas ?? [])
+      .filter((chamada) => idsVisiveis.has(chamada.groupId))
+      .map((chamada) => [chamada.id, chamada]),
+  );
+  const presencasVisiveis = (presencas ?? []).filter((presenca) =>
+    chamadaPorId.has(presenca.sessionId),
+  );
+
+  // O professor só acompanha as matérias que ele mesmo leciona ao aluno.
+  const notasVisiveis =
+    role === "teacher"
+      ? (notas ?? []).filter((nota) =>
+          (assignmentsDoProfessor ?? []).some(
+            (assignment) =>
+              assignment.subjectId === nota.subjectId && idsVisiveis.has(assignment.groupId),
+          ),
+        )
+      : (notas ?? []);
 
   const statusPorData = new Map<string, AttendanceStatus>();
-  for (const presenca of presencas ?? []) {
+  for (const presenca of presencasVisiveis) {
     const chamada = chamadaPorId.get(presenca.sessionId);
     if (chamada) statusPorData.set(chamada.date, presenca.status);
   }
@@ -79,47 +126,36 @@ export function StudentDetail({ studentId }: StudentDetailProps) {
     }
   }
 
+  // Sem registro nenhum, "0%" leria como presença perfeita — melhor não afirmar nada.
+  const semRegistros = presencasVisiveis.length === 0;
+  const frequencia = semRegistros ? "—" : formatPercent(attendanceRate(presencasVisiveis));
+  const faltas = semRegistros ? "—" : String(countAbsences(presencasVisiveis));
+
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Desempenho &amp; Presença</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Relatório acadêmico e de frequência do período atual
-          </p>
-        </div>
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-            Período
-            <select className={control} defaultValue="2026-1">
-              <option value="2026-1">Semestre 1 (2026)</option>
-              <option value="2026-2">Semestre 2 (2026)</option>
-            </select>
-          </label>
-          <Button
-            type="button"
-            // ponytail: geração real do PDF depende de um endpoint de relatório
-            onClick={() => {}}
-          >
-            <DownloadIcon />
-            Baixar relatório PDF
-          </Button>
+      <header className="flex flex-col gap-2">
+        {voltar}
+        <div className="flex items-center gap-4">
+          <AvatarText name={aluno.name} />
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{aluno.name}</h1>
+            <p className="text-sm text-muted-foreground">Desempenho e presença</p>
+          </div>
+          <Badge variant={aluno.active ? "success" : "danger"}>
+            {aluno.active ? "ATIVO" : "INATIVO"}
+          </Badge>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <section className="rounded-xl border bg-card p-4 shadow-sm lg:col-span-1">
-          <div className="flex items-center gap-4">
-            <AvatarText name={aluno.name} />
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">{aluno.name}</h2>
-              <Badge variant={aluno.active ? "success" : "danger"}>
-                {aluno.active ? "ATIVO" : "INATIVO"}
-              </Badge>
-            </div>
-          </div>
+      {!aluno.active && (
+        <p className="rounded-lg border border-warning-500/40 bg-warning-50 px-4 py-3 text-sm text-warning-700">
+          Aluno inativo — os dados abaixo estão congelados e não recebem novas chamadas.
+        </p>
+      )}
 
-          <dl className="mt-6 grid grid-cols-3 gap-3 text-sm">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <section className="flex flex-col gap-6 rounded-xl border bg-card p-4 shadow-sm lg:col-span-1">
+          <dl className="grid grid-cols-3 gap-3 text-sm">
             <div>
               <dt className="text-muted-foreground">Idade</dt>
               <dd className="font-medium text-foreground">
@@ -132,11 +168,26 @@ export function StudentDetail({ studentId }: StudentDetailProps) {
             </div>
             <div>
               <dt className="text-muted-foreground">Telefone</dt>
-              <dd className="font-medium text-foreground">{aluno.guardianPhone}</dd>
+              <dd className="font-medium text-foreground">
+                <a className="hover:underline" href={`tel:${aluno.guardianPhone}`}>
+                  {aluno.guardianPhone}
+                </a>
+              </dd>
             </div>
           </dl>
 
-          <div className="mt-6">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-muted p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{frequencia}</p>
+              <p className="text-xs text-muted-foreground">Frequência</p>
+            </div>
+            <div className="rounded-xl bg-muted p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{faltas}</p>
+              <p className="text-xs text-muted-foreground">Faltas</p>
+            </div>
+          </div>
+
+          <div>
             <p className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
               Aulas
             </p>
@@ -155,40 +206,38 @@ export function StudentDetail({ studentId }: StudentDetailProps) {
               </ul>
             )}
           </div>
-
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-muted p-4 text-center">
-              <p className="text-2xl font-bold text-foreground">
-                {formatPercent(attendanceRate(presencas ?? []))}
-              </p>
-              <p className="text-xs text-muted-foreground">Frequência</p>
-            </div>
-            <div className="rounded-xl bg-muted p-4 text-center">
-              <p className="text-2xl font-bold text-foreground">{countAbsences(presencas ?? [])}</p>
-              <p className="text-xs text-muted-foreground">Faltas</p>
-            </div>
-          </div>
         </section>
 
-        <section className="rounded-xl border bg-card p-4 shadow-sm lg:col-span-2">
-          {carregandoPresencas && (
-            <p className="text-sm text-muted-foreground">Carregando registros…</p>
-          )}
-          {!carregandoPresencas && mes && (
-            <AttendanceCalendar
-              key={aluno.id}
-              mes={mes}
-              statusPorData={statusPorData}
-              eventosPorData={eventosPorData}
-            />
-          )}
-          {!carregandoPresencas && !mes && (
-            <p className="text-sm text-muted-foreground">Sem registros de presença.</p>
-          )}
-        </section>
+        <Tabs defaultValue="presenca" className="flex flex-col gap-4 lg:col-span-2">
+          <TabsList className="grid w-full grid-cols-2 sm:w-64">
+            <TabsTrigger value="presenca">Presença</TabsTrigger>
+            <TabsTrigger value="notas">Notas</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="presenca">
+            <section className="rounded-xl border bg-card p-4 shadow-sm">
+              {carregandoPresencas && (
+                <p className="text-sm text-muted-foreground">Carregando registros…</p>
+              )}
+              {!carregandoPresencas && mes && (
+                <AttendanceCalendar
+                  key={aluno.id}
+                  mes={mes}
+                  statusPorData={statusPorData}
+                  eventosPorData={eventosPorData}
+                />
+              )}
+              {!carregandoPresencas && !mes && (
+                <p className="text-sm text-muted-foreground">Sem registros de presença.</p>
+              )}
+            </section>
+          </TabsContent>
+
+          <TabsContent value="notas">
+            <AcademicPanel grades={notasVisiveis} subjects={materias ?? []} />
+          </TabsContent>
+        </Tabs>
       </div>
-
-      <AcademicPanel grades={notas ?? []} subjects={materias ?? []} />
     </div>
   );
 }
