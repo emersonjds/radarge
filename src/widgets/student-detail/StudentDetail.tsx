@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import { AttendanceCalendar, type DayEvent } from "./AttendanceCalendar";
 import { AcademicPanel } from "./AcademicPanel";
+import { studentGradesInScope, studentGroupsInScope } from "./scope";
 
 function mesComMaisRegistros(datas: string[]): string | null {
   if (datas.length === 0) return null;
@@ -45,32 +46,33 @@ export interface StudentDetailProps {
 
 export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailProps) {
   const { role, profileId } = useSession();
+  const ehProfessor = role === "teacher";
   const { data: aluno, isLoading: carregandoAluno } = useStudent(studentId);
-  const { data: turmas } = useGroups();
-  const { data: enrollments } = useEnrollmentsByStudent(studentId);
+  const { data: turmas, isLoading: carregandoTurmas } = useGroups();
+  const { data: enrollments, isLoading: carregandoMatriculas } =
+    useEnrollmentsByStudent(studentId);
   const { data: chamadas } = useAttendanceSessions();
   const { data: presencas, isLoading: carregandoPresencas } =
     useAttendanceRecordsByStudent(studentId);
   const { data: eventosEscolares } = useSchoolEvents();
   const { data: notas } = useGradesByStudent(studentId);
   const { data: materias } = useSubjects();
-  const { data: assignmentsDoProfessor } = useAssignmentsByTeacher(profileId ?? "");
-
-  const voltar = (
-    <Link
-      href={backHref}
-      className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-    >
-      <ArrowLeft className="size-4" />
-      {backLabel}
-    </Link>
+  const { data: assignmentsDoProfessor } = useAssignmentsByTeacher(
+    ehProfessor ? (profileId ?? "") : "",
   );
 
-  if (carregandoAluno) {
+  const idsVisiveis = new Set(visibleGroups(turmas ?? [], role, profileId).map((aula) => aula.id));
+  const aulasDoAluno = studentGroupsInScope(enrollments ?? [], turmas ?? [], role, profileId);
+
+  if (carregandoAluno || carregandoTurmas || carregandoMatriculas) {
     return <p className="text-sm text-muted-foreground">Carregando aluno…</p>;
   }
 
-  if (!aluno) {
+  // A ficha inteira é PII de menor: o professor só a alcança pelos alunos que
+  // estudam com ele. Fora disso o aluno não existe — nem por link direto.
+  const foraDoEscopo = ehProfessor && aulasDoAluno.length === 0;
+
+  if (!aluno || foraDoEscopo) {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-center">
         <p className="text-sm text-muted-foreground">Aluno não encontrado.</p>
@@ -81,14 +83,6 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
     );
   }
 
-  const aulasVisiveis = visibleGroups(turmas ?? [], role, profileId);
-  const idsVisiveis = new Set(aulasVisiveis.map((aula) => aula.id));
-
-  const aulasDoAluno = (enrollments ?? [])
-    .filter((enrollment) => enrollment.active && idsVisiveis.has(enrollment.groupId))
-    .map((enrollment) => aulasVisiveis.find((aula) => aula.id === enrollment.groupId))
-    .filter((aula): aula is NonNullable<typeof aula> => Boolean(aula));
-
   const chamadaPorId = new Map(
     (chamadas ?? [])
       .filter((chamada) => idsVisiveis.has(chamada.groupId))
@@ -98,16 +92,22 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
     chamadaPorId.has(presenca.sessionId),
   );
 
-  // O professor só acompanha as matérias que ele mesmo leciona ao aluno.
-  const notasVisiveis =
-    role === "teacher"
-      ? (notas ?? []).filter((nota) =>
-          (assignmentsDoProfessor ?? []).some(
-            (assignment) =>
-              assignment.subjectId === nota.subjectId && idsVisiveis.has(assignment.groupId),
-          ),
-        )
-      : (notas ?? []);
+  const notasVisiveis = studentGradesInScope(
+    notas ?? [],
+    assignmentsDoProfessor ?? [],
+    aulasDoAluno,
+    role,
+  );
+
+  const voltar = (
+    <Link
+      href={backHref}
+      className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+    >
+      <ArrowLeft className="size-4" />
+      {backLabel}
+    </Link>
+  );
 
   const statusPorData = new Map<string, AttendanceStatus>();
   for (const presenca of presencasVisiveis) {
