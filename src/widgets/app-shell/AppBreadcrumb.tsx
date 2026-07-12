@@ -9,6 +9,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   students: "Alunos",
   reports: "Relatórios",
   users: "Perfis",
+  events: "Eventos",
 };
 
 interface Crumb {
