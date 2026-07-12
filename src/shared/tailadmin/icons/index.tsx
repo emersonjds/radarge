@@ -6,6 +6,7 @@ import GroupIcon from "./group.svg";
 import TrashBinIcon from "./trash.svg";
 import PencilIcon from "./pencil.svg";
 import CalenderIcon from "./calender-line.svg";
+import CalendarIcon from "./calendar.svg";
 import EyeIcon from "./eye.svg";
 import ChevronLeftIcon from "./chevron-left.svg";
 import UserCircleIcon from "./user-circle.svg";
@@ -15,6 +16,7 @@ import PieChartIcon from "./pie-chart.svg";
 import DocsIcon from "./docs.svg";
 
 export {
+  CalendarIcon,
   CalenderIcon,
   CheckCircleIcon,
   ChevronLeftIcon,

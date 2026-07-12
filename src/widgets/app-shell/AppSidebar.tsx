@@ -9,6 +9,7 @@ import type { Role } from "@/entities/profile/model";
 import {
   GridIcon,
   CalenderIcon,
+  CalendarIcon,
   GroupIcon,
   PieChartIcon,
   UserCircleIcon,
@@ -26,6 +27,7 @@ const navIcons: Record<NavIcon, ReactNode> = {
   materia: <DocsIcon />,
   turma: <TableIcon />,
   grades: <TaskIcon />,
+  eventos: <CalendarIcon />,
 };
 
 export interface AppSidebarProps {

@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Radar — Notificações por WhatsApp para responsáveis</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  :root {
+    --brand: #465fff;
+    --brand-soft: #eef1ff;
+    --gray-900: #101828;
+    --gray-700: #344054;
+    --gray-500: #667085;
+    --gray-300: #d0d5dd;
+    --gray-100: #f2f4f7;
+    --success: #12b76a;
+    --error: #f04438;
+    --warning: #f79009;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--gray-900);
+    font-size: 10.5pt;
+    line-height: 1.55;
+    margin: 0;
+  }
+  h1 {
+    font-size: 24pt; line-height: 1.15; margin: 0 0 4px;
+    letter-spacing: -0.02em;
+  }
+  h2 {
+    font-size: 14pt; margin: 26px 0 8px; padding-top: 10px;
+    border-top: 2px solid var(--brand); color: var(--brand);
+    letter-spacing: -0.01em; break-after: avoid;
+  }
+  h3 { font-size: 11.5pt; margin: 16px 0 6px; color: var(--gray-900); break-after: avoid; }
+  p { margin: 0 0 8px; }
+  ul, ol { margin: 0 0 8px; padding-left: 18px; }
+  li { margin-bottom: 3px; }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 9pt; background: var(--gray-100);
+    padding: 1px 4px; border-radius: 3px;
+  }
+  pre {
+    background: var(--gray-900); color: #e6e9f0;
+    padding: 10px 12px; border-radius: 6px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 8.2pt; line-height: 1.5;
+    overflow-x: auto; white-space: pre-wrap;
+    break-inside: avoid; margin: 8px 0 12px;
+  }
+  pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+  .sub { color: var(--gray-500); font-size: 10pt; margin-bottom: 20px; }
+  .tldr {
+    background: var(--brand-soft); border-left: 4px solid var(--brand);
+    padding: 12px 14px; border-radius: 0 6px 6px 0; margin: 16px 0 20px;
+  }
+  .tldr strong { color: var(--brand); }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 14px; font-size: 9.5pt; break-inside: avoid; }
+  th {
+    text-align: left; background: var(--gray-100); color: var(--gray-700);
+    font-weight: 600; padding: 7px 9px; border-bottom: 2px solid var(--gray-300);
+  }
+  td { padding: 7px 9px; border-bottom: 1px solid var(--gray-300); vertical-align: top; }
+  .yes { color: var(--success); font-weight: 600; }
+  .no { color: var(--error); font-weight: 600; }
+  .warn { color: var(--warning); font-weight: 600; }
+  .callout {
+    border: 1px solid var(--gray-300); border-left: 4px solid var(--warning);
+    background: #fffaf0; padding: 10px 12px; border-radius: 0 6px 6px 0;
+    margin: 12px 0; font-size: 9.8pt; break-inside: avoid;
+  }
+  .callout.danger { border-left-color: var(--error); background: #fef3f2; }
+  .callout.ok { border-left-color: var(--success); background: #f0fdf4; }
+  .callout-title { font-weight: 600; display: block; margin-bottom: 3px; }
+  .page-break { break-before: page; }
+  footer {
+    margin-top: 28px; padding-top: 10px; border-top: 1px solid var(--gray-300);
+    color: var(--gray-500); font-size: 8.5pt;
+  }
+  a { color: var(--brand); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<h1>Notificações por WhatsApp para os responsáveis</h1>
+<p class="sub">Radar — ONG de reforço escolar · documento de arquitetura · julho de 2026</p>
+
+<div class="tldr">
+  <p><strong>Recomendação:</strong> usar a <strong>WhatsApp Cloud API da Meta direto</strong> (sem intermediário/BSP), acionada por uma <strong>Edge Function do Supabase</strong>, com uma tabela de <strong>fila de envio (outbox)</strong> no Postgres e <code>pg_cron</code> disparando os lotes.</p>
+  <p style="margin-bottom:0">Não vale a pena subir uma API Node.js separada <em>hoje</em>: ela resolve o mesmo problema, custa mais um servidor, mais um deploy e mais um lugar pra guardar segredo — e o Supabase já é o backend-alvo do Radar. A opção Node está documentada na seção 6, com o critério objetivo de quando migrar.</p>
+</div>
+
+<h2>1. O que a API do WhatsApp exige (inegociável)</h2>
+
+<p>Antes de escolher a arquitetura, três regras da Meta definem o desenho. Elas não são opcionais e não têm como contornar:</p>
+
+<ol>
+  <li><strong>O token nunca pode ir para o navegador.</strong> A chamada à API do WhatsApp usa um <em>access token</em> permanente que dá poder de enviar mensagem em nome da ONG. O Radar é uma SPA com <code>output: "export"</code> — qualquer coisa no bundle é pública. Logo, <strong>obrigatoriamente</strong> existe um pedaço de código rodando no servidor. Isso é o que torna a pergunta "Supabase ou Node?" inevitável.</li>
+  <li><strong>Mensagem iniciada pela ONG precisa de <em>template</em> aprovado.</strong> Você não pode escrever texto livre para um número que não falou com você nas últimas 24h. Precisa cadastrar um modelo ("Olá {{1}}, o(a) aluno(a) {{2}} faltou à aula de hoje...") e esperar a Meta aprovar — normalmente minutos, às vezes horas.</li>
+  <li><strong>Existe uma janela de 24h.</strong> Se o responsável responder a mensagem, abre uma "janela de atendimento" de 24 horas em que você pode mandar texto livre — e de graça. Fora dessa janela, só template, e template de utilidade é cobrado.</li>
+</ol>
+
+<h2>2. Qual provedor: Cloud API, BSP ou biblioteca não-oficial</h2>
+
+<table>
+  <thead>
+    <tr><th style="width:22%">Caminho</th><th style="width:30%">O que é</th><th>Veredito para o Radar</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Cloud API (Meta)</strong></td>
+      <td>API oficial hospedada pela própria Meta. Você fala com <code>graph.facebook.com</code>. Sem servidor de WhatsApp pra manter.</td>
+      <td class="yes">✔ Escolher esta. Sem taxa de plataforma, sem mensalidade — você paga só a mensagem para a Meta. É a opção mais barata e a mais estável.</td>
+    </tr>
+    <tr>
+      <td><strong>BSP</strong> (Twilio, Zenvia, Take Blip, 360dialog, Infobip)</td>
+      <td>Revendedor oficial. Põe uma API própria por cima da Meta e cobra <em>markup</em> por mensagem ou mensalidade.</td>
+      <td class="warn">Só se a ONG quiser um painel de atendimento humano pronto (chat multi-atendente). Para envio automático, é pagar a mais pelo mesmo serviço.</td>
+    </tr>
+    <tr>
+      <td><strong>Não-oficial</strong> (Baileys, whatsapp-web.js, Evolution API)</td>
+      <td>Bibliotecas que simulam o WhatsApp Web logado num celular. Muito comuns no Brasil por serem "de graça".</td>
+      <td class="no">✘ Não usar. Viola os Termos da Meta, o número pode ser banido sem aviso, e a ONG estaria trafegando <strong>dado pessoal de criança</strong> por um canal não sancionado. Risco jurídico (LGPD) e operacional que não se paga pelo que economiza.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout danger">
+  <span class="callout-title">Por que o Evolution API / Baileys é especialmente ruim aqui</span>
+  Se o número for banido, a ONG perde o canal de comunicação com <em>todas</em> as famílias de uma vez, no meio do semestre, sem recurso. E como o dado é PII de menor de idade, um vazamento por conta de um gateway não-oficial é exatamente o tipo de coisa que a LGPD trata com severidade (art. 14). O custo real da Cloud API é de centavos por mensagem — não vale o risco.
+</div>
+
+<h3>Pré-requisitos de conta (leva ~1 a 3 dias, faça isso primeiro)</h3>
+<ol>
+  <li>Conta no <strong>Meta Business Manager</strong> com a ONG (CNPJ).</li>
+  <li><strong>Verificação de negócio</strong> da Meta (envio de documentos do CNPJ). É o passo mais lento — comece por ele.</li>
+  <li>Criar a <strong>WhatsApp Business Account (WABA)</strong> e registrar um número de telefone. <em>Atenção:</em> o número precisa estar limpo — não pode estar em uso num WhatsApp comum ou Business App; ele é migrado para a API e deixa de funcionar no celular.</li>
+  <li>Gerar um <strong>token permanente</strong> via System User (não use o token temporário de 24h da tela de teste).</li>
+  <li>Cadastrar os <strong>templates</strong> e esperar aprovação.</li>
+</ol>
+<p>Para desenvolver antes de tudo isso ficar pronto: a Meta dá um <strong>número de teste gratuito</strong> que envia para até 5 destinatários cadastrados. Dá para construir a feature inteira em cima dele.</p>
+
+<h2>3. A arquitetura recomendada (Supabase)</h2>
+
+<p>O desenho é deliberadamente pequeno: <strong>uma tabela, uma função de envio, uma função de webhook, um cron</strong>. Nada de fila dedicada, worker ou broker.</p>
+
+<pre><code>┌─────────────┐   admin clica "avisar responsáveis"
+│  Radar SPA  │──────────────┐
+└─────────────┘              │  INSERT (via RLS, admin only)
+                             ▼
+                   ┌───────────────────────┐
+                   │  whatsapp_outbox      │  ← a fila. É só uma tabela.
+                   │  (pending → sent)     │
+                   └───────────────────────┘
+                             ▲   │
+        pg_cron (a cada 1min)│   │ pg_net → invoca
+                             │   ▼
+                   ┌───────────────────────┐        ┌──────────────┐
+                   │ Edge Function          │───────▶│ Meta Graph   │
+                   │ whatsapp-send          │        │ API (Cloud)  │
+                   └───────────────────────┘        └──────────────┘
+                                                            │
+                   ┌───────────────────────┐                │ webhook
+                   │ Edge Function          │◀───────────────┘ (entregue/lido/
+                   │ whatsapp-webhook       │                   respondeu)
+                   └───────────────────────┘
+                             │ UPDATE status / opt-out
+                             ▼
+                   ┌───────────────────────┐
+                   │  whatsapp_outbox      │
+                   │  guardians            │
+                   └───────────────────────┘</code></pre>
+
+<h3>Por que a tabela outbox existe (e por que não é over-engineering)</h3>
+<p>A tentação é chamar a API da Meta direto, de forma síncrona, quando o admin clica no botão. Não funciona bem por três motivos concretos:</p>
+<ul>
+  <li><strong>Lote.</strong> "Avisar os responsáveis dos 12 faltantes de hoje" são 12 chamadas HTTP. Se a 7ª falhar, o que aconteceu com as outras? Sem registro, ninguém sabe.</li>
+  <li><strong>Retry.</strong> A Meta devolve <code>429</code> e erros transitórios. Sem uma linha com <code>attempts</code>, você não tem onde tentar de novo.</li>
+  <li><strong>Auditoria.</strong> É comunicação sobre criança, para responsável legal. Você <em>precisa</em> conseguir responder "o que exatamente foi enviado, para qual número, quando, e o WhatsApp confirmou a entrega?". Isso é a tabela.</li>
+</ul>
+<p>Uma tabela + um cron é a versão mais barata dessas três coisas. Um BullMQ/Redis aqui seria a versão cara da mesma coisa.</p>
+
+<h2>4. Modelo de dados</h2>
+
+<pre><code>-- Consentimento vive no responsável, não no aluno.
+alter table guardians
+  add column phone_e164        text,                       -- '+5511998887777'
+  add column whatsapp_wa_id    text,                       -- devolvido pela Meta, ver §8
+  add column whatsapp_opt_in   boolean not null default false,
+  add column opted_out_at      timestamptz;
+
+create type whatsapp_status as enum ('pending','sent','delivered','read','failed');
+
+create table whatsapp_outbox (
+  id              uuid primary key default gen_random_uuid(),
+  guardian_id     uuid not null references guardians(id),
+  student_id      uuid not null references students(id),
+  template_name   text not null,                           -- 'falta_do_dia'
+  params          jsonb not null,                          -- {"1":"Maria","2":"João","3":"11/07"}
+  status          whatsapp_status not null default 'pending',
+  attempts        smallint not null default 0,
+  provider_msg_id text,                                    -- wamid.HBg... (id da Meta)
+  error           text,
+  scheduled_for   timestamptz not null default now(),
+  sent_at         timestamptz,
+  created_at      timestamptz not null default now(),
+
+  -- Trava de duplicidade: um aviso do mesmo tipo, pro mesmo aluno, no mesmo dia.
+  -- É o que impede o pai receber 3 vezes que o filho faltou porque alguém
+  -- clicou no botão 3 vezes.
+  unique (student_id, template_name, (scheduled_for::date))
+);
+
+create index on whatsapp_outbox (status, scheduled_for)
+  where status = 'pending';</code></pre>
+
+<div class="callout ok">
+  <span class="callout-title">O <code>unique</code> é a peça mais importante desse schema</span>
+  Idempotência no banco, não no código. Se o admin clicar duas vezes, o segundo <code>INSERT</code> falha no Postgres — não chega nem perto da Meta. Isso é infinitamente mais confiável que um <code>if (jaEnviou)</code> em JavaScript.
+</div>
+
+<h3>RLS</h3>
+<pre><code>alter table whatsapp_outbox enable row level security;
+
+-- Só admin/coordenador enfileira. Professor não dispara mensagem pra família.
+create policy "admin enfileira" on whatsapp_outbox for insert to authenticated
+  with check (
+    exists (select 1 from perfis
+            where id = auth.uid() and papel in ('admin','coordinator'))
+  );
+
+-- Ninguém do app atualiza status: só a Edge Function (service_role, bypassa RLS).
+create policy "admin lê" on whatsapp_outbox for select to authenticated
+  using (
+    exists (select 1 from perfis
+            where id = auth.uid() and papel in ('admin','coordinator'))
+  );</code></pre>
+
+<h2>5. As duas Edge Functions</h2>
+
+<h3><code>whatsapp-send</code> — puxa da fila e envia</h3>
+<pre><code>// supabase/functions/whatsapp-send/index.ts
+import { createClient } from "jsr:@supabase/supabase-js@2";
+
+const GRAPH = `https://graph.facebook.com/v23.0/${Deno.env.get("WA_PHONE_ID")}/messages`;
+const TOKEN = Deno.env.get("WA_TOKEN")!;
+
+const db = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,   // fica só aqui, no servidor
+);
+
+Deno.serve(async () =&gt; {
+  const { data: fila } = await db
+    .from("whatsapp_outbox")
+    .select("id, template_name, params, guardians(phone_e164, whatsapp_opt_in)")
+    .eq("status", "pending")
+    .lte("scheduled_for", new Date().toISOString())
+    .lt("attempts", 3)
+    .limit(50);                                  // lote pequeno; o cron volta em 1min
+
+  for (const msg of fila ?? []) {
+    if (!msg.guardians.whatsapp_opt_in) {
+      await db.from("whatsapp_outbox")
+        .update({ status: "failed", error: "sem opt-in" }).eq("id", msg.id);
+      continue;
+    }
+
+    const res = await fetch(GRAPH, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to: msg.guardians.phone_e164,
+        type: "template",
+        template: {
+          name: msg.template_name,
+          language: { code: "pt_BR" },
+          components: [{
+            type: "body",
+            parameters: Object.values(msg.params).map((t) =&gt; ({ type: "text", text: t })),
+          }],
+        },
+      }),
+    });
+
+    const body = await res.json();
+
+    await db.from("whatsapp_outbox").update(
+      res.ok
+        ? { status: "sent", provider_msg_id: body.messages[0].id, sent_at: new Date() }
+        : { attempts: msg.attempts + 1, error: body.error?.message ?? "erro" },
+    ).eq("id", msg.id);
+  }
+
+  return new Response("ok");
+});</code></pre>
+
+<h3><code>whatsapp-webhook</code> — recebe confirmações e opt-out</h3>
+<p>Esta função é <strong>pública</strong> (a Meta chama de fora). Por isso a assinatura HMAC não é opcional — sem ela, qualquer um marca mensagem como entregue ou descadastra um responsável.</p>
+
+<pre><code>// supabase/functions/whatsapp-webhook/index.ts  (config.toml: verify_jwt = false)
+
+Deno.serve(async (req) =&gt; {
+  const url = new URL(req.url);
+
+  // Handshake inicial da Meta ao cadastrar o webhook.
+  if (req.method === "GET") {
+    return url.searchParams.get("hub.verify_token") === Deno.env.get("WA_VERIFY_TOKEN")
+      ? new Response(url.searchParams.get("hub.challenge"))
+      : new Response("no", { status: 403 });
+  }
+
+  const raw = await req.text();
+  if (!(await assinaturaValida(raw, req.headers.get("x-hub-signature-256")))) {
+    return new Response("assinatura inválida", { status: 401 });
+  }
+
+  const value = JSON.parse(raw).entry?.[0]?.changes?.[0]?.value;
+
+  for (const st of value?.statuses ?? []) {
+    await db.from("whatsapp_outbox")
+      .update({ status: st.status })            // delivered | read | failed
+      .eq("provider_msg_id", st.id);
+  }
+
+  // Responsável respondeu "PARAR" → opt-out imediato. Exigência da LGPD e da Meta.
+  for (const m of value?.messages ?? []) {
+    const texto = m.text?.body?.trim().toUpperCase();
+    if (["PARAR", "SAIR", "STOP"].includes(texto)) {
+      await db.from("guardians")
+        .update({ whatsapp_opt_in: false, opted_out_at: new Date() })
+        .eq("whatsapp_wa_id", m.from);
+    }
+  }
+
+  return new Response("ok");                    // sempre 200: a Meta reenvia em erro
+});
+
+async function assinaturaValida(corpo: string, header: string | null) {
+  if (!header) return false;
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(Deno.env.get("WA_APP_SECRET")!),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+  );
+  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(corpo));
+  const esperado = "sha256=" + [...new Uint8Array(mac)]
+    .map((b) =&gt; b.toString(16).padStart(2, "0")).join("");
+  return esperado === header;
+}</code></pre>
+
+<h3>O cron</h3>
+<pre><code>select cron.schedule('whatsapp-send', '* * * * *', $$
+  select net.http_post(
+    url     := 'https://&lt;projeto&gt;.supabase.co/functions/v1/whatsapp-send',
+    headers := '{"Authorization": "Bearer &lt;service_role_key&gt;"}'::jsonb
+  );
+$$);</code></pre>
+<p>Um minuto de latência é irrelevante para "seu filho faltou hoje". Se um dia precisar ser instantâneo, troca o cron por um trigger <code>AFTER INSERT</code> com <code>pg_net</code> — mesma função, sem reescrever nada.</p>
+
+<h2>6. A alternativa: API Node.js + Postgres próprio</h2>
+
+<p>É perfeitamente viável e nada exótico: um Fastify/Hono no Railway, Fly.io ou Render, um Postgres gerenciado (Neon, Supabase, RDS), <code>pg-boss</code> para a fila (que usa o próprio Postgres — não precisa de Redis).</p>
+
+<p><strong>O ponto é que ela não resolve nada que o Supabase não resolva</strong> — e adiciona: mais um deploy, mais um lugar para vazar segredo, mais um serviço para monitorar, e o custo de um servidor sempre ligado. Sem contar que o Radar teria dois backends (Supabase para os dados, Node para o WhatsApp) ou uma migração inteira.</p>
+
+<table>
+  <thead>
+    <tr><th style="width:30%">Critério</th><th style="width:35%">Supabase (Edge Functions)</th><th style="width:35%">Node.js + Postgres</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Infra a manter</td><td class="yes">Nenhuma além do Supabase</td><td>Servidor + deploy + monitoramento</td></tr>
+    <tr><td>Custo mensal</td><td class="yes">R$ 0 no free tier (500k invocações)</td><td>~US$ 5–20 (servidor + banco)</td></tr>
+    <tr><td>Onde mora o segredo</td><td class="yes">Supabase Vault / function secrets</td><td>Env do servidor (mais um lugar)</td></tr>
+    <tr><td>Fila / retry</td><td>Tabela + <code>pg_cron</code></td><td><code>pg-boss</code> (mais robusto)</td></tr>
+    <tr><td>Auth / RLS</td><td class="yes">Já é a do Radar</td><td>Reimplementar autorização na API</td></tr>
+    <tr><td>Cold start</td><td>~100–300 ms (irrelevante aqui)</td><td class="yes">Zero</td></tr>
+    <tr><td>Tarefa longa (&gt;150 s)</td><td class="no">Não cabe</td><td class="yes">Sem limite</td></tr>
+    <tr><td>Chat ao vivo (atendimento)</td><td class="no">Ruim — precisa de conexão persistente</td><td class="yes">Natural</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <span class="callout-title">Critério objetivo para migrar para Node</span>
+  Migre <strong>quando e se</strong> uma destas for verdade: (a) a ONG quiser um <strong>chat de atendimento ao vivo</strong> pelo WhatsApp, com atendente humano respondendo — isso pede conexão persistente e não cabe bem em serverless; (b) o volume passar de ~5.000 mensagens/dia, quando lote e rate limit ficam um problema de engenharia de verdade; (c) o Radar sair do Supabase por outro motivo. <strong>Enquanto for "avisar falta e mandar boletim", Edge Function resolve e sobra.</strong>
+</div>
+
+<h2>7. Custos reais</h2>
+
+<p>Com a Cloud API direto, você paga <em>só a Meta</em>, por mensagem. Os avisos do Radar (falta, resumo de frequência, aviso de reunião) se enquadram todos na categoria <strong>Utilidade</strong> — que é a mais barata.</p>
+
+<table>
+  <thead>
+    <tr><th>Categoria</th><th>Preço (Brasil, USD)</th><th>Uso no Radar</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Utilidade</strong></td><td>~<strong>US$ 0,0068</strong> / msg (≈ R$ 0,04)</td><td>Falta do dia, resumo semanal, alerta de frequência baixa</td></tr>
+    <tr><td>Serviço (resposta do responsável)</td><td class="yes"><strong>Grátis</strong></td><td>Quando o pai responde e você replica dentro de 24h</td></tr>
+    <tr><td>Marketing</td><td>~US$ 0,0625 / msg</td><td class="no">Não usar — 9× mais caro e sujeito a bloqueio</td></tr>
+    <tr><td>Autenticação</td><td>~US$ 0,0315 / msg</td><td>Não se aplica</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Simulação para a ONG:</strong> 150 alunos, ~10% de falta por dia letivo, 20 dias letivos/mês → <strong>300 mensagens/mês</strong> ≈ <strong>US$ 2,04</strong> (cerca de <strong>R$ 11/mês</strong>). Somando um resumo mensal para todos os 150 responsáveis, ainda fica abaixo de <strong>R$ 30/mês</strong>. Há desconto por volume acima de 1.000 mensagens.</p>
+
+<div class="callout ok">
+  <span class="callout-title">Truque legítimo de custo</span>
+  Qualquer mensagem enviada dentro de uma janela de atendimento aberta (o responsável respondeu nas últimas 24h) é <strong>grátis</strong> — inclusive templates de utilidade. Vale a pena os templates terminarem com um convite a responder ("Responda esta mensagem se quiser falar com a coordenação") — melhora o relacionamento <em>e</em> derruba o custo das mensagens seguintes.
+</div>
+
+<h2>8. Armadilhas do Brasil (as que custam um dia de debug)</h2>
+
+<div class="callout danger">
+  <span class="callout-title">O nono dígito</span>
+  Números de celular brasileiros registrados no WhatsApp antes de ~2012 têm o <code>wa_id</code> <strong>sem o 9 na frente</strong> (<code>5511988887777</code> vira <code>551188887777</code>). Você <strong>envia</strong> com o 9 e a Meta resolve — mas o webhook <strong>volta</strong> com o número sem o 9.
+  <p style="margin:6px 0 0"><strong>Consequência prática:</strong> se você casar o webhook com o responsável comparando string de telefone, o opt-out de metade dos pais simplesmente não vai funcionar, silenciosamente. Por isso o schema tem <code>whatsapp_wa_id</code> separado de <code>phone_e164</code>: <strong>guarde o <code>wa_id</code> que a Meta devolveu no primeiro contato e sempre case por ele</strong>, nunca pelo telefone digitado.</p>
+</div>
+
+<ul>
+  <li><strong>E.164 sempre.</strong> Guarde <code>+5511988887777</code>, não <code>(11) 98888-7777</code>. Normalize no <code>INSERT</code>, não na hora de enviar.</li>
+  <li><strong>Idioma do template é <code>pt_BR</code></strong>, com underline. <code>pt-BR</code> falha.</li>
+  <li><strong>Template rejeitado</strong> por parecer marketing: evite "confira", "aproveite", emoji promocional. Escreva seco e informativo — é o que a categoria Utilidade espera.</li>
+  <li><strong>Rate limit.</strong> Um número novo começa com limite baixo (1.000 destinatários únicos/dia), que sobe conforme a qualidade. Para a escala da ONG isso nunca vai apertar, mas é o motivo do <code>limit(50)</code> por lote.</li>
+  <li><strong>Qualidade do número.</strong> Se muitos pais bloquearem/denunciarem, a Meta rebaixa a qualidade e no limite bloqueia o número. Opt-in de verdade é a defesa — não importe uma planilha de telefones e comece a disparar.</li>
+</ul>
+
+<h2>9. LGPD e opt-in</h2>
+
+<p>O dado aqui é sensível por natureza: <strong>informação sobre criança, enviada ao responsável legal</strong>. A LGPD (art. 14) exige consentimento específico e destacado de pelo menos um dos pais ou responsável. Na prática:</p>
+
+<ul>
+  <li><strong>Opt-in explícito e registrado.</strong> Na matrícula, um campo "Autorizo receber avisos sobre meu filho(a) pelo WhatsApp" — e o Radar grava <em>quando</em> e <em>quem</em> autorizou. Nunca assuma consentimento por ter o telefone no cadastro.</li>
+  <li><strong>Opt-out em um passo.</strong> Responder "PARAR" descadastra na hora (já está no webhook acima). É exigência da Meta <em>e</em> da LGPD.</li>
+  <li><strong>Minimização.</strong> O template manda o primeiro nome do aluno e a data. Não manda endereço, nota, diagnóstico, nem nada que não seja necessário para o aviso.</li>
+  <li><strong>Nunca logue o conteúdo.</strong> O <code>console.log</code> da Edge Function vai para o painel do Supabase. Logue <code>outbox.id</code> e status — nunca nome de aluno ou telefone completo (regra que o Radar já tem em <code>CLAUDE.md §7</code>).</li>
+</ul>
+
+<h2>10. Templates a cadastrar</h2>
+
+<table>
+  <thead>
+    <tr><th style="width:22%">Nome</th><th style="width:14%">Categoria</th><th>Corpo</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>falta_do_dia</code></td><td>Utilidade</td>
+      <td>Olá, {{1}}. Informamos que {{2}} não compareceu à aula de {{3}} no dia {{4}}. Qualquer dúvida, responda esta mensagem. — Equipe [ONG]</td>
+    </tr>
+    <tr>
+      <td><code>alerta_frequencia</code></td><td>Utilidade</td>
+      <td>Olá, {{1}}. A frequência de {{2}} está em {{3}}% neste mês. Gostaríamos de conversar sobre como podemos ajudar. Responda esta mensagem para falar com a coordenação. — Equipe [ONG]</td>
+    </tr>
+    <tr>
+      <td><code>resumo_mensal</code></td><td>Utilidade</td>
+      <td>Olá, {{1}}. Resumo de {{2}} em {{3}}: frequência {{4}}%, média {{5}}. Responda esta mensagem se quiser conversar. — Equipe [ONG]</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>11. Ordem de implementação</h2>
+
+<ol>
+  <li><strong>Hoje:</strong> abrir o Meta Business, mandar os documentos da ONG para verificação. É o gargalo — o resto se faz em paralelo.</li>
+  <li>Migração do Radar para Supabase (já é o backend-alvo; a feature de WhatsApp depende dela).</li>
+  <li>Campos de <code>guardians</code> (telefone, opt-in) + tela de consentimento na ficha do aluno. <strong>Funciona sem nenhuma API do WhatsApp</strong> — é só cadastro.</li>
+  <li>Tabela <code>whatsapp_outbox</code> + RLS.</li>
+  <li>Edge Function <code>whatsapp-send</code> contra o <strong>número de teste</strong> da Meta (5 destinatários, grátis). Aqui a feature já funciona ponta a ponta.</li>
+  <li>Edge Function <code>whatsapp-webhook</code> + HMAC + opt-out.</li>
+  <li><code>pg_cron</code>, botão "avisar responsáveis" na tela de chamada, e troca do número de teste pelo número real da ONG.</li>
+</ol>
+
+<p>Os passos 3 e 4 já entregam valor sozinhos (a ONG passa a ter telefone e consentimento organizados) e não dependem da verificação da Meta terminar.</p>
+
+<footer>
+  Radar — documento de arquitetura · julho de 2026<br>
+  Preços conferidos em julho de 2026 na documentação oficial da Meta; a tabela muda periodicamente — confirme em
+  <a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/pricing">developers.facebook.com/documentation/business-messaging/whatsapp/pricing</a> antes de fechar orçamento.
+</footer>
+
+</body>
+</html>
