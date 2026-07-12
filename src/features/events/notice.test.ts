@@ -55,6 +55,11 @@ describe("whatsappLink", () => {
     expect(link).toBe("https://wa.me/5511988124477?text=ol%C3%A1");
   });
 
+  it("trata DDD 55 sem DDI como número local, não como internacionalizado", () => {
+    const link = whatsappLink("(55) 99123-4567", "oi");
+    expect(link).toBe(`https://wa.me/5555991234567?text=${encodeURIComponent("oi")}`);
+  });
+
   it("telefone com poucos dígitos retorna null", () => {
     expect(whatsappLink("1234", "olá")).toBeNull();
   });

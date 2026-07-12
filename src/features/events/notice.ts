@@ -23,14 +23,21 @@ export function buildEventNotice({ event, group, student }: EventNoticeInput): s
   ].join("\n");
 }
 
-const MIN_VALID_PHONE_DIGITS = 10;
+const MIN_VALID_PHONE_DIGITS = 10; // DDD + 8 dígitos
+const MIN_DIGITS_WITH_COUNTRY_CODE = 12; // 55 + DDD + 8 dígitos
 const BRAZIL_COUNTRY_CODE = "55";
 
-/** Returns null when the phone has too few digits to be a real number — the UI hides the button. */
+/**
+ * Returns null when the phone has too few digits to be a real number — the UI hides the button.
+ * "Já tem DDI" é decidido pelo tamanho, não pelo prefixo: 55 também é DDD (Santa Maria/RS),
+ * e um número local como (55) 99123-4567 não pode ser confundido com um já internacionalizado.
+ */
 export function whatsappLink(phone: string, message: string): string | null {
   const digits = phone.replace(/\D/g, "");
   if (digits.length < MIN_VALID_PHONE_DIGITS) return null;
 
-  const withCountryCode = digits.startsWith(BRAZIL_COUNTRY_CODE) ? digits : `${BRAZIL_COUNTRY_CODE}${digits}`;
+  const hasCountryCode =
+    digits.length >= MIN_DIGITS_WITH_COUNTRY_CODE && digits.startsWith(BRAZIL_COUNTRY_CODE);
+  const withCountryCode = hasCountryCode ? digits : `${BRAZIL_COUNTRY_CODE}${digits}`;
   return `https://wa.me/${withCountryCode}?text=${encodeURIComponent(message)}`;
 }
