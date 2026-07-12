@@ -39,9 +39,10 @@ test.describe("visão por papel", () => {
     await expect(page.getByText("Meus alunos")).toBeVisible();
 
     const nav = sidebar(page);
-    await expect(nav.getByRole("link")).toHaveCount(3);
+    await expect(nav.getByRole("link")).toHaveCount(4);
     await expect(nav.getByRole("link", { name: "Chamada", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Alunos", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Eventos", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Painel" })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "Relatórios" })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "Perfis" })).toHaveCount(0);
@@ -53,10 +54,11 @@ test.describe("visão por papel", () => {
     await login(page, "Administrador");
 
     const nav = sidebar(page);
-    await expect(nav.getByRole("link")).toHaveCount(6);
+    await expect(nav.getByRole("link")).toHaveCount(7);
     await expect(nav.getByRole("link", { name: "Painel" })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Alunos", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Relatórios" })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Eventos", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Perfis" })).toBeVisible();
 
     await page.screenshot({ path: "e2e/auth/evidencias/admin-home.png", fullPage: true });
@@ -75,10 +77,11 @@ test.describe("visão por papel", () => {
     await login(page, "Coordenador");
 
     const nav = sidebar(page);
-    await expect(nav.getByRole("link")).toHaveCount(3);
+    await expect(nav.getByRole("link")).toHaveCount(4);
     await expect(nav.getByRole("link", { name: "Painel" })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Alunos", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Relatórios" })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Eventos", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Perfis" })).toHaveCount(0);
 
     await page.screenshot({ path: "e2e/auth/evidencias/coordenador-home.png", fullPage: true });
