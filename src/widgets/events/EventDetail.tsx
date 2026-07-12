@@ -19,7 +19,6 @@ import { buildEventNotice, whatsappLink } from "@/features/events/notice";
 import { summarizeParticipation } from "@/features/events/summary";
 import { formatCurrency, formatDate } from "@/shared/lib/format";
 import { Button } from "@/shared/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
 
 const selectClasses =
   "h-11 w-full min-w-36 rounded-lg border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:outline-hidden sm:h-9";
@@ -126,96 +125,87 @@ export function EventDetail({ event, group, canManage, onBack, onEdit, onDeleted
         )}
       </div>
 
-      <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Aluno</TableHead>
-              <TableHead>Autorização</TableHead>
-              {!free && <TableHead>Pagamento</TableHead>}
-              <TableHead>Avisar</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {(students ?? []).map((student) => {
-              const participation = participationOf(student.id);
-              const message = buildEventNotice({ event, group, student });
-              const link = whatsappLink(student.guardianPhone, message);
+      {/* Cartão por aluno no celular: o professor marca autorização e pagamento em sala, sem rolagem lateral. */}
+      <ul className="divide-y rounded-xl border bg-card shadow-sm">
+        {(students ?? []).map((student) => {
+          const participation = participationOf(student.id);
+          const message = buildEventNotice({ event, group, student });
+          const link = whatsappLink(student.guardianPhone, message);
 
-              return (
-                <TableRow key={student.id}>
-                  <TableCell className="font-medium text-foreground">{student.name}</TableCell>
-                  <TableCell>
-                    <select
-                      aria-label={`Autorização de ${student.name}`}
-                      value={participation.authorization}
-                      onChange={(e) =>
-                        setParticipation.mutate({
-                          eventId: event.id,
-                          studentId: student.id,
-                          authorization: e.target.value as AuthorizationStatus,
-                        })
-                      }
-                      className={selectClasses}
-                    >
-                      {Object.entries(authorizationLabels).map(([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                  </TableCell>
-                  {!free && (
-                    <TableCell>
-                      <select
-                        aria-label={`Pagamento de ${student.name}`}
-                        value={participation.payment}
-                        onChange={(e) =>
-                          setParticipation.mutate({
-                            eventId: event.id,
-                            studentId: student.id,
-                            payment: e.target.value as PaymentStatus,
-                          })
-                        }
-                        className={selectClasses}
-                      >
-                        {Object.entries(paymentLabels).map(([value, label]) => (
-                          <option key={value} value={value}>
-                            {label}
-                          </option>
-                        ))}
-                      </select>
-                    </TableCell>
-                  )}
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {link && (
-                        <Button asChild variant="outline" size="sm">
-                          <a href={link} target="_blank" rel="noopener noreferrer">
-                            <MessageCircle className="size-4" />
-                            WhatsApp
-                          </a>
-                        </Button>
-                      )}
-                      <Button type="button" variant="ghost" size="sm" onClick={() => copyNotice(student)}>
-                        <Copy className="size-4" />
-                        {copiedStudentId === student.id ? "Copiado!" : "Copiar texto"}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-            {(students ?? []).length === 0 && (
-              <TableRow>
-                <TableCell colSpan={free ? 3 : 4} className="text-sm text-muted-foreground">
-                  Nenhum aluno matriculado nesta aula.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+          return (
+            <li key={student.id} className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:gap-4">
+              <span className="font-medium text-foreground lg:flex-1">{student.name}</span>
+
+              <div className="grid grid-cols-2 gap-2 lg:flex lg:w-auto">
+                <select
+                  aria-label={`Autorização de ${student.name}`}
+                  value={participation.authorization}
+                  onChange={(changeEvent) =>
+                    setParticipation.mutate({
+                      eventId: event.id,
+                      studentId: student.id,
+                      authorization: changeEvent.target.value as AuthorizationStatus,
+                    })
+                  }
+                  className={selectClasses}
+                >
+                  {Object.entries(authorizationLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+
+                {!free && (
+                  <select
+                    aria-label={`Pagamento de ${student.name}`}
+                    value={participation.payment}
+                    onChange={(changeEvent) =>
+                      setParticipation.mutate({
+                        eventId: event.id,
+                        studentId: student.id,
+                        payment: changeEvent.target.value as PaymentStatus,
+                      })
+                    }
+                    className={selectClasses}
+                  >
+                    {Object.entries(paymentLabels).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                {link && (
+                  <Button asChild variant="outline" size="sm" className="h-11 flex-1 sm:h-9 lg:flex-none">
+                    <a href={link} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle className="size-4" />
+                      WhatsApp
+                    </a>
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-11 flex-1 sm:h-9 lg:flex-none"
+                  onClick={() => copyNotice(student)}
+                >
+                  <Copy className="size-4" />
+                  {copiedStudentId === student.id ? "Copiado!" : "Copiar texto"}
+                </Button>
+              </div>
+            </li>
+          );
+        })}
+
+        {(students ?? []).length === 0 && (
+          <li className="p-4 text-sm text-muted-foreground">Nenhum aluno matriculado nesta aula.</li>
+        )}
+      </ul>
     </div>
   );
 }
