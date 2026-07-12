@@ -6,7 +6,7 @@ import { seedDb } from "./seed";
  * won't change when the backend lands. Not for production PII.
  * Bump the key version whenever the seed shape changes — old blobs are stale.
  */
-const STORAGE_KEY = "radar.db.v9";
+const STORAGE_KEY = "radar.db.v10";
 const LEGACY_KEYS = [
   "radar.db.v1",
   "radar.db.v2",
@@ -16,6 +16,7 @@ const LEGACY_KEYS = [
   "radar.db.v6",
   "radar.db.v7",
   "radar.db.v8",
+  "radar.db.v9",
 ];
 
 export type Collection =
@@ -29,7 +30,9 @@ export type Collection =
   | "assignments"
   | "evaluations"
   | "evaluationGrades"
-  | "enrollments";
+  | "enrollments"
+  | "events"
+  | "eventParticipations";
 
 // Partial: a seed or a persisted blob may predate a collection (light migration),
 // and readCollection/mutateCollection already fall back to [] for missing keys.

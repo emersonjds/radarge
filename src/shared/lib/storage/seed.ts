@@ -20,6 +20,14 @@ const TURMAS = [
 
 const DATAS = ["2026-06-16", "2026-06-18", "2026-06-23", "2026-06-25", "2026-06-30", "2026-07-01"];
 
+/** Rodízio determinístico de participação nos eventos de demo. */
+const CICLO_PARTICIPACAO = [
+  ["authorized", "paid"],
+  ["authorized", "pending"],
+  ["pending", "pending"],
+  ["denied", "waived"],
+] as const;
+
 const NOMES = [
   "Marcus Thorne",
   "Sasha Kim",
@@ -347,6 +355,40 @@ export function seedDb(): Db {
     }
   }
 
+  const eventos = [
+    {
+      id: "evento-zoo",
+      groupId: "turma-mat-b",
+      title: "Passeio ao Zoológico",
+      date: "2026-08-14",
+      location: "Zoológico Municipal",
+      cost: 25,
+    },
+    {
+      id: "evento-planetario",
+      groupId: "turma-fis-a",
+      title: "Visita ao Planetário",
+      date: "2026-08-21",
+      location: "Planetário do Ibirapuera",
+      cost: 0,
+    },
+  ];
+
+  const participacoes = eventos.flatMap((evento) =>
+    enrollments
+      .filter((matricula) => matricula.groupId === evento.groupId && matricula.active)
+      .map((matricula, index) => {
+        const [authorization, payment] = CICLO_PARTICIPACAO[index % CICLO_PARTICIPACAO.length];
+        return {
+          id: `part-${evento.id}-${matricula.studentId}`,
+          eventId: evento.id,
+          studentId: matricula.studentId,
+          authorization,
+          payment: evento.cost === 0 ? "waived" : payment,
+        };
+      }),
+  );
+
   return {
     profiles: perfis,
     groups: turmas,
@@ -359,5 +401,7 @@ export function seedDb(): Db {
     evaluations,
     evaluationGrades,
     enrollments,
+    events: eventos,
+    eventParticipations: participacoes,
   };
 }
