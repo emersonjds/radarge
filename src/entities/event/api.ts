@@ -19,15 +19,21 @@ export interface NewEventInput {
   cost: number;
 }
 
-export async function createEvent(input: NewEventInput): Promise<Event> {
-  const title = input.title.trim();
+async function assertUnique(candidate: Event): Promise<void> {
   const duplicate = (await fetchEvents()).some(
     (event) =>
-      event.groupId === input.groupId && event.title === title && event.date === input.date,
+      event.id !== candidate.id &&
+      event.groupId === candidate.groupId &&
+      event.title === candidate.title &&
+      event.date === candidate.date,
   );
   if (duplicate) {
     throw new Error("Já existe um evento com esse nome e data nesta aula.");
   }
+}
+
+export async function createEvent(input: NewEventInput): Promise<Event> {
+  const title = input.title.trim();
   const event: Event = {
     id: crypto.randomUUID(),
     groupId: input.groupId,
@@ -37,6 +43,7 @@ export async function createEvent(input: NewEventInput): Promise<Event> {
     cost: input.cost,
   };
   eventSchema.parse(event);
+  await assertUnique(event);
   await mutateCollection<Event>("events", (rows) => [...rows, event]);
   return event;
 }
@@ -59,6 +66,7 @@ export async function updateEvent(id: string, patch: EventUpdate): Promise<Event
     ...(patch.cost !== undefined ? { cost: patch.cost } : {}),
   };
   eventSchema.parse(next);
+  await assertUnique(next);
   await mutateCollection<Event>("events", (rows) =>
     rows.map((event) => (event.id === id ? next : event)),
   );

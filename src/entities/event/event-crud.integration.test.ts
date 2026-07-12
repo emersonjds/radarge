@@ -47,6 +47,15 @@ describe("event CRUD (integration, over the store)", () => {
     expect(atualizado.title).toBe(novoEvento.title);
   });
 
+  it("rejects an update that collides with another event of the same aula", async () => {
+    const zoologico = await createEvent(novoEvento);
+    const planetario = await createEvent({ ...novoEvento, title: "Visita ao Planetário" });
+
+    await expect(updateEvent(planetario.id, { title: zoologico.title })).rejects.toThrow(
+      "Já existe um evento com esse nome e data nesta aula.",
+    );
+  });
+
   it("deletes an event and cascades its participations", async () => {
     const criado = await createEvent(novoEvento);
     await setParticipation({
