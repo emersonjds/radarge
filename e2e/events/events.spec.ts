@@ -10,7 +10,7 @@ const MOBILE_VIEWPORT = { width: 375, height: 812 };
  */
 async function loginAsBruno(page: Page) {
   await page.goto("/login");
-  await page.evaluate(() => window.localStorage.setItem("radar.session", "perfil-bruno"));
+  await page.evaluate(() => window.localStorage.setItem("radarge.session", "perfil-bruno"));
   await page.goto("/events");
 }
 

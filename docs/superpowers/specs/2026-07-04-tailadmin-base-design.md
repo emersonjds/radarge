@@ -1,16 +1,16 @@
-# Radar sobre TailAdmin — Design
+# Radarge sobre TailAdmin — Design
 
 **Data:** 2026-07-04
 **Branch:** `feat/tailadmin-base`
-**Objetivo:** Adotar o template TailAdmin (`free-nextjs-admin-dashboard`, Tailwind 4, Next 16, React 19) como base de UI do Radar, reescrevendo as telas existentes sobre os componentes do template, sem reconstruir CSS. Preservar toda a lógica de domínio.
+**Objetivo:** Adotar o template TailAdmin (`free-nextjs-admin-dashboard`, Tailwind 4, Next 16, React 19) como base de UI do Radarge, reescrevendo as telas existentes sobre os componentes do template, sem reconstruir CSS. Preservar toda a lógica de domínio.
 
-## 1. Estratégia — híbrido "cérebro do Radar + corpo do TailAdmin"
+## 1. Estratégia — híbrido "cérebro do Radarge + corpo do TailAdmin"
 
 **Fica (domínio, intacto):**
 
 - `entities/*` — model/api/queries (profile, student, group, attendance-session, attendance-record, school-event).
 - `features/*` — auth, session (useSyncExternalStore), analytics (attendanceRate/countAbsences).
-- `shared/lib/*` — storage (localStorage `radar.db.v4`, seed), format, auth/password (SHA-256 demo).
+- `shared/lib/*` — storage (localStorage `radarge.db.v4`, seed), format, auth/password (SHA-256 demo).
 - Providers React Query, navegação por papel, guards por papel, conteúdo PT-BR.
 
 **Entra do template (passa a mandar na apresentação):**
@@ -29,7 +29,7 @@
 
 | Tema                   | Decisão                                                                                                 |
 | ---------------------- | ------------------------------------------------------------------------------------------------------- |
-| Identidade visual      | **TailAdmin puro** — paleta/índigo e fonte Outfit do template, sem retematizar para o azul Radar agora. |
+| Identidade visual      | **TailAdmin puro** — paleta/índigo e fonte Outfit do template, sem retematizar para o azul Radarge agora. |
 | Navegação mobile       | **Sidebar responsiva do template** (off-canvas + backdrop no mobile). Remove a bottom-nav custom.       |
 | Dark mode              | **Travar em claro (v1)** — remove o toggle; mantém só o tema claro.                                     |
 | Gerenciador de pacotes | **pnpm** (gerar `pnpm-lock.yaml`; ignorar o `package-lock.json` do template).                           |
@@ -41,7 +41,7 @@
 - `src/shared/icons/` ← ícones SVG do template (via `@svgr/webpack`, já presente).
 - `src/shared/hooks/` ← `useModal` (e afins úteis).
 - `src/shared/context/SidebarContext.tsx` ← do template (sem ThemeContext/dark).
-- `src/widgets/app-shell/` ← `AppSidebar` + `AppHeader` + `Backdrop`, com os itens de menu vindos da config de navegação por papel do Radar.
+- `src/widgets/app-shell/` ← `AppSidebar` + `AppHeader` + `Backdrop`, com os itens de menu vindos da config de navegação por papel do Radarge.
 - `src/app/(app)/*` mantém as rotas atuais (Painel, Alunos, Chamada, Relatórios, Perfis) agora sob o shell do template; `src/app/(auth)/login` sem shell (full-width).
 - Cada widget de tela reescrito com Tailwind + componentes do template, consumindo os mesmos hooks/queries de hoje.
 
@@ -71,12 +71,12 @@ Guards por papel e navegação por papel inalterados em comportamento; só re-re
 ## 7. Riscos e mitigações
 
 - **Fonte/paleta mudam** (Outfit/índigo em vez de Inter/azul) — aceito (TailAdmin puro); retematização de marca fica como trabalho futuro opcional.
-- **Deps pesadas do template** (FullCalendar, jvectormap, swiper, flatpickr, react-dnd, dropzone) — instalar **apenas o necessário** (ApexCharts sim; o resto só se uma tela do Radar usar). O calendário de eventos escolares atual permanece na sua forma simples, sem FullCalendar nesta fase.
+- **Deps pesadas do template** (FullCalendar, jvectormap, swiper, flatpickr, react-dnd, dropzone) — instalar **apenas o necessário** (ApexCharts sim; o resto só se uma tela do Radarge usar). O calendário de eventos escolares atual permanece na sua forma simples, sem FullCalendar nesta fase.
 - **Migração grande** — feita incremental na branch, com type-check verde a cada tela, para nunca deixar a base quebrada.
 
 ## 8. Fora de escopo (nesta migração)
 
-- Retematizar para a marca azul do Radar.
+- Retematizar para a marca azul do Radarge.
 - Backend Supabase (segue front-only com localStorage).
 - FullCalendar, mapas jvectormap, dropzone, drag-and-drop — só se uma tela exigir.
 - Dark mode.

@@ -18,7 +18,7 @@
 - Autoria: `Emerson Silva <emerson_jdss@hotmail.com>`, sem menção a IA.
 - Commit messages: EN, curto, imperativo.
 - Design tokens / TailAdmin classes; sem hex cru.
-- Bump storage → `radar.db.v8`, `radar.db.v7` entra em `LEGACY_KEYS`.
+- Bump storage → `radarge.db.v8`, `radarge.db.v7` entra em `LEGACY_KEYS`.
 - Cada task deixa `pnpm type-check`, `pnpm test` e `pnpm build` verdes antes do commit.
 
 ## Tarefas (ordem de execução)

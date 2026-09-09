@@ -7,7 +7,7 @@
 
 A ONG faz passeios e atividades fora da rotina (zoológico, planetário, cinema, feira de ciências). Hoje isso vive em papel e grupo de WhatsApp: a coordenação não sabe quem autorizou, quem pagou e quem ainda não respondeu — e no dia do passeio a lista de embarque é feita de memória.
 
-O Radar precisa de uma **Área de Eventos**: criar um evento vinculado a uma aula, controlar **autorização do responsável** e **pagamento** aluno a aluno, e **avisar os responsáveis** com a mensagem já pronta.
+O Radarge precisa de uma **Área de Eventos**: criar um evento vinculado a uma aula, controlar **autorização do responsável** e **pagamento** aluno a aluno, e **avisar os responsáveis** com a mensagem já pronta.
 
 ## 2. User stories
 

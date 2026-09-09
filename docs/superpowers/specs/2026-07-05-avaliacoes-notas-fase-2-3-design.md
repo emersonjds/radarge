@@ -80,7 +80,7 @@ mudam** (mesmo shape `Grade[]`). Só a fonte muda.
 ## Camada de dados (store)
 
 - `db.ts`: adicionar coleções `"evaluations"` e `"evaluationGrades"`; **remover** `"grades"`
-  do union `Collection` e do `Db`. Bump `radar.db.v6 → radar.db.v7`; `v6` em `LEGACY_KEYS`.
+  do union `Collection` e do `Db`. Bump `radarge.db.v6 → radarge.db.v7`; `v6` em `LEGACY_KEYS`.
 - `seed.ts`: remover o bloco `notas`/`grades`. Semear, para cada `assignment` (turma×matéria),
   uma ou duas avaliações e as notas dos alunos daquela turma — determinístico (reaproveitar
   a lógica `scoreFor` para gerar valores variados por aluno/área). Objetivo: os relatórios

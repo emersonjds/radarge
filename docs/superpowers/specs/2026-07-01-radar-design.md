@@ -1,4 +1,4 @@
-# Radar — presença escolar (spec de design)
+# Radarge — presença escolar (spec de design)
 
 **Data:** 2026-07-01
 **Status:** aprovado
@@ -6,7 +6,7 @@
 
 ## 1. Produto
 
-- **Nome:** Radar
+- **Nome:** Radarge
 - **Domínio:** marcação de presença de alunos em sala, usado por professores; área administrativa com gráficos e dados de presença/absenteísmo.
 - **Base de arquitetura:** Qore (Next.js + FSD-like) com dados no modelo do Bolão da Copa (Supabase direto).
 - **Idioma da UI:** português brasileiro em 100% dos textos visíveis.
@@ -84,7 +84,7 @@ Hook `SessionStart` no `.claude/settings.json` do projeto ativando o modo ponyta
 
 ## 12. Git
 
-`git init` em `projects/radar`. `.githooks` (commit-msg bloqueia rastro de IA; pre-push só humano). Micro-commits atômicos, mensagens em inglês imperativo, autor humano. Sem `git push` sem confirmação explícita.
+`git init` em `projects/radarge`. `.githooks` (commit-msg bloqueia rastro de IA; pre-push só humano). Micro-commits atômicos, mensagens em inglês imperativo, autor humano. Sem `git push` sem confirmação explícita.
 
 ## 13. Fora do v1 (YAGNI)
 

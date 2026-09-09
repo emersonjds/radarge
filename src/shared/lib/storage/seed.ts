@@ -10,7 +10,6 @@ const PROFESSOR_ID = "perfil-ricardo";
 const TEACHER_TWO_ID = "perfil-bruno";
 const ADMIN_ID = "perfil-ana";
 const COORDINATOR_ID = "perfil-carla";
-const PO_ID = "perfil-vanessa";
 
 const TURMAS = [
   { id: "turma-mat-b", name: "Reforço de Matemática — Segunda", shift: "afternoon" },
@@ -89,13 +88,13 @@ function statusFor(alunoIdx: number, dataIdx: number): SeedStatus {
 
 export function seedDb(): Db {
   // Demo credentials (username / password):
-  // ricardo / prof123, bruno / prof123, ana / admin123, carla / coord123, vanessa / 123456
+  // ricardo / prof123, bruno / prof123, ana / admin123, carla / coord123
   // passwordHash is the SHA-256 hex of the password (shared/lib/auth/password) — temporary until Supabase Auth.
   const perfis = [
     {
       id: PROFESSOR_ID,
       name: "Ricardo Alves",
-      email: "ricardo@radar.escola",
+      email: "ricardo@radarge.escola",
       role: "teacher",
       jobTitle: "Professor Titular",
       username: "ricardo",
@@ -105,7 +104,7 @@ export function seedDb(): Db {
     {
       id: ADMIN_ID,
       name: "Ana Vance",
-      email: "ana@radar.escola",
+      email: "ana@radarge.escola",
       role: "admin",
       jobTitle: "Administração",
       username: "ana",
@@ -115,7 +114,7 @@ export function seedDb(): Db {
     {
       id: COORDINATOR_ID,
       name: "Carla Dias",
-      email: "carla@radar.escola",
+      email: "carla@radarge.escola",
       role: "coordinator",
       jobTitle: "Coordenação Pedagógica",
       username: "carla",
@@ -125,21 +124,11 @@ export function seedDb(): Db {
     {
       id: TEACHER_TWO_ID,
       name: "Bruno Farias",
-      email: "bruno@radar.escola",
+      email: "bruno@radarge.escola",
       role: "teacher",
       jobTitle: "Professor",
       username: "bruno",
       passwordHash: "00624b02e1f9b996a3278f559d5d55313552ad2c0bafc82adfd975c12df61eaf",
-      active: true,
-    },
-    {
-      id: PO_ID,
-      name: "Vanessa Moreira",
-      email: "vanessa@radar.escola",
-      role: "admin",
-      jobTitle: "Product Owner",
-      username: "vanessa",
-      passwordHash: "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
       active: true,
     },
   ];
@@ -349,7 +338,8 @@ export function seedDb(): Db {
           id: `eg-${homeworkId}-${aluno.id}`,
           evaluationId: homeworkId,
           studentId: aluno.id,
-          score: aluno.id === "aluno-1" && assignment.id === "assign-matb-mat" ? null : homeworkScore,
+          score:
+            aluno.id === "aluno-1" && assignment.id === "assign-matb-mat" ? null : homeworkScore,
         },
       );
     }

@@ -34,7 +34,7 @@ describe("profile management + auth (integration, over the store)", () => {
     const criado = await createProfile({
       name: "Novo Coordenador",
       username: "NovoCoord",
-      email: "novo@radar.escola",
+      email: "novo@radarge.escola",
       role: "coordinator",
       password: "segredo123",
     });
@@ -50,7 +50,7 @@ describe("profile management + auth (integration, over the store)", () => {
       createProfile({
         name: "Outra Ana",
         username: "ana",
-        email: "outra@radar.escola",
+        email: "outra@radarge.escola",
         role: "admin",
         password: "segredo123",
       }),
@@ -62,7 +62,7 @@ describe("profile management + auth (integration, over the store)", () => {
       createProfile({
         name: "Senha Curta",
         username: "curto",
-        email: "curto@radar.escola",
+        email: "curto@radarge.escola",
         role: "teacher",
         password: "123",
       }),

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { ChevronDown } from "lucide-react";
 import { setSession } from "@/features/session/session-store";
 import { roleLabels, type Role } from "@/entities/profile/model";
 import { Button } from "@/shared/ui/button";
@@ -10,8 +11,12 @@ import { loginAsRole } from "./authenticate";
 
 const ROLES: Role[] = ["admin", "teacher", "coordinator"];
 
-const selectClasses =
-  "h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground shadow-xs focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20";
+/** O que cada cargo encontra depois de entrar — espelha navForRole. */
+const acessoPorCargo: Record<Role, string> = {
+  admin: "Painel, alunos, relatórios, aulas, matérias e perfis.",
+  teacher: "Chamada das suas aulas, seus alunos e lançamento de notas.",
+  coordinator: "Painel de acompanhamento, alunos e relatórios.",
+};
 
 export function LoginForm() {
   const router = useRouter();
@@ -40,43 +45,52 @@ export function LoginForm() {
   return (
     <form
       onSubmit={entrar}
-      className="w-full max-w-md rounded-xl border border-border bg-card p-8 shadow-sm"
+      className="w-full max-w-sm duration-500 animate-in fade-in slide-in-from-bottom-3 motion-reduce:animate-none"
     >
-      <div className="mb-8">
-        <span className="text-2xl font-bold text-primary">Radar</span>
-        <p className="mt-1 text-sm text-muted-foreground">Presença escolar</p>
-      </div>
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">Entrar</h1>
+      <p className="mt-1.5 text-sm text-muted-foreground">
+        Escolha o cargo para abrir a demonstração.
+      </p>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="perfil">
-          Entrar como
-        </Label>
-        <select
-          id="perfil"
-          value={role}
-          onChange={(event) => setRole(event.target.value as Role)}
-          className={selectClasses}
-        >
-          {ROLES.map((value) => (
-            <option key={value} value={value}>
-              {roleLabels[value]}
-            </option>
-          ))}
-        </select>
+      <div className="mt-8">
+        <Label htmlFor="perfil">Entrar como</Label>
+        <div className="relative mt-2">
+          <select
+            id="perfil"
+            value={role}
+            onChange={(event) => setRole(event.target.value as Role)}
+            className="h-11 w-full appearance-none rounded-lg border border-input bg-background pr-10 pl-4 text-sm font-medium text-foreground shadow-xs transition-colors hover:border-ring/50 focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20"
+          >
+            {ROLES.map((value) => (
+              <option key={value} value={value}>
+                {roleLabels[value]}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-muted-foreground"
+          />
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{acessoPorCargo[role]}</p>
       </div>
 
       {erro && (
         <p
           role="alert"
-          className="mb-5 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          className="mt-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
         >
           {erro}
         </p>
       )}
 
-      <Button className="w-full" disabled={entrando}>
+      <Button className="mt-7 h-11 w-full text-sm" disabled={entrando}>
         {entrando ? "Entrando…" : "Entrar"}
       </Button>
+
+      <p className="mt-6 text-xs text-muted-foreground">
+        Ambiente de demonstração — sem senha. Os dados são fictícios.
+      </p>
     </form>
   );
 }

@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Radar — Notificações por WhatsApp para responsáveis</title>
+<title>Radarge — Notificações por WhatsApp para responsáveis</title>
 <style>
   @page { size: A4; margin: 18mm 16mm; }
   :root {
@@ -86,11 +86,11 @@
 <body>
 
 <h1>Notificações por WhatsApp para os responsáveis</h1>
-<p class="sub">Radar — ONG de reforço escolar · documento de arquitetura · julho de 2026</p>
+<p class="sub">Radarge — ONG de reforço escolar · documento de arquitetura · julho de 2026</p>
 
 <div class="tldr">
   <p><strong>Recomendação:</strong> usar a <strong>WhatsApp Cloud API da Meta direto</strong> (sem intermediário/BSP), acionada por uma <strong>Edge Function do Supabase</strong>, com uma tabela de <strong>fila de envio (outbox)</strong> no Postgres e <code>pg_cron</code> disparando os lotes.</p>
-  <p style="margin-bottom:0">Não vale a pena subir uma API Node.js separada <em>hoje</em>: ela resolve o mesmo problema, custa mais um servidor, mais um deploy e mais um lugar pra guardar segredo — e o Supabase já é o backend-alvo do Radar. A opção Node está documentada na seção 6, com o critério objetivo de quando migrar.</p>
+  <p style="margin-bottom:0">Não vale a pena subir uma API Node.js separada <em>hoje</em>: ela resolve o mesmo problema, custa mais um servidor, mais um deploy e mais um lugar pra guardar segredo — e o Supabase já é o backend-alvo do Radarge. A opção Node está documentada na seção 6, com o critério objetivo de quando migrar.</p>
 </div>
 
 <h2>1. O que a API do WhatsApp exige (inegociável)</h2>
@@ -98,7 +98,7 @@
 <p>Antes de escolher a arquitetura, três regras da Meta definem o desenho. Elas não são opcionais e não têm como contornar:</p>
 
 <ol>
-  <li><strong>O token nunca pode ir para o navegador.</strong> A chamada à API do WhatsApp usa um <em>access token</em> permanente que dá poder de enviar mensagem em nome da ONG. O Radar é uma SPA com <code>output: "export"</code> — qualquer coisa no bundle é pública. Logo, <strong>obrigatoriamente</strong> existe um pedaço de código rodando no servidor. Isso é o que torna a pergunta "Supabase ou Node?" inevitável.</li>
+  <li><strong>O token nunca pode ir para o navegador.</strong> A chamada à API do WhatsApp usa um <em>access token</em> permanente que dá poder de enviar mensagem em nome da ONG. O Radarge é uma SPA com <code>output: "export"</code> — qualquer coisa no bundle é pública. Logo, <strong>obrigatoriamente</strong> existe um pedaço de código rodando no servidor. Isso é o que torna a pergunta "Supabase ou Node?" inevitável.</li>
   <li><strong>Mensagem iniciada pela ONG precisa de <em>template</em> aprovado.</strong> Você não pode escrever texto livre para um número que não falou com você nas últimas 24h. Precisa cadastrar um modelo ("Olá {{1}}, o(a) aluno(a) {{2}} faltou à aula de hoje...") e esperar a Meta aprovar — normalmente minutos, às vezes horas.</li>
   <li><strong>Existe uma janela de 24h.</strong> Se o responsável responder a mensagem, abre uma "janela de atendimento" de 24 horas em que você pode mandar texto livre — e de graça. Fora dessa janela, só template, e template de utilidade é cobrado.</li>
 </ol>
@@ -107,7 +107,7 @@
 
 <table>
   <thead>
-    <tr><th style="width:22%">Caminho</th><th style="width:30%">O que é</th><th>Veredito para o Radar</th></tr>
+    <tr><th style="width:22%">Caminho</th><th style="width:30%">O que é</th><th>Veredito para o Radarge</th></tr>
   </thead>
   <tbody>
     <tr>
@@ -148,7 +148,7 @@
 <p>O desenho é deliberadamente pequeno: <strong>uma tabela, uma função de envio, uma função de webhook, um cron</strong>. Nada de fila dedicada, worker ou broker.</p>
 
 <pre><code>┌─────────────┐   admin clica "avisar responsáveis"
-│  Radar SPA  │──────────────┐
+│  Radarge SPA  │──────────────┐
 └─────────────┘              │  INSERT (via RLS, admin only)
                              ▼
                    ┌───────────────────────┐
@@ -365,7 +365,7 @@ $$);</code></pre>
 
 <p>É perfeitamente viável e nada exótico: um Fastify/Hono no Railway, Fly.io ou Render, um Postgres gerenciado (Neon, Supabase, RDS), <code>pg-boss</code> para a fila (que usa o próprio Postgres — não precisa de Redis).</p>
 
-<p><strong>O ponto é que ela não resolve nada que o Supabase não resolva</strong> — e adiciona: mais um deploy, mais um lugar para vazar segredo, mais um serviço para monitorar, e o custo de um servidor sempre ligado. Sem contar que o Radar teria dois backends (Supabase para os dados, Node para o WhatsApp) ou uma migração inteira.</p>
+<p><strong>O ponto é que ela não resolve nada que o Supabase não resolva</strong> — e adiciona: mais um deploy, mais um lugar para vazar segredo, mais um serviço para monitorar, e o custo de um servidor sempre ligado. Sem contar que o Radarge teria dois backends (Supabase para os dados, Node para o WhatsApp) ou uma migração inteira.</p>
 
 <table>
   <thead>
@@ -376,7 +376,7 @@ $$);</code></pre>
     <tr><td>Custo mensal</td><td class="yes">R$ 0 no free tier (500k invocações)</td><td>~US$ 5–20 (servidor + banco)</td></tr>
     <tr><td>Onde mora o segredo</td><td class="yes">Supabase Vault / function secrets</td><td>Env do servidor (mais um lugar)</td></tr>
     <tr><td>Fila / retry</td><td>Tabela + <code>pg_cron</code></td><td><code>pg-boss</code> (mais robusto)</td></tr>
-    <tr><td>Auth / RLS</td><td class="yes">Já é a do Radar</td><td>Reimplementar autorização na API</td></tr>
+    <tr><td>Auth / RLS</td><td class="yes">Já é a do Radarge</td><td>Reimplementar autorização na API</td></tr>
     <tr><td>Cold start</td><td>~100–300 ms (irrelevante aqui)</td><td class="yes">Zero</td></tr>
     <tr><td>Tarefa longa (&gt;150 s)</td><td class="no">Não cabe</td><td class="yes">Sem limite</td></tr>
     <tr><td>Chat ao vivo (atendimento)</td><td class="no">Ruim — precisa de conexão persistente</td><td class="yes">Natural</td></tr>
@@ -385,16 +385,16 @@ $$);</code></pre>
 
 <div class="callout">
   <span class="callout-title">Critério objetivo para migrar para Node</span>
-  Migre <strong>quando e se</strong> uma destas for verdade: (a) a ONG quiser um <strong>chat de atendimento ao vivo</strong> pelo WhatsApp, com atendente humano respondendo — isso pede conexão persistente e não cabe bem em serverless; (b) o volume passar de ~5.000 mensagens/dia, quando lote e rate limit ficam um problema de engenharia de verdade; (c) o Radar sair do Supabase por outro motivo. <strong>Enquanto for "avisar falta e mandar boletim", Edge Function resolve e sobra.</strong>
+  Migre <strong>quando e se</strong> uma destas for verdade: (a) a ONG quiser um <strong>chat de atendimento ao vivo</strong> pelo WhatsApp, com atendente humano respondendo — isso pede conexão persistente e não cabe bem em serverless; (b) o volume passar de ~5.000 mensagens/dia, quando lote e rate limit ficam um problema de engenharia de verdade; (c) o Radarge sair do Supabase por outro motivo. <strong>Enquanto for "avisar falta e mandar boletim", Edge Function resolve e sobra.</strong>
 </div>
 
 <h2>7. Custos reais</h2>
 
-<p>Com a Cloud API direto, você paga <em>só a Meta</em>, por mensagem. Os avisos do Radar (falta, resumo de frequência, aviso de reunião) se enquadram todos na categoria <strong>Utilidade</strong> — que é a mais barata.</p>
+<p>Com a Cloud API direto, você paga <em>só a Meta</em>, por mensagem. Os avisos do Radarge (falta, resumo de frequência, aviso de reunião) se enquadram todos na categoria <strong>Utilidade</strong> — que é a mais barata.</p>
 
 <table>
   <thead>
-    <tr><th>Categoria</th><th>Preço (Brasil, USD)</th><th>Uso no Radar</th></tr>
+    <tr><th>Categoria</th><th>Preço (Brasil, USD)</th><th>Uso no Radarge</th></tr>
   </thead>
   <tbody>
     <tr><td><strong>Utilidade</strong></td><td>~<strong>US$ 0,0068</strong> / msg (≈ R$ 0,04)</td><td>Falta do dia, resumo semanal, alerta de frequência baixa</td></tr>
@@ -432,10 +432,10 @@ $$);</code></pre>
 <p>O dado aqui é sensível por natureza: <strong>informação sobre criança, enviada ao responsável legal</strong>. A LGPD (art. 14) exige consentimento específico e destacado de pelo menos um dos pais ou responsável. Na prática:</p>
 
 <ul>
-  <li><strong>Opt-in explícito e registrado.</strong> Na matrícula, um campo "Autorizo receber avisos sobre meu filho(a) pelo WhatsApp" — e o Radar grava <em>quando</em> e <em>quem</em> autorizou. Nunca assuma consentimento por ter o telefone no cadastro.</li>
+  <li><strong>Opt-in explícito e registrado.</strong> Na matrícula, um campo "Autorizo receber avisos sobre meu filho(a) pelo WhatsApp" — e o Radarge grava <em>quando</em> e <em>quem</em> autorizou. Nunca assuma consentimento por ter o telefone no cadastro.</li>
   <li><strong>Opt-out em um passo.</strong> Responder "PARAR" descadastra na hora (já está no webhook acima). É exigência da Meta <em>e</em> da LGPD.</li>
   <li><strong>Minimização.</strong> O template manda o primeiro nome do aluno e a data. Não manda endereço, nota, diagnóstico, nem nada que não seja necessário para o aviso.</li>
-  <li><strong>Nunca logue o conteúdo.</strong> O <code>console.log</code> da Edge Function vai para o painel do Supabase. Logue <code>outbox.id</code> e status — nunca nome de aluno ou telefone completo (regra que o Radar já tem em <code>CLAUDE.md §7</code>).</li>
+  <li><strong>Nunca logue o conteúdo.</strong> O <code>console.log</code> da Edge Function vai para o painel do Supabase. Logue <code>outbox.id</code> e status — nunca nome de aluno ou telefone completo (regra que o Radarge já tem em <code>CLAUDE.md §7</code>).</li>
 </ul>
 
 <h2>10. Templates a cadastrar</h2>
@@ -464,7 +464,7 @@ $$);</code></pre>
 
 <ol>
   <li><strong>Hoje:</strong> abrir o Meta Business, mandar os documentos da ONG para verificação. É o gargalo — o resto se faz em paralelo.</li>
-  <li>Migração do Radar para Supabase (já é o backend-alvo; a feature de WhatsApp depende dela).</li>
+  <li>Migração do Radarge para Supabase (já é o backend-alvo; a feature de WhatsApp depende dela).</li>
   <li>Campos de <code>guardians</code> (telefone, opt-in) + tela de consentimento na ficha do aluno. <strong>Funciona sem nenhuma API do WhatsApp</strong> — é só cadastro.</li>
   <li>Tabela <code>whatsapp_outbox</code> + RLS.</li>
   <li>Edge Function <code>whatsapp-send</code> contra o <strong>número de teste</strong> da Meta (5 destinatários, grátis). Aqui a feature já funciona ponta a ponta.</li>
@@ -475,7 +475,7 @@ $$);</code></pre>
 <p>Os passos 3 e 4 já entregam valor sozinhos (a ONG passa a ter telefone e consentimento organizados) e não dependem da verificação da Meta terminar.</p>
 
 <footer>
-  Radar — documento de arquitetura · julho de 2026<br>
+  Radarge — documento de arquitetura · julho de 2026<br>
   Preços conferidos em julho de 2026 na documentação oficial da Meta; a tabela muda periodicamente — confirme em
   <a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/pricing">developers.facebook.com/documentation/business-messaging/whatsapp/pricing</a> antes de fechar orçamento.
 </footer>
