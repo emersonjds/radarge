@@ -18,7 +18,7 @@ export default function AuthLayout({ children }: Readonly<{ children: React.Reac
         />
 
         <div className="relative max-w-md">
-          <span className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Radar</span>
+          <span className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Radarge</span>
           <p className="mt-1 text-sm font-medium text-brand-200">Presença escolar no contra-turno</p>
           <p className="mt-5 hidden text-sm leading-relaxed text-white/60 lg:block">
             Chamada rápida no celular para os professores. Frequência, absenteísmo e desempenho em

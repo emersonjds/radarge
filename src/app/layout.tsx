@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Radar — presença escolar",
+  title: "Radarge — presença escolar",
   description: "Chamada e acompanhamento de frequência escolar para professores e coordenação.",
 };
 

@@ -48,7 +48,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className={`flex flex-col py-8 ${showText ? "items-start" : "items-center"}`}>
-        <span className="text-2xl font-bold text-primary">{showText ? "Radar" : "R"}</span>
+        <span className="text-2xl font-bold text-primary">{showText ? "Radarge" : "R"}</span>
         {showText && (
           <span className="text-xs font-medium text-muted-foreground">Gestão Estudantil</span>
         )}

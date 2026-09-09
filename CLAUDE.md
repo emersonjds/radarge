@@ -1,4 +1,4 @@
-# CLAUDE.md — Radar
+# CLAUDE.md — Radarge
 
 Regras de ouro para todo desenvolvimento assistido por IA neste projeto. Leia e siga integralmente antes de qualquer tarefa.
 
@@ -6,7 +6,7 @@ Regras de ouro para todo desenvolvimento assistido por IA neste projeto. Leia e 
 
 ## 1. Identidade do Produto
 
-- **Nome**: Radar
+- **Nome**: Radarge
 - **Domínio**: sistema de presença e acompanhamento para **ONG de reforço escolar no contra-turno**. Professores marcam presença nas **aulas** (mobile); admins acompanham frequência, absenteísmo e desempenho em dashboards (mobile + desktop).
 - **Modelo**: alunos têm uma **ficha** independente (nome, data de nascimento, responsável, telefone) e podem estar matriculados em **múltiplas aulas** simultaneamente (relação N:N). Não há conceito de série/ano escolar — cada aula é uma oficina temática (ex: Reforço de Matemática — Segunda).
 - **Stack**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, pnpm. shadcn/ui (Radix + cva) em `src/shared/ui`. TanStack Query, zod, ApexCharts.
@@ -71,7 +71,7 @@ src/
 
 > **Estado atual: front-only, sem backend.** Não existe cliente Supabase no repo — `@supabase/ssr` não está instalado e não há `supabase/migrations/`. Tudo abaixo de "backend-alvo" é plano, não código.
 
-- Os dados vivem em **localStorage** (`src/shared/lib/storage/`, chave `radar.db.v2`), com seed de demonstração em `seed.ts`.
+- Os dados vivem em **localStorage** (`src/shared/lib/storage/`, chave `radarge.db.v2`), com seed de demonstração em `seed.ts`.
 - Os fetchers de `entities/*/api.ts` são **assíncronos** e têm assinatura estável — é isso que deixa o Supabase entrar depois como adapter, sem mexer nas features. Mantenha-os assim.
 - Login é **por cargo, sem senha** (`features/auth/authenticate.ts` → primeiro perfil ativo do cargo). É demo; trocar por Supabase Auth.
 - Analytics hoje é calculado em JS sobre o store (`features/analytics/model.ts`) — temporário.
@@ -108,7 +108,7 @@ Execução e qualidade: `bug` (QA/quality gate de código), `qa` (E2E em tela co
 
 Regra: **um agent por função, sem duplicação**.
 
-## 10. Domínio: Radar (ONG de Reforço Escolar)
+## 10. Domínio: Radarge (ONG de Reforço Escolar)
 
 - **Perfil**: usuário do sistema, com papel `teacher` (Professor), `coordinator` (Coordenador) ou `admin` (Administrador). A navegação por papel vive em `shared/config/navigation.ts`.
 - **Aula** (entidade `Group`): oficina temática com um professor regente (ex: Reforço de Matemática — Segunda). Atributos: nome, turno (manhã/tarde/noite). **Não há série/ano** — cada aula é independente.

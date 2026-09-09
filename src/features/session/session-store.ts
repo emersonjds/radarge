@@ -4,11 +4,11 @@ import { useSyncExternalStore } from "react";
 
 /**
  * Mock session: the id of the logged-in profile. Persisted in localStorage
- * (`radar.session`) and read via useSyncExternalStore so it's hydration-safe
+ * (`radarge.session`) and read via useSyncExternalStore so it's hydration-safe
  * (server + first client render see "logged out") and cross-tab aware.
  * Replace with real Supabase auth (session from the JWT) later.
  */
-const STORAGE_KEY = "radar.session";
+const STORAGE_KEY = "radarge.session";
 
 const listeners = new Set<() => void>();
 

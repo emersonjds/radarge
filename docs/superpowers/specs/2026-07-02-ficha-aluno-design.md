@@ -48,7 +48,7 @@ Ciências, História, Geografia, Física) para alimentar os checkboxes do form.
 - Coloca alguns alunos em reforço para dado de demonstração: os alunos "em risco"
   (`EM_RISCO`) recebem `reforco` com Matemática + observação; os demais ficam
   `null`.
-- **Bump da chave** `radar.db.v2` → `radar.db.v3` (o shape do seed mudou; blobs
+- **Bump da chave** `radarge.db.v2` → `radarge.db.v3` (o shape do seed mudou; blobs
   antigos são descartados no primeiro load, como já é feito com a legacy key).
 
 ### Derivação de idade (`shared/lib/format.ts`)

@@ -86,7 +86,7 @@ export function seedDb(): Db {
     {
       id: PROFESSOR_ID,
       name: "Ricardo Alves",
-      email: "ricardo@radar.escola",
+      email: "ricardo@radarge.escola",
       role: "teacher",
       jobTitle: "Professor Titular",
       username: "ricardo",
@@ -96,7 +96,7 @@ export function seedDb(): Db {
     {
       id: ADMIN_ID,
       name: "Ana Vance",
-      email: "ana@radar.escola",
+      email: "ana@radarge.escola",
       role: "admin",
       jobTitle: "Administração",
       username: "ana",
@@ -106,7 +106,7 @@ export function seedDb(): Db {
     {
       id: COORDINATOR_ID,
       name: "Carla Dias",
-      email: "carla@radar.escola",
+      email: "carla@radarge.escola",
       role: "coordinator",
       jobTitle: "Coordenação Pedagógica",
       username: "carla",
@@ -116,7 +116,7 @@ export function seedDb(): Db {
     {
       id: TEACHER_TWO_ID,
       name: "Bruno Farias",
-      email: "bruno@radar.escola",
+      email: "bruno@radarge.escola",
       role: "teacher",
       jobTitle: "Professor",
       username: "bruno",

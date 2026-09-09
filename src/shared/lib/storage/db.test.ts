@@ -37,13 +37,13 @@ describe("storage db", () => {
     await expect(readCollection("schoolEvents")).resolves.toBeInstanceOf(Array);
   });
 
-  it("discards a stale radar.db.v1 blob and reseeds", async () => {
+  it("discards a stale radarge.db.v1 blob and reseeds", async () => {
     window.localStorage.setItem(
-      "radar.db.v1",
+      "radarge.db.v1",
       JSON.stringify({ perfis: [{ id: "professor-1", name: "Carla Professora" }] }),
     );
     const turmas = await readCollection<Group>("groups");
     expect(turmas.length).toBeGreaterThan(0);
-    expect(window.localStorage.getItem("radar.db.v1")).toBeNull();
+    expect(window.localStorage.getItem("radarge.db.v1")).toBeNull();
   });
 });
