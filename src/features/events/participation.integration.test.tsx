@@ -1,6 +1,9 @@
+import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { act, waitFor } from "@testing-library/react";
+import { server } from "@/test/msw/server";
 import { resetDb } from "@/shared/lib/storage/db";
+import { resetApiClient } from "@/shared/lib/api/instance";
 import { renderHookWithQuery } from "@/test/react-query";
 import { fetchEnrollmentsByGroup } from "@/entities/enrollment/api";
 import { createEvent } from "@/entities/event/api";
@@ -18,9 +21,23 @@ const novoEvento = {
   cost: 15,
 };
 
-describe("participação em evento (integration, over the store)", () => {
+const GROUP_ID = "turma-mat-b";
+
+/**
+ * The roster comes from the API now, while the event and its participations are
+ * still local — SPA-299 has no endpoint to migrate them to.
+ */
+const enrollments = [
+  { id: "enrollment-1", studentId: "aluno-1", groupId: GROUP_ID, joinedAt: "2026-02-01", active: true },
+  { id: "enrollment-2", studentId: "aluno-2", groupId: GROUP_ID, joinedAt: "2026-02-01", active: true },
+  { id: "enrollment-3", studentId: "aluno-3", groupId: GROUP_ID, joinedAt: "2026-02-01", active: true },
+];
+
+describe("participação em evento", () => {
   beforeEach(async () => {
+    resetApiClient();
     await resetDb();
+    server.use(http.get("*/enrollments", () => HttpResponse.json(enrollments)));
   });
 
   it("marks authorization and payment for a student, upserting instead of duplicating", async () => {

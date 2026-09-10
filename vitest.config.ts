@@ -9,6 +9,10 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    // The API client refuses to be built without a base URL, so every test that
+    // reaches a fetcher needs one. A test that cares about a different value —
+    // or about its absence — still overrides this with vi.stubEnv.
+    env: { NEXT_PUBLIC_API_URL: "http://api.test" },
   },
   resolve: {
     alias: {
