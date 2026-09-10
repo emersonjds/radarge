@@ -31,10 +31,5 @@ test("admin adds, edits and deletes a student", async ({ browser }) => {
   const editedRow = page.getByRole("row").filter({ hasText: editedName });
   await editedRow.getByRole("button", { name: "Excluir" }).click();
   await expect(page.getByText(editedName)).toHaveCount(0);
-  // Clicking in the rightmost column leaves the table's own overflow container
-  // scrolled sideways, which frames the shot on the wrong columns.
-  await page.getByRole("table").evaluate((table) => {
-    for (let node = table.parentElement; node; node = node.parentElement) node.scrollLeft = 0;
-  });
   await captureScreen(page, "e2e/students/evidence/student-deleted.png");
 });
