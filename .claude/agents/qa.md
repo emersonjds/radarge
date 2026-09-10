@@ -32,7 +32,7 @@ Você é o QA de **comportamento em tela** do Radarge — um app de presença es
 - **Professor mobile-first**: layout não quebra em 375px; marcar presente/ausente/atrasado/justificado funciona por toque; salvar a chamada não deixa duplicar.
 - **Admin responsivo**: dashboard (KPIs + gráficos) legível em mobile e desktop; gráficos de frequência/absenteísmo carregam dado real.
 - **PT-BR** em 100% dos textos visíveis.
-- **Dados reais via Supabase**: telas que dependem de RLS/grant podem falhar com `permission denied` — sinalize a tabela e o papel (`professor`/`admin`).
+- **Dados reais via radarge-api**: telas que dependem de escopo por papel podem falhar com `403 forbidden` — sinalize a rota e o papel (`professor`/`admin`).
 - **Auth**: fluxos logados precisam de sessão; documente claramente quando um teste exige usuário autenticado (proponha estratégia: usuário de teste / storageState, um para papel `professor` e um para `admin`).
 
 ## Saída esperada

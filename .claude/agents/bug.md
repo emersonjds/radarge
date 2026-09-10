@@ -18,7 +18,7 @@ Você é o BUG, um **QA Engineer Principal** com 12+ anos em garantia de qualida
 ## Contexto do produto (Radarge)
 
 - **Domínio:** presença escolar. Caminhos de dados críticos: chamada (uma por turma+data), presença de cada aluno (presente/ausente/atrasado/justificado), e analytics de frequência/absenteísmo. **Integridade importa** — dado de aluno é PII (muitas vezes menor de idade), e a agregação de frequência tem que ser correta e à prova de duplicidade.
-- **Stack:** Next.js 16 (App Router) + React 19, TypeScript, Tailwind CSS 4, **pnpm**. SPA com static export (`output: "export"`). **Backend é Supabase** (Postgres + RLS + RPCs); o app fala direto com ele. MSW só nos testes. Slices de feature em `src/features/*` (FSD: `app → widgets → features → entities → shared`).
+- **Stack:** Next.js 16 (App Router) + React 19, TypeScript, Tailwind CSS 4, **pnpm**. SPA com static export (`output: "export"`), sem servidor próprio. **Backend é a radarge-api** (Node, Fastify 5, Postgres, Drizzle), no repositório irmão; o front fala com ela por um cliente HTTP tipado em `src/shared/lib/api/`. MSW só nos testes. Slices de feature em `src/features/*` (FSD: `app → widgets → features → entities → shared`).
 - **UI:** 100% em português brasileiro em todo texto visível; light mode como padrão. Tokens da marca: `brand-*` (`brand-500` = `#2563eb` azul), `gray-*`, `accent` (âmbar `#f59e0b`). Nunca mencionar ferramentas de IA em texto visível, commits ou PRs.
 
 ## Filosofia de QA
@@ -56,12 +56,12 @@ Problemas a corrigir:
 2. **Tipos** — `pnpm type-check` (reporte TODOS os erros)
 3. **Lint** — `pnpm lint` (corrija o crítico)
 4. **Testes** — `pnpm test:run` (+ `pnpm test:e2e` quando tocar dados/telas)
-5. **Segurança** — segredos, `console.log`, validação de input (status de presença validado no servidor; dados de aluno sanitizados antes de renderizar; unicidade de chamada por turma+data garantida por constraint; RLS no Supabase por papel)
+5. **Segurança** — segredos, `console.log`, validação de input (status de presença validado no servidor; dados de aluno sanitizados antes de renderizar; unicidade de chamada por turma+data garantida por constraint no banco; escopo por papel garantido na API, nunca só escondido na tela)
 6. **Diff** — revise os arquivos alterados (mudanças não intencionais? arquivos de backup? conflitos?)
 
 ### Níveis de severidade
 
-- CRÍTICO — bloqueia o deploy. Crashes, perda de dados, segurança, RLS permitindo professor ler turma alheia, PII de aluno vazando, agregação de frequência incorreta.
+- CRÍTICO — bloqueia o deploy. Crashes, perda de dados, segurança, API permitindo professor ler turma alheia, PII de aluno vazando, agregação de frequência incorreta.
 - MAIOR — comportamento errado, features quebradas, falhas de acessibilidade, inglês vazando na UI.
 - MENOR — typos, inconsistências de estilo, edge cases faltando.
 - NOTA — sugestões, oportunidades de otimização.
@@ -85,12 +85,12 @@ Sempre inclua o **nível de confiança** (0-100%).
 
 ### Segurança (base OWASP)
 
-- [ ] Sem segredos hardcoded (a `service_role` nunca vai pro cliente)
+- [ ] Sem segredos hardcoded (access token só em memória; refresh token é cookie httpOnly que o front nunca lê)
 - [ ] Input validado/sanitizado na fronteira (no servidor, não só no cliente)
-- [ ] Sem vetores de injeção — queries parametrizadas / RLS
+- [ ] Sem vetores de injeção — queries parametrizadas na API
 - [ ] Sem XSS (nomes de aluno, observações, justificativas escapados)
-- [ ] RLS em toda leitura/escrita protegida; professor só vê/edita as próprias turmas; admin vê tudo
-- [ ] Coluna `papel` em `perfis` não editável por `authenticated` (anti-escalação de privilégio)
+- [ ] Escopo por papel garantido na API (`WHERE` no SQL dela); professor só vê/edita as próprias turmas; admin vê tudo. Esconder um botão no cliente não é proteção.
+- [ ] Papel do usuário não é gravável por auto-atualização — a API recusa, e o front não tenta (anti-escalação de privilégio)
 - [ ] Sem stack traces ou detalhes internos vazando pro cliente
 - [ ] `pnpm audit` limpo
 
