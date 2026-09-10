@@ -26,7 +26,7 @@ const LIMITE_FALTAS_RISCO = 3;
 const TODAS = "todas";
 
 const control =
-  "h-11 rounded-lg border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20";
+  "h-11 rounded-lg border border-input bg-transparent px-3 text-base text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20 sm:text-sm";
 
 export function ReportsCenter() {
   const { data: alunos, isLoading: carregandoAlunos } = useStudents();
@@ -117,7 +117,8 @@ export function ReportsCenter() {
       linha.name,
       linha.turmaNome,
       formatScore(linha.nota),
-      linha.freq === null ? "—" : formatPercent(linha.freq),
+      // Empty, not a dash: an em-dash in a spreadsheet cell poisons SUM and AVERAGE.
+      linha.freq === null ? "" : formatPercent(linha.freq),
       linha.faltas,
       linha.aptidao ? areaLabels[linha.aptidao] : "—",
       linha.emRisco ? "Em risco" : "Regular",
