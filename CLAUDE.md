@@ -105,7 +105,7 @@ Toda feature/implementação que passa pelo fluxo SDD **deve** ter as três cama
 
 ## 9. Agentes disponíveis
 
-Especialistas de domínio: `arq` (arquitetura FSD + Supabase), `back` (schema/RLS/RPCs de presença e analytics), `front` (frontend, performance e segurança client-side), `pixel` (UX/UI: chamada mobile do professor, dashboard responsivo do admin), `redteam` (segurança ofensiva e threat modeling da RLS).
+Especialistas de domínio: `front` (frontend, performance e segurança client-side), `pixel` (UX/UI: chamada mobile do professor, dashboard responsivo do admin), `redteam` (segurança ofensiva e threat modeling da fronteira com a API).
 Execução e qualidade: `bug` (QA/quality gate de código), `qa` (E2E em tela com Playwright), `scribe` (i18n PT-BR, docs).
 
 Regra: **um agent por função, sem duplicação**.
