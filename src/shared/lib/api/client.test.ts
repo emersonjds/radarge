@@ -53,6 +53,26 @@ describe("createApiClient", () => {
     expect(receivedAuthorization).toBe("Bearer caller-token");
   });
 
+  it("announces JSON only when it actually sends a body", async () => {
+    const contentTypes: (string | null)[] = [];
+    server.use(
+      http.post("*/auth/logout", ({ request }) => {
+        contentTypes.push(request.headers.get("content-type"));
+        return new HttpResponse(null, { status: 204 });
+      }),
+      http.post("*/students", ({ request }) => {
+        contentTypes.push(request.headers.get("content-type"));
+        return HttpResponse.json({ id: "student-1" });
+      }),
+    );
+
+    const client = createApiClient();
+    await client.request("/auth/logout", { method: "POST" });
+    await client.request("/students", { method: "POST", body: { name: "Ana" } });
+
+    expect(contentTypes).toEqual([null, "application/json"]);
+  });
+
   it("returns typed data on the happy path", async () => {
     server.use(http.get("*/auth/me", () => HttpResponse.json(profile)));
 

@@ -88,9 +88,12 @@ export const createApiClient = (options: CreateApiClientOptions = {}): ApiClient
     requestOptions: RequestOptions,
     hasRetriedAfterRefresh: boolean,
   ): Promise<TResponse> => {
-    const headers = new Headers({ "Content-Type": "application/json" });
+    const headers = new Headers();
     const token = getAccessToken();
 
+    // Only when something is actually sent: Fastify rejects a request that
+    // announces JSON and carries no body, which is every bodyless POST here.
+    if (requestOptions.body !== undefined) headers.set("Content-Type", "application/json");
     if (token) headers.set("Authorization", `Bearer ${token}`);
 
     let response: Response;
