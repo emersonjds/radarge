@@ -21,6 +21,17 @@ describe("messageForError", () => {
     expect(messageForError(new SessionEndedError(), FALLBACK)).toMatch(/sessão expirou/);
   });
 
+  it("lets a screen override what a code means to its reader", () => {
+    const onSignIn = messageForError(
+      new ApiError("unauthorized", "authentication required"),
+      FALLBACK,
+      { unauthorized: "Usuário ou senha incorretos." },
+    );
+
+    expect(onSignIn).toBe("Usuário ou senha incorretos.");
+    expect(messageForError(new ApiError("unauthorized", "x"), FALLBACK)).toMatch(/sessão expirou/);
+  });
+
   it("uses the caller's fallback for anything untyped", () => {
     expect(messageForError(new Error("boom"), FALLBACK)).toBe(FALLBACK);
     expect(messageForError("boom", FALLBACK)).toBe(FALLBACK);
