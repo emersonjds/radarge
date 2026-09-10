@@ -51,8 +51,7 @@ test("student record shows the attendance rate and the academic block with aptit
 
   await expect(page.getByRole("heading", { name: "Enzo Ferreira" })).toBeVisible();
   await expect(page.getByRole("main").getByRole("link", { name: "Relatórios" })).toBeVisible();
-  await expect(page.getByText("Frequência")).toBeVisible();
-  await expect(page.getByText("Faltas")).toBeVisible();
+  await expect(page.getByText("Sem chamadas registradas.")).toBeVisible();
 
   await page.getByRole("tab", { name: "Notas" }).click();
   await expect(page.getByRole("heading", { name: "Desempenho acadêmico" })).toBeVisible();

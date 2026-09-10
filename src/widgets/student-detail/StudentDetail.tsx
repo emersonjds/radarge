@@ -162,8 +162,6 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
 
   // With no records at all, "0%" would read as perfect attendance — better to claim nothing.
   const hasNoRecords = visibleRecords.length === 0;
-  const attendancePercent = hasNoRecords ? "—" : formatPercent(attendanceRate(visibleRecords));
-  const absences = hasNoRecords ? "—" : String(countAbsences(visibleRecords));
 
   return (
     <div className="flex flex-col gap-6">
@@ -172,7 +170,7 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
         <div className="flex items-center gap-4">
           <AvatarText name={student.name} />
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{student.name}</h1>
+            <h1 className="text-xl font-semibold text-foreground sm:text-2xl">{student.name}</h1>
             <p className="text-sm text-muted-foreground">Desempenho e presença</p>
           </div>
           <Badge variant={student.active ? "success" : "danger"}>
@@ -187,65 +185,74 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
         </p>
       )}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card asChild className="lg:col-span-1">
-          <section className="flex flex-col gap-6">
-            <dl className="grid grid-cols-3 gap-3 text-sm">
-              <div>
-                <dt className="text-muted-foreground">Idade</dt>
-                <dd className="font-medium text-foreground">
-                  {computeAgeAt(student.birthDate, todayIso())} anos
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Responsável</dt>
-                <dd className="font-medium text-foreground">{student.guardianName}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Telefone</dt>
-                <dd className="font-medium text-foreground">
-                  <a className="hover:underline" href={`tel:${student.guardianPhone}`}>
-                    {student.guardianPhone}
-                  </a>
-                </dd>
-              </div>
-            </dl>
+      <Card>
+        <dl className="flex flex-col gap-3 sm:grid sm:grid-cols-3 sm:gap-6">
+          <div className="flex flex-col gap-1">
+            <dt className="text-xs font-medium text-muted-foreground">Idade</dt>
+            <dd className="text-sm font-medium text-foreground">
+              {computeAgeAt(student.birthDate, todayIso())} anos
+            </dd>
+          </div>
+          <div className="flex flex-col gap-1">
+            <dt className="text-xs font-medium text-muted-foreground">Responsável</dt>
+            <dd className="text-sm font-medium text-foreground">{student.guardianName}</dd>
+          </div>
+          <div className="flex flex-col gap-1">
+            <dt className="text-xs font-medium text-muted-foreground">Telefone</dt>
+            <dd className="text-sm font-medium text-foreground">
+              <a
+                className="whitespace-nowrap tabular-nums hover:underline"
+                href={`tel:${student.guardianPhone}`}
+              >
+                {student.guardianPhone}
+              </a>
+            </dd>
+          </div>
+        </dl>
+      </Card>
 
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+        <Card className="flex flex-col gap-6 lg:col-span-1">
+          {hasNoRecords ? (
+            <p className="text-sm text-muted-foreground">Sem chamadas registradas.</p>
+          ) : (
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-muted p-4 text-center">
-                <p className="text-2xl font-bold text-foreground">{attendancePercent}</p>
-                <p className="text-xs text-muted-foreground">Frequência</p>
+              <div className="rounded-lg border border-border bg-gray-50 p-3 text-center">
+                <p className="text-xl font-semibold text-foreground tabular-nums">
+                  {formatPercent(attendanceRate(visibleRecords))}
+                </p>
+                <p className="text-xs font-medium text-muted-foreground">Frequência</p>
               </div>
-              <div className="rounded-xl bg-muted p-4 text-center">
-                <p className="text-2xl font-bold text-foreground">{absences}</p>
-                <p className="text-xs text-muted-foreground">Faltas</p>
+              <div className="rounded-lg border border-border bg-gray-50 p-3 text-center">
+                <p className="text-xl font-semibold text-foreground tabular-nums">
+                  {countAbsences(visibleRecords)}
+                </p>
+                <p className="text-xs font-medium text-muted-foreground">Faltas</p>
               </div>
             </div>
+          )}
 
-            <div>
-              <p className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                Aulas
-              </p>
-              {studentGroups.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Sem aulas matriculadas.</p>
-              ) : (
-                <ul className="flex flex-wrap gap-2">
-                  {studentGroups.map((group) => (
-                    <li
-                      key={group.id}
-                      className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-foreground"
-                    >
-                      {group.name}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </section>
+          <div>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">Aulas</p>
+            {studentGroups.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Sem aulas matriculadas.</p>
+            ) : (
+              <ul className="flex flex-wrap gap-2">
+                {studentGroups.map((group) => (
+                  <li
+                    key={group.id}
+                    className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-foreground"
+                  >
+                    {group.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </Card>
 
         <Tabs defaultValue="presenca" className="flex flex-col gap-4 lg:col-span-2">
-          <TabsList className="grid w-full grid-cols-2 sm:w-64">
+          <TabsList className="grid w-full grid-cols-2 border border-border sm:w-64">
             <TabsTrigger value="presenca">Presença</TabsTrigger>
             <TabsTrigger value="notas">Notas</TabsTrigger>
           </TabsList>

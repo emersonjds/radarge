@@ -110,7 +110,7 @@ test.describe("student detail (desktop)", () => {
 
     await expect(page.getByRole("heading", { name: "Aluno Detalhe Sem Aula" })).toBeVisible();
     await expect(page.getByText("Sem aulas matriculadas.")).toBeVisible();
-    await expect(page.getByText("—", { exact: true })).toHaveCount(2);
+    await expect(page.getByText("Sem chamadas registradas.")).toBeVisible();
 
     await captureScreen(page, "e2e/student-detail/evidence/student-without-group.png");
   });
