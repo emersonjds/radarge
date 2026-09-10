@@ -1,4 +1,6 @@
 import PlusIcon from "./plus.svg";
+import ArrowDownIcon from "./arrow-down.svg";
+import ArrowUpIcon from "./arrow-up.svg";
 import CheckCircleIcon from "./check-circle.svg";
 import GridIcon from "./grid.svg";
 import DownloadIcon from "./download.svg";
@@ -16,6 +18,8 @@ import PieChartIcon from "./pie-chart.svg";
 import DocsIcon from "./docs.svg";
 
 export {
+  ArrowDownIcon,
+  ArrowUpIcon,
   CalendarIcon,
   CalenderIcon,
   CheckCircleIcon,

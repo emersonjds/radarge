@@ -15,42 +15,39 @@ import { messageForError } from "@/shared/lib/api/error-message";
 import { formatPercent } from "@/shared/lib/format";
 import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
-import { GroupIcon, UserCircleIcon, CheckCircleIcon } from "@tailadmin/icons";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  GroupIcon,
+  UserCircleIcon,
+  CheckCircleIcon,
+} from "@tailadmin/icons";
 import { AttendanceBarChart } from "./AttendanceBarChart";
 import { TrendLineChart } from "./TrendLineChart";
 
-/** Below this, a lone teacher account (dev seed) would tank the stat — show a plausible mock instead. */
-const MOCK_TEACHERS_THRESHOLD = 2;
-const MOCK_TOTAL_TEACHERS = 148;
 const RISK_ABSENCE_THRESHOLD = 3;
 const MAX_ALERTS = 3;
 
-interface AdminTask {
-  title: string;
-  status: "Pendente" | "Concluída" | "Urgente";
+interface KpiCardProps {
+  label: string;
+  value: string;
+  icon: ReactNode;
+  badge?: ReactNode;
 }
 
-const ADMIN_TASKS: AdminTask[] = [
-  { title: "Reunião de diretoria: orçamento do 3º trimestre", status: "Pendente" },
-  { title: "Renovação de credenciamento docente", status: "Concluída" },
-  { title: "Auditoria de instalações sanitárias", status: "Urgente" },
-  { title: "Recepção de novos alunos", status: "Pendente" },
-];
-
-const TASK_VARIANT: Record<AdminTask["status"], "secondary" | "success" | "danger"> = {
-  Pendente: "secondary",
-  Concluída: "success",
-  Urgente: "danger",
-};
-
-function StatCard({ label, value, icon }: { label: string; value: string; icon: ReactNode }) {
+function KpiCard({ label, value, icon, badge }: KpiCardProps) {
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm">
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-primary">
+    <div className="rounded-xl border bg-card p-4 shadow-sm md:p-5">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-primary">
         {icon}
       </div>
-      <p className="mt-4 text-sm text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-foreground">{value}</p>
+      <div className="mt-5 flex items-end justify-between">
+        <div>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="mt-2 text-3xl font-bold text-foreground">{value}</p>
+        </div>
+        {badge}
+      </div>
     </div>
   );
 }
@@ -68,8 +65,19 @@ export function AdminPanel() {
   const studentsAtRisk = useStudentsAtRisk({ threshold: 0 });
 
   const totalStudents = students.data?.length ?? 0;
+  const activeStudents = students.data?.filter((student) => student.active).length ?? 0;
   const totalTeachers = profiles.data?.filter((profile) => profile.role === "teacher").length ?? 0;
   const analyticsError = attendanceRate.error ?? absenteeismTrend.error ?? studentsAtRisk.error;
+
+  const trendPoints = absenteeismTrend.data ?? [];
+  const attendanceTrendDelta =
+    trendPoints.length >= 2
+      ? Math.round(
+          100 -
+            trendPoints[trendPoints.length - 1].absenceRate -
+            (100 - trendPoints[0].absenceRate),
+        )
+      : null;
 
   const studentById = new Map((students.data ?? []).map((student) => [student.id, student]));
   const groupById = new Map((groups.data ?? []).map((group) => [group.id, group]));
@@ -144,21 +152,22 @@ export function AdminPanel() {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard
+        <KpiCard
           label="Total de alunos"
           value={students.isLoading ? "…" : String(totalStudents)}
           icon={<GroupIcon />}
-        />
-        <StatCard
-          label="Total de professores"
-          value={
-            profiles.isLoading
-              ? "…"
-              : String(totalTeachers < MOCK_TEACHERS_THRESHOLD ? MOCK_TOTAL_TEACHERS : totalTeachers)
+          badge={
+            !students.isLoading ? (
+              <Badge variant="success">{activeStudents} ativos</Badge>
+            ) : undefined
           }
+        />
+        <KpiCard
+          label="Total de professores"
+          value={profiles.isLoading ? "…" : String(totalTeachers)}
           icon={<UserCircleIcon />}
         />
-        <StatCard
+        <KpiCard
           label="Frequência geral"
           value={
             attendanceRate.isLoading
@@ -168,6 +177,19 @@ export function AdminPanel() {
                 : formatPercent(attendanceRate.data?.rate ?? 0)
           }
           icon={<CheckCircleIcon />}
+          badge={
+            attendanceTrendDelta === null ? undefined : attendanceTrendDelta > 0 ? (
+              <Badge variant="success">
+                <ArrowUpIcon />
+                {attendanceTrendDelta}%
+              </Badge>
+            ) : attendanceTrendDelta < 0 ? (
+              <Badge variant="danger">
+                <ArrowDownIcon />
+                {Math.abs(attendanceTrendDelta)}%
+              </Badge>
+            ) : undefined
+          }
         />
       </div>
 
@@ -212,23 +234,9 @@ export function AdminPanel() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border bg-card p-4 shadow-sm lg:col-span-2">
-          <h2 className="mb-2 text-lg font-semibold text-foreground">Tendência de frequência</h2>
-          <TrendLineChart points={trend} />
-        </div>
-
-        <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-foreground">Tarefas administrativas</h2>
-          <ul className="flex flex-col gap-3">
-            {ADMIN_TASKS.map((task) => (
-              <li key={task.title} className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-foreground">{task.title}</span>
-                <Badge variant={TASK_VARIANT[task.status]}>{task.status}</Badge>
-              </li>
-            ))}
-          </ul>
-        </div>
+      <div className="rounded-xl border bg-card p-4 shadow-sm">
+        <h2 className="mb-2 text-lg font-semibold text-foreground">Tendência de frequência</h2>
+        <TrendLineChart points={trend} />
       </div>
     </div>
   );
