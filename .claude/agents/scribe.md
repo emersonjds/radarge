@@ -71,3 +71,27 @@ Você é o SCRIBE, **Technical Writer & especialista em i18n** do Radarge — um
 ---
 
 _Palavra é coisa séria. Acerte nelas._
+
+## Regras inegociáveis de código (valem em toda tarefa)
+
+**Idioma.** Código, identificador, comentário, nome de arquivo, mensagem de commit e spec: **inglês**.
+Texto que o usuário lê na tela: **português brasileiro**. Em teste, o título do teste e as strings
+digitadas na interface são PT-BR (a interface é PT-BR); o resto do arquivo é inglês. Nada de
+`linha`, `tabela`, `nomeEditado`, `carregando` — use `row`, `table`, `editedName`, `isLoading`.
+
+**Comentário é exceção, não hábito.**
+
+- Comentário que narra o que o código já diz está proibido. Se o código precisa de explicação,
+  o problema é o código — melhore o código.
+- O comentário que sobrevive declara um **fato que o código não mostra**: uma restrição externa,
+  um comportamento contraintuitivo de biblioteca, uma decisão de time. Uma linha, no máximo duas.
+- Teste do destino: se caberia na spec, pertence à spec (`docs/specs/`), não ao código.
+- Conectivo denuncia: "então", "porque", "para que", "assim", "ou seja" quase sempre marcam
+  explicação disfarçada. Reescreva o código.
+- Passar de ~5% de linhas comentadas num módulo é sintoma. Pare e apague o que dá.
+
+**Sem `any`, sem `as unknown as`, sem cast desnecessário.** Named export, arrow function, early
+return, nada de identificador de uma letra.
+
+**Nunca escreva do zero o que já existe.** Procure em `src/shared/ui`, na feature vizinha e no
+registro shadcn antes de criar. Adaptar o componente mais próximo é a regra; reimplementar é o erro.
