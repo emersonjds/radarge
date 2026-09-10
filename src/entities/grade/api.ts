@@ -1,31 +1,25 @@
-import { readCollection } from "@/shared/lib/storage/db";
-import { evaluationSchema, type Evaluation } from "@/entities/evaluation/model";
-import { evaluationGradeSchema, type EvaluationGrade } from "@/entities/evaluation-grade/model";
+import type { components } from "@/shared/api/schema";
+import { apiClient } from "@/shared/lib/api/instance";
 import type { Grade } from "./model";
-import { deriveSubjectGrades } from "./derive";
 
-async function readEvaluations(): Promise<Evaluation[]> {
-  const rows = await readCollection("evaluations");
-  return rows.map((row) => evaluationSchema.parse(row));
-}
+type SubjectAverage = components["schemas"]["SubjectAverage"];
 
-async function readEvaluationGrades(): Promise<EvaluationGrade[]> {
-  const rows = await readCollection("evaluationGrades");
-  return rows.map((row) => evaluationGradeSchema.parse(row));
-}
+/** SubjectAverage carries no id — the API answers one row per (student, subject). */
+const toGrade = (average: SubjectAverage): Grade => ({
+  id: `${average.studentId}-${average.subjectId}`,
+  studentId: average.studentId,
+  subjectId: average.subjectId,
+  score: average.score,
+});
 
-export async function fetchGrades(): Promise<Grade[]> {
-  const [evaluations, evaluationGrades] = await Promise.all([
-    readEvaluations(),
-    readEvaluationGrades(),
-  ]);
-  return deriveSubjectGrades(evaluations, evaluationGrades);
-}
+export const fetchGrades = async (): Promise<Grade[]> => {
+  const averages = await apiClient().request<SubjectAverage[]>("/grades");
+  return averages.map(toGrade);
+};
 
-export async function fetchGradesByStudent(studentId: string): Promise<Grade[]> {
-  const [evaluations, evaluationGrades] = await Promise.all([
-    readEvaluations(),
-    readEvaluationGrades(),
-  ]);
-  return deriveSubjectGrades(evaluations, evaluationGrades, [studentId]);
-}
+export const fetchGradesByStudent = async (studentId: string): Promise<Grade[]> => {
+  const averages = await apiClient().request<SubjectAverage[]>(
+    `/grades?studentId=${encodeURIComponent(studentId)}`,
+  );
+  return averages.map(toGrade);
+};

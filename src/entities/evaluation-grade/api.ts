@@ -1,17 +1,13 @@
-import { mutateCollection, readCollection } from "@/shared/lib/storage/db";
-import { evaluationGradeSchema, type EvaluationGrade } from "./model";
+import type { components } from "@/shared/api/schema";
+import { apiClient } from "@/shared/lib/api/instance";
 
-export async function fetchEvaluationGrades(): Promise<EvaluationGrade[]> {
-  const rows = await readCollection("evaluationGrades");
-  return rows.map((row) => evaluationGradeSchema.parse(row));
-}
+export type EvaluationGrade = components["schemas"]["EvaluationGrade"];
+type GradeSheetEntry = components["schemas"]["GradeSheetInput"]["entries"][number];
 
-export async function fetchEvaluationGradesByEvaluation(
+export const fetchEvaluationGradesByEvaluation = (
   evaluationId: string,
-): Promise<EvaluationGrade[]> {
-  const grades = await fetchEvaluationGrades();
-  return grades.filter((grade) => grade.evaluationId === evaluationId);
-}
+): Promise<EvaluationGrade[]> =>
+  apiClient().request<EvaluationGrade[]>(`/evaluations/${evaluationId}/grades`);
 
 export interface SetEvaluationGradeInput {
   evaluationId: string;
@@ -19,22 +15,21 @@ export interface SetEvaluationGradeInput {
   score: number | null;
 }
 
-/** Upsert a single student's grade on an evaluation (unique per evaluation+student). */
-export async function setEvaluationGrade(input: SetEvaluationGradeInput): Promise<void> {
-  await mutateCollection<EvaluationGrade>("evaluationGrades", (rows) => {
-    const existing = rows.find(
-      (row) => row.evaluationId === input.evaluationId && row.studentId === input.studentId,
-    );
-    if (existing) {
-      return rows.map((row) => (row === existing ? { ...row, score: input.score } : row));
-    }
-    const created: EvaluationGrade = {
-      id: crypto.randomUUID(),
-      evaluationId: input.evaluationId,
-      studentId: input.studentId,
-      score: input.score,
-    };
-    evaluationGradeSchema.parse(created);
-    return [...rows, created];
+/**
+ * The API saves the grade sheet whole with one PUT, so a single row change reads
+ * the current sheet, replaces that student's entry, and writes the sheet back.
+ */
+export const setEvaluationGrade = async (input: SetEvaluationGradeInput): Promise<void> => {
+  const current = await fetchEvaluationGradesByEvaluation(input.evaluationId);
+  const entries: GradeSheetEntry[] = [
+    ...current
+      .filter((grade) => grade.studentId !== input.studentId)
+      .map((grade) => ({ studentId: grade.studentId, score: grade.score })),
+    { studentId: input.studentId, score: input.score },
+  ];
+
+  await apiClient().request<EvaluationGrade[]>(`/evaluations/${input.evaluationId}/grades`, {
+    method: "PUT",
+    body: { entries },
   });
-}
+};
