@@ -9,3 +9,11 @@ export function attendanceRate(records: AttendanceRecord[]): number {
 export function countAbsences(records: AttendanceRecord[]): number {
   return records.filter((record) => record.status === "absent").length;
 }
+
+export type StudentSituation = "at-risk" | "regular" | "no-data";
+
+// A student outside every roll call is neither at risk nor regular: there is no evidence to judge.
+export function studentSituation(absences: number | null, riskThreshold: number): StudentSituation {
+  if (absences === null) return "no-data";
+  return absences >= riskThreshold ? "at-risk" : "regular";
+}

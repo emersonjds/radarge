@@ -6,6 +6,7 @@ import { useStudents, useDeleteStudent } from "@/entities/student/queries";
 import { useEnrollments } from "@/entities/enrollment/queries";
 import type { Student } from "@/entities/student/model";
 import { useStudentsAtRisk } from "@/features/analytics/queries";
+import { studentSituation } from "@/features/analytics/model";
 import { useGroups } from "@/entities/group/queries";
 import { useSession } from "@/features/session/use-session";
 import { messageForError } from "@/shared/lib/api/error-message";
@@ -16,6 +17,7 @@ import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
+import { EmptyValue } from "@/shared/ui/empty-value";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
 import { TablePagination } from "@/shared/ui/table-pagination";
 import { Eye, Pencil, Trash2 } from "lucide-react";
@@ -109,11 +111,12 @@ export function StudentList() {
     const groupNames = (groupIdsByStudent.get(student.id) ?? [])
       .map((groupId) => groupById.get(groupId)?.name)
       .filter((name): name is string => Boolean(name));
+    const hasAttendanceData = attendanceRateByStudent.has(student.id);
     return {
       student,
       groupNames: groupNames.join(", ") || "—",
       attendance: attendanceRateByStudent.get(student.id) ?? null,
-      absences: absencesByStudent.get(student.id) ?? 0,
+      absences: hasAttendanceData ? (absencesByStudent.get(student.id) ?? 0) : null,
     };
   });
   const pageRows = paginate(rows, page);
@@ -182,7 +185,7 @@ export function StudentList() {
                 </TableHeader>
                 <TableBody>
                   {pageRows.map(({ student, groupNames, attendance, absences }) => {
-                    const atRisk = absences >= RISK_ABSENCE_THRESHOLD;
+                    const situation = studentSituation(absences, RISK_ABSENCE_THRESHOLD);
                     return (
                       <TableRow key={student.id} className="border-t border-border">
                         <TableCell>
@@ -207,11 +210,17 @@ export function StudentList() {
                         <TableCell className="text-right tabular-nums">
                           {attendance === null ? "—" : formatPercent(attendance)}
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">{absences}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {absences === null ? <EmptyValue /> : absences}
+                        </TableCell>
                         <TableCell>
-                          <Badge variant={atRisk ? "danger" : "success"}>
-                            {atRisk ? "Em risco" : "Regular"}
-                          </Badge>
+                          {situation === "no-data" ? (
+                            <EmptyValue label="sem chamadas registradas" />
+                          ) : (
+                            <Badge variant={situation === "at-risk" ? "danger" : "success"}>
+                              {situation === "at-risk" ? "Em risco" : "Regular"}
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-end gap-1">
@@ -250,7 +259,7 @@ export function StudentList() {
             ) : (
               <ul className="flex flex-col divide-y divide-border">
                 {pageRows.map(({ student, groupNames, attendance, absences }) => {
-                  const atRisk = absences >= RISK_ABSENCE_THRESHOLD;
+                  const situation = studentSituation(absences, RISK_ABSENCE_THRESHOLD);
                   return (
                     <li key={student.id} className="flex flex-col gap-3 p-4">
                       <div className="flex items-start justify-between gap-3">
@@ -260,16 +269,20 @@ export function StudentList() {
                             {student.name}
                           </span>
                         </div>
-                        <Badge className="shrink-0" variant={atRisk ? "danger" : "success"}>
-                          {atRisk ? "Em risco" : "Regular"}
-                        </Badge>
+                        {situation === "no-data" ? (
+                          <EmptyValue className="shrink-0" label="sem chamadas registradas" />
+                        ) : (
+                          <Badge className="shrink-0" variant={situation === "at-risk" ? "danger" : "success"}>
+                            {situation === "at-risk" ? "Em risco" : "Regular"}
+                          </Badge>
+                        )}
                       </div>
                       <p className="truncate text-xs text-muted-foreground" title={groupNames}>
                         {groupNames}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         Frequência {attendance === null ? "—" : formatPercent(attendance)} ·{" "}
-                        {absences} falta{absences === 1 ? "" : "s"}
+                        {absences === null ? "—" : `${absences} falta${absences === 1 ? "" : "s"}`}
                       </p>
                       <div className="flex items-center justify-end gap-1">
                         <IconButton

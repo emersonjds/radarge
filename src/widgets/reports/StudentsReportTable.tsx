@@ -4,12 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { areaLabels } from "@/entities/subject/model";
 import type { Area } from "@/entities/subject/model";
+import type { StudentSituation } from "@/features/analytics/model";
 import { formatPercent, formatScore } from "@/shared/lib/format";
 import { paginate } from "@/shared/lib/pagination";
 import { useIsDesktop } from "@/shared/lib/use-is-desktop";
 import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
 import { Card } from "@/shared/ui/card";
+import { EmptyValue } from "@/shared/ui/empty-value";
 import { IconButton } from "@/shared/ui/icon-button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
 import { TablePagination } from "@/shared/ui/table-pagination";
@@ -21,9 +23,9 @@ export interface ReportRow {
   groupNames: string;
   average: number;
   attendanceRate: number | null;
-  absences: number;
+  absences: number | null;
   aptitude: Area | null;
-  atRisk: boolean;
+  situation: StudentSituation;
 }
 
 export interface StudentsReportTableProps {
@@ -88,9 +90,13 @@ export function StudentsReportTable({ rows, isLoading }: StudentsReportTableProp
                     </TableCell>
                     <TableCell>{row.aptitude ? areaLabels[row.aptitude] : "—"}</TableCell>
                     <TableCell>
-                      <Badge variant={row.atRisk ? "danger" : "success"}>
-                        {row.atRisk ? "Em risco" : "Regular"}
-                      </Badge>
+                      {row.situation === "no-data" ? (
+                        <EmptyValue label="sem chamadas registradas" />
+                      ) : (
+                        <Badge variant={row.situation === "at-risk" ? "danger" : "success"}>
+                          {row.situation === "at-risk" ? "Em risco" : "Regular"}
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end">
@@ -120,9 +126,13 @@ export function StudentsReportTable({ rows, isLoading }: StudentsReportTableProp
                         {row.name}
                       </span>
                     </div>
-                    <Badge className="shrink-0" variant={row.atRisk ? "danger" : "success"}>
-                      {row.atRisk ? "Em risco" : "Regular"}
-                    </Badge>
+                    {row.situation === "no-data" ? (
+                      <EmptyValue className="shrink-0" label="sem chamadas registradas" />
+                    ) : (
+                      <Badge className="shrink-0" variant={row.situation === "at-risk" ? "danger" : "success"}>
+                        {row.situation === "at-risk" ? "Em risco" : "Regular"}
+                      </Badge>
+                    )}
                   </Link>
                   <p className="truncate text-xs text-muted-foreground" title={row.groupNames}>
                     {row.groupNames}
@@ -130,7 +140,7 @@ export function StudentsReportTable({ rows, isLoading }: StudentsReportTableProp
                   <p className="text-xs text-muted-foreground">
                     Nota {formatScore(row.average)} · Frequência{" "}
                     {row.attendanceRate === null ? "—" : formatPercent(row.attendanceRate)} ·{" "}
-                    {row.absences} falta{row.absences === 1 ? "" : "s"}
+                    {row.absences === null ? "—" : `${row.absences} falta${row.absences === 1 ? "" : "s"}`}
                   </p>
                 </li>
               ))}

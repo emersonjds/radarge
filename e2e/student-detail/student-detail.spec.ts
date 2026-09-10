@@ -120,7 +120,7 @@ test.describe("student detail (desktop)", () => {
     await page.goto(`/reports?studentId=${ids.inativo}`);
 
     await expect(page.getByRole("heading", { name: "Aluno Detalhe Inativo" })).toBeVisible();
-    await expect(page.getByText("INATIVO", { exact: true })).toBeVisible();
+    await expect(page.getByText("Inativo", { exact: true })).toBeVisible();
     await expect(
       page.getByText(
         "Aluno inativo — os dados abaixo estão congelados e não recebem novas chamadas.",

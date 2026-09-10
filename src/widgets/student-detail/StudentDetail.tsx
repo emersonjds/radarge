@@ -158,7 +158,7 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
         <AvatarText name={student.name} />
         <p className="text-sm text-muted-foreground">Desempenho e presença</p>
         <Badge variant={student.active ? "success" : "danger"}>
-          {student.active ? "ATIVO" : "INATIVO"}
+          {student.active ? "Ativo" : "Inativo"}
         </Badge>
       </header>
 

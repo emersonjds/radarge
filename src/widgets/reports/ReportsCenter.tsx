@@ -13,6 +13,7 @@ import {
   useAttendanceRate,
   useStudentsAtRisk,
 } from "@/features/analytics/queries";
+import { studentSituation } from "@/features/analytics/model";
 import { overallAverage, studentAptitude } from "@/features/analytics/academic";
 import { messageForError } from "@/shared/lib/api/error-message";
 import { formatPercent, formatScore } from "@/shared/lib/format";
@@ -98,7 +99,8 @@ export function ReportsCenter() {
       const groupNames = (groupIdsByStudent.get(student.id) ?? [])
         .map((enrolledGroupId) => groupById.get(enrolledGroupId)?.name)
         .filter((name): name is string => Boolean(name));
-      const absences = absencesByStudent.get(student.id) ?? 0;
+      const hasAttendanceData = attendanceRateByStudent.has(student.id);
+      const absences = hasAttendanceData ? (absencesByStudent.get(student.id) ?? 0) : null;
       return {
         id: student.id,
         name: student.name,
@@ -107,7 +109,7 @@ export function ReportsCenter() {
         attendanceRate: attendanceRateByStudent.get(student.id) ?? null,
         absences,
         aptitude: studentAptitude(studentGrades, subjectList),
-        atRisk: absences >= RISK_ABSENCE_THRESHOLD,
+        situation: studentSituation(absences, RISK_ABSENCE_THRESHOLD),
       };
     });
 
@@ -127,9 +129,9 @@ export function ReportsCenter() {
       formatScore(row.average),
       // Empty, not a dash: an em-dash in a spreadsheet cell poisons SUM and AVERAGE.
       row.attendanceRate === null ? "" : formatPercent(row.attendanceRate),
-      row.absences,
+      row.absences === null ? "" : row.absences,
       row.aptitude ? areaLabels[row.aptitude] : "—",
-      row.atRisk ? "Em risco" : "Regular",
+      row.situation === "no-data" ? "" : row.situation === "at-risk" ? "Em risco" : "Regular",
     ]);
     const slug = scopeLabel
       .toLowerCase()
