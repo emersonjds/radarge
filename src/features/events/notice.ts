@@ -11,7 +11,9 @@ export interface EventNoticeInput {
 }
 
 export function buildEventNotice({ event, group, student }: EventNoticeInput): string {
-  const valueLine = isFree(event) ? "Este evento é gratuito." : `Valor: ${formatCurrency(event.cost)} por aluno.`;
+  const valueLine = isFree(event)
+    ? "Este evento é gratuito."
+    : `Valor: ${formatCurrency(event.cost)} por aluno.`;
 
   return [
     `Olá, ${student.guardianName}!`,

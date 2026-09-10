@@ -3,7 +3,14 @@ import type { EventParticipation } from "@/entities/event-participation/model";
 import type { Event } from "@/entities/event/model";
 import { summarizeParticipation } from "./summary";
 
-const event: Event = { id: "ev1", groupId: "g1", title: "Zoológico", date: "2026-08-01", location: "Zoo", cost: 20 };
+const event: Event = {
+  id: "ev1",
+  groupId: "g1",
+  title: "Zoológico",
+  date: "2026-08-01",
+  location: "Zoo",
+  cost: 20,
+};
 const freeEvent: Event = { ...event, id: "ev2", cost: 0 };
 
 function participation(overrides: Partial<EventParticipation>): EventParticipation {

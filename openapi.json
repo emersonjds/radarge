@@ -16,11 +16,7 @@
     "schemas": {
       "RoleInput": {
         "type": "string",
-        "enum": [
-          "teacher",
-          "coordinator",
-          "admin"
-        ]
+        "enum": ["teacher", "coordinator", "admin"]
       },
       "ErrorInput": {
         "type": "object",
@@ -34,10 +30,7 @@
             "example": "student not found"
           }
         },
-        "required": [
-          "code",
-          "message"
-        ]
+        "required": ["code", "message"]
       },
       "CredentialsInput": {
         "type": "object",
@@ -52,10 +45,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "username",
-          "password"
-        ]
+        "required": ["username", "password"]
       },
       "ProfileInput": {
         "type": "object",
@@ -73,11 +63,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "teacher",
-              "coordinator",
-              "admin"
-            ]
+            "enum": ["teacher", "coordinator", "admin"]
           },
           "email": {
             "nullable": true,
@@ -91,15 +77,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "username",
-          "role",
-          "email",
-          "jobTitle",
-          "mustChangePassword"
-        ]
+        "required": ["id", "name", "username", "role", "email", "jobTitle", "mustChangePassword"]
       },
       "SessionInput": {
         "type": "object",
@@ -109,19 +87,13 @@
           },
           "expiresInSeconds": {
             "type": "number",
-            "enum": [
-              900
-            ]
+            "enum": [900]
           },
           "profile": {
             "$ref": "#/components/schemas/ProfileInput"
           }
         },
-        "required": [
-          "accessToken",
-          "expiresInSeconds",
-          "profile"
-        ]
+        "required": ["accessToken", "expiresInSeconds", "profile"]
       },
       "PasswordChangeInput": {
         "type": "object",
@@ -136,10 +108,7 @@
             "maxLength": 200
           }
         },
-        "required": [
-          "currentPassword",
-          "newPassword"
-        ]
+        "required": ["currentPassword", "newPassword"]
       },
       "AttendanceRateInput": {
         "type": "object",
@@ -158,11 +127,7 @@
             "maximum": 9007199254740991
           }
         },
-        "required": [
-          "rate",
-          "present",
-          "total"
-        ]
+        "required": ["rate", "present", "total"]
       },
       "AbsenteeismPointInput": {
         "type": "object",
@@ -176,10 +141,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "date",
-          "absenceRate"
-        ]
+        "required": ["date", "absenceRate"]
       },
       "StudentAtRiskInput": {
         "type": "object",
@@ -198,32 +160,20 @@
             "type": "number"
           }
         },
-        "required": [
-          "studentId",
-          "absences",
-          "attendance"
-        ]
+        "required": ["studentId", "absences", "attendance"]
       },
       "AreaScoreInput": {
         "type": "object",
         "properties": {
           "area": {
             "type": "string",
-            "enum": [
-              "exact_sciences",
-              "biological_sciences",
-              "languages",
-              "humanities"
-            ]
+            "enum": ["exact_sciences", "biological_sciences", "languages", "humanities"]
           },
           "average": {
             "type": "number"
           }
         },
-        "required": [
-          "area",
-          "average"
-        ]
+        "required": ["area", "average"]
       },
       "SubjectScoreInput": {
         "type": "object",
@@ -237,10 +187,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "subjectId",
-          "score"
-        ]
+        "required": ["subjectId", "score"]
       },
       "AcademicSummaryInput": {
         "type": "object",
@@ -251,12 +198,7 @@
           "topArea": {
             "nullable": true,
             "type": "string",
-            "enum": [
-              "exact_sciences",
-              "biological_sciences",
-              "languages",
-              "humanities"
-            ]
+            "enum": ["exact_sciences", "biological_sciences", "languages", "humanities"]
           },
           "areaAffinity": {
             "type": "array",
@@ -277,13 +219,7 @@
             }
           }
         },
-        "required": [
-          "averageScore",
-          "topArea",
-          "areaAffinity",
-          "topSubjects",
-          "attentionSubjects"
-        ]
+        "required": ["averageScore", "topArea", "areaAffinity", "topSubjects", "attentionSubjects"]
       },
       "AssignmentInput": {
         "type": "object",
@@ -309,12 +245,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
-        "required": [
-          "id",
-          "groupId",
-          "subjectId",
-          "teacherId"
-        ]
+        "required": ["id", "groupId", "subjectId", "teacherId"]
       },
       "NewAssignmentInput": {
         "type": "object",
@@ -335,11 +266,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
-        "required": [
-          "groupId",
-          "subjectId",
-          "teacherId"
-        ]
+        "required": ["groupId", "subjectId", "teacherId"]
       },
       "AssignmentChangesInput": {
         "type": "object",
@@ -350,9 +277,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
-        "required": [
-          "teacherId"
-        ]
+        "required": ["teacherId"]
       },
       "AttendanceSessionInput": {
         "type": "object",
@@ -376,12 +301,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
-        "required": [
-          "id",
-          "groupId",
-          "date",
-          "teacherId"
-        ]
+        "required": ["id", "groupId", "date", "teacherId"]
       },
       "AttendanceRecordInput": {
         "type": "object",
@@ -403,20 +323,10 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "present",
-              "absent",
-              "late",
-              "excused"
-            ]
+            "enum": ["present", "absent", "late", "excused"]
           }
         },
-        "required": [
-          "id",
-          "sessionId",
-          "studentId",
-          "status"
-        ]
+        "required": ["id", "sessionId", "studentId", "status"]
       },
       "OpenAttendanceSessionInput": {
         "type": "object",
@@ -432,10 +342,7 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
           }
         },
-        "required": [
-          "groupId",
-          "date"
-        ]
+        "required": ["groupId", "date"]
       },
       "RollCallInput": {
         "type": "object",
@@ -454,24 +361,14 @@
                 },
                 "status": {
                   "type": "string",
-                  "enum": [
-                    "present",
-                    "absent",
-                    "late",
-                    "excused"
-                  ]
+                  "enum": ["present", "absent", "late", "excused"]
                 }
               },
-              "required": [
-                "studentId",
-                "status"
-              ]
+              "required": ["studentId", "status"]
             }
           }
         },
-        "required": [
-          "entries"
-        ]
+        "required": ["entries"]
       },
       "EnrollmentInput": {
         "type": "object",
@@ -498,13 +395,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "id",
-          "studentId",
-          "groupId",
-          "joinedAt",
-          "active"
-        ]
+        "required": ["id", "studentId", "groupId", "joinedAt", "active"]
       },
       "EvaluationInput": {
         "type": "object",
@@ -529,10 +420,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "exam",
-              "homework"
-            ]
+            "enum": ["exam", "homework"]
           },
           "date": {
             "type": "string"
@@ -543,15 +431,7 @@
             "maximum": 32767
           }
         },
-        "required": [
-          "id",
-          "groupId",
-          "subjectId",
-          "name",
-          "type",
-          "date",
-          "weight"
-        ]
+        "required": ["id", "groupId", "subjectId", "name", "type", "date", "weight"]
       },
       "EvaluationGradeInput": {
         "type": "object",
@@ -578,12 +458,7 @@
             "maximum": 9007199254740991
           }
         },
-        "required": [
-          "id",
-          "evaluationId",
-          "studentId",
-          "score"
-        ]
+        "required": ["id", "evaluationId", "studentId", "score"]
       },
       "SubjectAverageInput": {
         "type": "object",
@@ -602,11 +477,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "studentId",
-          "subjectId",
-          "score"
-        ]
+        "required": ["studentId", "subjectId", "score"]
       },
       "NewEvaluationInput": {
         "type": "object",
@@ -628,10 +499,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "exam",
-              "homework"
-            ]
+            "enum": ["exam", "homework"]
           },
           "date": {
             "type": "string",
@@ -644,14 +512,7 @@
             "maximum": 3
           }
         },
-        "required": [
-          "groupId",
-          "subjectId",
-          "name",
-          "type",
-          "date",
-          "weight"
-        ]
+        "required": ["groupId", "subjectId", "name", "type", "date", "weight"]
       },
       "EvaluationChangesInput": {
         "type": "object",
@@ -663,10 +524,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "exam",
-              "homework"
-            ]
+            "enum": ["exam", "homework"]
           },
           "date": {
             "type": "string",
@@ -703,16 +561,11 @@
                   "multipleOf": 0.1
                 }
               },
-              "required": [
-                "studentId",
-                "score"
-              ]
+              "required": ["studentId", "score"]
             }
           }
         },
-        "required": [
-          "entries"
-        ]
+        "required": ["entries"]
       },
       "GroupInput": {
         "type": "object",
@@ -727,11 +580,7 @@
           },
           "shift": {
             "type": "string",
-            "enum": [
-              "morning",
-              "afternoon",
-              "evening"
-            ]
+            "enum": ["morning", "afternoon", "evening"]
           },
           "teacherId": {
             "type": "string",
@@ -739,12 +588,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "shift",
-          "teacherId"
-        ]
+        "required": ["id", "name", "shift", "teacherId"]
       },
       "NewGroupInput": {
         "type": "object",
@@ -756,11 +600,7 @@
           },
           "shift": {
             "type": "string",
-            "enum": [
-              "morning",
-              "afternoon",
-              "evening"
-            ]
+            "enum": ["morning", "afternoon", "evening"]
           },
           "teacherId": {
             "type": "string",
@@ -768,11 +608,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
-        "required": [
-          "name",
-          "shift",
-          "teacherId"
-        ]
+        "required": ["name", "shift", "teacherId"]
       },
       "GroupChangesInput": {
         "type": "object",
@@ -784,11 +620,7 @@
           },
           "shift": {
             "type": "string",
-            "enum": [
-              "morning",
-              "afternoon",
-              "evening"
-            ]
+            "enum": ["morning", "afternoon", "evening"]
           },
           "teacherId": {
             "type": "string",
@@ -802,14 +634,10 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "ok"
-            ]
+            "enum": ["ok"]
           }
         },
-        "required": [
-          "status"
-        ]
+        "required": ["status"]
       },
       "ManagedProfileInput": {
         "type": "object",
@@ -827,11 +655,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "teacher",
-              "coordinator",
-              "admin"
-            ]
+            "enum": ["teacher", "coordinator", "admin"]
           },
           "email": {
             "nullable": true,
@@ -845,15 +669,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "username",
-          "role",
-          "email",
-          "jobTitle",
-          "active"
-        ]
+        "required": ["id", "name", "username", "role", "email", "jobTitle", "active"]
       },
       "NewProfileInput": {
         "type": "object",
@@ -871,11 +687,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "teacher",
-              "coordinator",
-              "admin"
-            ]
+            "enum": ["teacher", "coordinator", "admin"]
           },
           "password": {
             "type": "string",
@@ -892,12 +704,7 @@
             "maxLength": 120
           }
         },
-        "required": [
-          "name",
-          "username",
-          "role",
-          "password"
-        ]
+        "required": ["name", "username", "role", "password"]
       },
       "ProfileChangesInput": {
         "type": "object",
@@ -915,11 +722,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "teacher",
-              "coordinator",
-              "admin"
-            ]
+            "enum": ["teacher", "coordinator", "admin"]
           },
           "password": {
             "type": "string",
@@ -940,6 +743,137 @@
           }
         }
       },
+      "EventInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "groupId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "cost": {
+            "type": "number",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": ["id", "groupId", "title", "date", "location", "cost"]
+      },
+      "EventParticipationInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "eventId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "authorization": {
+            "type": "string",
+            "enum": ["pending", "authorized", "denied"]
+          },
+          "payment": {
+            "type": "string",
+            "enum": ["pending", "paid", "waived"]
+          }
+        },
+        "required": ["id", "eventId", "studentId", "authorization", "payment"]
+      },
+      "NewEventInput": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "cost": {
+            "default": 0,
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999,
+            "multipleOf": 0.01
+          }
+        },
+        "required": ["groupId", "title", "date", "location"]
+      },
+      "EventChangesInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "cost": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999,
+            "multipleOf": 0.01
+          }
+        }
+      },
+      "ParticipationChangesInput": {
+        "type": "object",
+        "properties": {
+          "authorization": {
+            "type": "string",
+            "enum": ["pending", "authorized", "denied"]
+          },
+          "payment": {
+            "type": "string",
+            "enum": ["pending", "paid", "waived"]
+          }
+        }
+      },
       "SchoolEventInput": {
         "type": "object",
         "properties": {
@@ -950,11 +884,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "vacation",
-              "makeup",
-              "event"
-            ]
+            "enum": ["vacation", "makeup", "event"]
           },
           "title": {
             "type": "string"
@@ -966,24 +896,14 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "type",
-          "title",
-          "startDate",
-          "endDate"
-        ]
+        "required": ["id", "type", "title", "startDate", "endDate"]
       },
       "NewSchoolEventInput": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "enum": [
-              "vacation",
-              "makeup",
-              "event"
-            ]
+            "enum": ["vacation", "makeup", "event"]
           },
           "title": {
             "type": "string",
@@ -1001,23 +921,14 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
           }
         },
-        "required": [
-          "type",
-          "title",
-          "startDate",
-          "endDate"
-        ]
+        "required": ["type", "title", "startDate", "endDate"]
       },
       "SchoolEventChangesInput": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "enum": [
-              "vacation",
-              "makeup",
-              "event"
-            ]
+            "enum": ["vacation", "makeup", "event"]
           },
           "title": {
             "type": "string",
@@ -1060,14 +971,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "birthDate",
-          "guardianName",
-          "guardianPhone",
-          "active"
-        ]
+        "required": ["id", "name", "birthDate", "guardianName", "guardianPhone", "active"]
       },
       "NewStudentInput": {
         "type": "object",
@@ -1093,12 +997,7 @@
             "maxLength": 32
           }
         },
-        "required": [
-          "name",
-          "birthDate",
-          "guardianName",
-          "guardianPhone"
-        ]
+        "required": ["name", "birthDate", "guardianName", "guardianPhone"]
       },
       "StudentChangesInput": {
         "type": "object",
@@ -1141,19 +1040,10 @@
           },
           "area": {
             "type": "string",
-            "enum": [
-              "exact_sciences",
-              "biological_sciences",
-              "languages",
-              "humanities"
-            ]
+            "enum": ["exact_sciences", "biological_sciences", "languages", "humanities"]
           }
         },
-        "required": [
-          "id",
-          "name",
-          "area"
-        ]
+        "required": ["id", "name", "area"]
       },
       "NewSubjectInput": {
         "type": "object",
@@ -1165,18 +1055,10 @@
           },
           "area": {
             "type": "string",
-            "enum": [
-              "exact_sciences",
-              "biological_sciences",
-              "languages",
-              "humanities"
-            ]
+            "enum": ["exact_sciences", "biological_sciences", "languages", "humanities"]
           }
         },
-        "required": [
-          "name",
-          "area"
-        ]
+        "required": ["name", "area"]
       },
       "SubjectChangesInput": {
         "type": "object",
@@ -1188,22 +1070,13 @@
           },
           "area": {
             "type": "string",
-            "enum": [
-              "exact_sciences",
-              "biological_sciences",
-              "languages",
-              "humanities"
-            ]
+            "enum": ["exact_sciences", "biological_sciences", "languages", "humanities"]
           }
         }
       },
       "Role": {
         "type": "string",
-        "enum": [
-          "teacher",
-          "coordinator",
-          "admin"
-        ]
+        "enum": ["teacher", "coordinator", "admin"]
       },
       "Error": {
         "type": "object",
@@ -1217,10 +1090,7 @@
             "example": "student not found"
           }
         },
-        "required": [
-          "code",
-          "message"
-        ],
+        "required": ["code", "message"],
         "additionalProperties": false
       },
       "Credentials": {
@@ -1236,10 +1106,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "username",
-          "password"
-        ],
+        "required": ["username", "password"],
         "additionalProperties": false
       },
       "Profile": {
@@ -1258,11 +1125,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "teacher",
-              "coordinator",
-              "admin"
-            ]
+            "enum": ["teacher", "coordinator", "admin"]
           },
           "email": {
             "nullable": true,
@@ -1276,15 +1139,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "username",
-          "role",
-          "email",
-          "jobTitle",
-          "mustChangePassword"
-        ],
+        "required": ["id", "name", "username", "role", "email", "jobTitle", "mustChangePassword"],
         "additionalProperties": false
       },
       "Session": {
@@ -1295,19 +1150,13 @@
           },
           "expiresInSeconds": {
             "type": "number",
-            "enum": [
-              900
-            ]
+            "enum": [900]
           },
           "profile": {
             "$ref": "#/components/schemas/Profile"
           }
         },
-        "required": [
-          "accessToken",
-          "expiresInSeconds",
-          "profile"
-        ],
+        "required": ["accessToken", "expiresInSeconds", "profile"],
         "additionalProperties": false
       },
       "PasswordChange": {
@@ -1323,10 +1172,7 @@
             "maxLength": 200
           }
         },
-        "required": [
-          "currentPassword",
-          "newPassword"
-        ],
+        "required": ["currentPassword", "newPassword"],
         "additionalProperties": false
       },
       "AttendanceRate": {
@@ -1346,11 +1192,7 @@
             "maximum": 9007199254740991
           }
         },
-        "required": [
-          "rate",
-          "present",
-          "total"
-        ],
+        "required": ["rate", "present", "total"],
         "additionalProperties": false
       },
       "AbsenteeismPoint": {
@@ -1365,10 +1207,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "date",
-          "absenceRate"
-        ],
+        "required": ["date", "absenceRate"],
         "additionalProperties": false
       },
       "StudentAtRisk": {
@@ -1388,11 +1227,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "studentId",
-          "absences",
-          "attendance"
-        ],
+        "required": ["studentId", "absences", "attendance"],
         "additionalProperties": false
       },
       "AreaScore": {
@@ -1400,21 +1235,13 @@
         "properties": {
           "area": {
             "type": "string",
-            "enum": [
-              "exact_sciences",
-              "biological_sciences",
-              "languages",
-              "humanities"
-            ]
+            "enum": ["exact_sciences", "biological_sciences", "languages", "humanities"]
           },
           "average": {
             "type": "number"
           }
         },
-        "required": [
-          "area",
-          "average"
-        ],
+        "required": ["area", "average"],
         "additionalProperties": false
       },
       "SubjectScore": {
@@ -1429,10 +1256,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "subjectId",
-          "score"
-        ],
+        "required": ["subjectId", "score"],
         "additionalProperties": false
       },
       "AcademicSummary": {
@@ -1444,12 +1268,7 @@
           "topArea": {
             "nullable": true,
             "type": "string",
-            "enum": [
-              "exact_sciences",
-              "biological_sciences",
-              "languages",
-              "humanities"
-            ]
+            "enum": ["exact_sciences", "biological_sciences", "languages", "humanities"]
           },
           "areaAffinity": {
             "type": "array",
@@ -1470,13 +1289,7 @@
             }
           }
         },
-        "required": [
-          "averageScore",
-          "topArea",
-          "areaAffinity",
-          "topSubjects",
-          "attentionSubjects"
-        ],
+        "required": ["averageScore", "topArea", "areaAffinity", "topSubjects", "attentionSubjects"],
         "additionalProperties": false
       },
       "Assignment": {
@@ -1503,12 +1316,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
-        "required": [
-          "id",
-          "groupId",
-          "subjectId",
-          "teacherId"
-        ],
+        "required": ["id", "groupId", "subjectId", "teacherId"],
         "additionalProperties": false
       },
       "NewAssignment": {
@@ -1530,11 +1338,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
-        "required": [
-          "groupId",
-          "subjectId",
-          "teacherId"
-        ],
+        "required": ["groupId", "subjectId", "teacherId"],
         "additionalProperties": false
       },
       "AssignmentChanges": {
@@ -1546,9 +1350,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
-        "required": [
-          "teacherId"
-        ],
+        "required": ["teacherId"],
         "additionalProperties": false
       },
       "AttendanceSession": {
@@ -1573,12 +1375,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
-        "required": [
-          "id",
-          "groupId",
-          "date",
-          "teacherId"
-        ],
+        "required": ["id", "groupId", "date", "teacherId"],
         "additionalProperties": false
       },
       "AttendanceRecord": {
@@ -1601,20 +1398,10 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "present",
-              "absent",
-              "late",
-              "excused"
-            ]
+            "enum": ["present", "absent", "late", "excused"]
           }
         },
-        "required": [
-          "id",
-          "sessionId",
-          "studentId",
-          "status"
-        ],
+        "required": ["id", "sessionId", "studentId", "status"],
         "additionalProperties": false
       },
       "OpenAttendanceSession": {
@@ -1631,10 +1418,7 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
           }
         },
-        "required": [
-          "groupId",
-          "date"
-        ],
+        "required": ["groupId", "date"],
         "additionalProperties": false
       },
       "RollCall": {
@@ -1654,25 +1438,15 @@
                 },
                 "status": {
                   "type": "string",
-                  "enum": [
-                    "present",
-                    "absent",
-                    "late",
-                    "excused"
-                  ]
+                  "enum": ["present", "absent", "late", "excused"]
                 }
               },
-              "required": [
-                "studentId",
-                "status"
-              ],
+              "required": ["studentId", "status"],
               "additionalProperties": false
             }
           }
         },
-        "required": [
-          "entries"
-        ],
+        "required": ["entries"],
         "additionalProperties": false
       },
       "Enrollment": {
@@ -1700,13 +1474,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "id",
-          "studentId",
-          "groupId",
-          "joinedAt",
-          "active"
-        ],
+        "required": ["id", "studentId", "groupId", "joinedAt", "active"],
         "additionalProperties": false
       },
       "Evaluation": {
@@ -1732,10 +1500,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "exam",
-              "homework"
-            ]
+            "enum": ["exam", "homework"]
           },
           "date": {
             "type": "string"
@@ -1746,15 +1511,7 @@
             "maximum": 32767
           }
         },
-        "required": [
-          "id",
-          "groupId",
-          "subjectId",
-          "name",
-          "type",
-          "date",
-          "weight"
-        ],
+        "required": ["id", "groupId", "subjectId", "name", "type", "date", "weight"],
         "additionalProperties": false
       },
       "EvaluationGrade": {
@@ -1782,12 +1539,7 @@
             "maximum": 9007199254740991
           }
         },
-        "required": [
-          "id",
-          "evaluationId",
-          "studentId",
-          "score"
-        ],
+        "required": ["id", "evaluationId", "studentId", "score"],
         "additionalProperties": false
       },
       "SubjectAverage": {
@@ -1807,11 +1559,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "studentId",
-          "subjectId",
-          "score"
-        ],
+        "required": ["studentId", "subjectId", "score"],
         "additionalProperties": false
       },
       "NewEvaluation": {
@@ -1834,10 +1582,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "exam",
-              "homework"
-            ]
+            "enum": ["exam", "homework"]
           },
           "date": {
             "type": "string",
@@ -1850,14 +1595,7 @@
             "maximum": 3
           }
         },
-        "required": [
-          "groupId",
-          "subjectId",
-          "name",
-          "type",
-          "date",
-          "weight"
-        ],
+        "required": ["groupId", "subjectId", "name", "type", "date", "weight"],
         "additionalProperties": false
       },
       "EvaluationChanges": {
@@ -1870,10 +1608,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "exam",
-              "homework"
-            ]
+            "enum": ["exam", "homework"]
           },
           "date": {
             "type": "string",
@@ -1911,17 +1646,12 @@
                   "multipleOf": 0.1
                 }
               },
-              "required": [
-                "studentId",
-                "score"
-              ],
+              "required": ["studentId", "score"],
               "additionalProperties": false
             }
           }
         },
-        "required": [
-          "entries"
-        ],
+        "required": ["entries"],
         "additionalProperties": false
       },
       "Group": {
@@ -1937,11 +1667,7 @@
           },
           "shift": {
             "type": "string",
-            "enum": [
-              "morning",
-              "afternoon",
-              "evening"
-            ]
+            "enum": ["morning", "afternoon", "evening"]
           },
           "teacherId": {
             "type": "string",
@@ -1949,12 +1675,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "shift",
-          "teacherId"
-        ],
+        "required": ["id", "name", "shift", "teacherId"],
         "additionalProperties": false
       },
       "NewGroup": {
@@ -1967,11 +1688,7 @@
           },
           "shift": {
             "type": "string",
-            "enum": [
-              "morning",
-              "afternoon",
-              "evening"
-            ]
+            "enum": ["morning", "afternoon", "evening"]
           },
           "teacherId": {
             "type": "string",
@@ -1979,11 +1696,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
-        "required": [
-          "name",
-          "shift",
-          "teacherId"
-        ],
+        "required": ["name", "shift", "teacherId"],
         "additionalProperties": false
       },
       "GroupChanges": {
@@ -1996,11 +1709,7 @@
           },
           "shift": {
             "type": "string",
-            "enum": [
-              "morning",
-              "afternoon",
-              "evening"
-            ]
+            "enum": ["morning", "afternoon", "evening"]
           },
           "teacherId": {
             "type": "string",
@@ -2015,14 +1724,10 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "ok"
-            ]
+            "enum": ["ok"]
           }
         },
-        "required": [
-          "status"
-        ],
+        "required": ["status"],
         "additionalProperties": false
       },
       "ManagedProfile": {
@@ -2041,11 +1746,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "teacher",
-              "coordinator",
-              "admin"
-            ]
+            "enum": ["teacher", "coordinator", "admin"]
           },
           "email": {
             "nullable": true,
@@ -2059,15 +1760,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "username",
-          "role",
-          "email",
-          "jobTitle",
-          "active"
-        ],
+        "required": ["id", "name", "username", "role", "email", "jobTitle", "active"],
         "additionalProperties": false
       },
       "NewProfile": {
@@ -2086,11 +1779,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "teacher",
-              "coordinator",
-              "admin"
-            ]
+            "enum": ["teacher", "coordinator", "admin"]
           },
           "password": {
             "type": "string",
@@ -2107,12 +1796,7 @@
             "maxLength": 120
           }
         },
-        "required": [
-          "name",
-          "username",
-          "role",
-          "password"
-        ],
+        "required": ["name", "username", "role", "password"],
         "additionalProperties": false
       },
       "ProfileChanges": {
@@ -2131,11 +1815,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "teacher",
-              "coordinator",
-              "admin"
-            ]
+            "enum": ["teacher", "coordinator", "admin"]
           },
           "password": {
             "type": "string",
@@ -2157,6 +1837,142 @@
         },
         "additionalProperties": false
       },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "groupId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "cost": {
+            "type": "number",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": ["id", "groupId", "title", "date", "location", "cost"],
+        "additionalProperties": false
+      },
+      "EventParticipation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "eventId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "authorization": {
+            "type": "string",
+            "enum": ["pending", "authorized", "denied"]
+          },
+          "payment": {
+            "type": "string",
+            "enum": ["pending", "paid", "waived"]
+          }
+        },
+        "required": ["id", "eventId", "studentId", "authorization", "payment"],
+        "additionalProperties": false
+      },
+      "NewEvent": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "cost": {
+            "default": 0,
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999,
+            "multipleOf": 0.01
+          }
+        },
+        "required": ["groupId", "title", "date", "location", "cost"],
+        "additionalProperties": false
+      },
+      "EventChanges": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "cost": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999,
+            "multipleOf": 0.01
+          }
+        },
+        "additionalProperties": false
+      },
+      "ParticipationChanges": {
+        "type": "object",
+        "properties": {
+          "authorization": {
+            "type": "string",
+            "enum": ["pending", "authorized", "denied"]
+          },
+          "payment": {
+            "type": "string",
+            "enum": ["pending", "paid", "waived"]
+          }
+        },
+        "additionalProperties": false
+      },
       "SchoolEvent": {
         "type": "object",
         "properties": {
@@ -2167,11 +1983,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "vacation",
-              "makeup",
-              "event"
-            ]
+            "enum": ["vacation", "makeup", "event"]
           },
           "title": {
             "type": "string"
@@ -2183,13 +1995,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "type",
-          "title",
-          "startDate",
-          "endDate"
-        ],
+        "required": ["id", "type", "title", "startDate", "endDate"],
         "additionalProperties": false
       },
       "NewSchoolEvent": {
@@ -2197,11 +2003,7 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": [
-              "vacation",
-              "makeup",
-              "event"
-            ]
+            "enum": ["vacation", "makeup", "event"]
           },
           "title": {
             "type": "string",
@@ -2219,12 +2021,7 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
           }
         },
-        "required": [
-          "type",
-          "title",
-          "startDate",
-          "endDate"
-        ],
+        "required": ["type", "title", "startDate", "endDate"],
         "additionalProperties": false
       },
       "SchoolEventChanges": {
@@ -2232,11 +2029,7 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": [
-              "vacation",
-              "makeup",
-              "event"
-            ]
+            "enum": ["vacation", "makeup", "event"]
           },
           "title": {
             "type": "string",
@@ -2280,14 +2073,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "birthDate",
-          "guardianName",
-          "guardianPhone",
-          "active"
-        ],
+        "required": ["id", "name", "birthDate", "guardianName", "guardianPhone", "active"],
         "additionalProperties": false
       },
       "NewStudent": {
@@ -2314,12 +2100,7 @@
             "maxLength": 32
           }
         },
-        "required": [
-          "name",
-          "birthDate",
-          "guardianName",
-          "guardianPhone"
-        ],
+        "required": ["name", "birthDate", "guardianName", "guardianPhone"],
         "additionalProperties": false
       },
       "StudentChanges": {
@@ -2364,19 +2145,10 @@
           },
           "area": {
             "type": "string",
-            "enum": [
-              "exact_sciences",
-              "biological_sciences",
-              "languages",
-              "humanities"
-            ]
+            "enum": ["exact_sciences", "biological_sciences", "languages", "humanities"]
           }
         },
-        "required": [
-          "id",
-          "name",
-          "area"
-        ],
+        "required": ["id", "name", "area"],
         "additionalProperties": false
       },
       "NewSubject": {
@@ -2389,18 +2161,10 @@
           },
           "area": {
             "type": "string",
-            "enum": [
-              "exact_sciences",
-              "biological_sciences",
-              "languages",
-              "humanities"
-            ]
+            "enum": ["exact_sciences", "biological_sciences", "languages", "humanities"]
           }
         },
-        "required": [
-          "name",
-          "area"
-        ],
+        "required": ["name", "area"],
         "additionalProperties": false
       },
       "SubjectChanges": {
@@ -2413,12 +2177,7 @@
           },
           "area": {
             "type": "string",
-            "enum": [
-              "exact_sciences",
-              "biological_sciences",
-              "languages",
-              "humanities"
-            ]
+            "enum": ["exact_sciences", "biological_sciences", "languages", "humanities"]
           }
         },
         "additionalProperties": false
@@ -2429,9 +2188,7 @@
     "/health": {
       "get": {
         "summary": "Whether the service is up and serving",
-        "tags": [
-          "health"
-        ],
+        "tags": ["health"],
         "responses": {
           "200": {
             "description": "Default Response",
@@ -2449,9 +2206,7 @@
     "/auth/login": {
       "post": {
         "summary": "Exchange a username and password for a session",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
@@ -2499,9 +2254,7 @@
     "/auth/refresh": {
       "post": {
         "summary": "Rotate the refresh cookie and renew the access token",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "responses": {
           "200": {
             "description": "Default Response",
@@ -2539,9 +2292,7 @@
     "/auth/logout": {
       "post": {
         "summary": "End the session on every device sharing its sign-in",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "responses": {
           "204": {
             "description": "Signed out",
@@ -2550,9 +2301,7 @@
                 "schema": {
                   "type": "string",
                   "nullable": true,
-                  "enum": [
-                    null
-                  ],
+                  "enum": [null],
                   "description": "Signed out"
                 }
               }
@@ -2574,9 +2323,7 @@
     "/auth/change-password": {
       "post": {
         "summary": "Replace your own password, ending every session",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
@@ -2600,9 +2347,7 @@
                 "schema": {
                   "type": "string",
                   "nullable": true,
-                  "enum": [
-                    null
-                  ],
+                  "enum": [null],
                   "description": "Password changed"
                 }
               }
@@ -2644,9 +2389,7 @@
     "/auth/me": {
       "get": {
         "summary": "The caller's own profile",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "security": [
           {
             "bearer": []
@@ -2679,9 +2422,7 @@
     "/profiles": {
       "get": {
         "summary": "Every profile, by name",
-        "tags": [
-          "profiles"
-        ],
+        "tags": ["profiles"],
         "security": [
           {
             "bearer": []
@@ -2725,9 +2466,7 @@
       },
       "post": {
         "summary": "Create a profile",
-        "tags": [
-          "profiles"
-        ],
+        "tags": ["profiles"],
         "requestBody": {
           "required": true,
           "content": {
@@ -2800,9 +2539,7 @@
     "/profiles/{id}": {
       "get": {
         "summary": "One profile",
-        "tags": [
-          "profiles"
-        ],
+        "tags": ["profiles"],
         "parameters": [
           {
             "schema": {
@@ -2865,9 +2602,7 @@
       },
       "patch": {
         "summary": "Change a profile",
-        "tags": [
-          "profiles"
-        ],
+        "tags": ["profiles"],
         "description": "A caller can never change their own role or deactivate themselves: an administrator who demotes themselves by accident locks the organisation out of its own system.",
         "requestBody": {
           "required": true,
@@ -2961,9 +2696,7 @@
       },
       "delete": {
         "summary": "Remove a profile that leads no group and teaches no subject",
-        "tags": [
-          "profiles"
-        ],
+        "tags": ["profiles"],
         "description": "Deactivating with PATCH is the reversible option, and usually the right one.",
         "parameters": [
           {
@@ -2990,9 +2723,7 @@
                 "schema": {
                   "type": "string",
                   "nullable": true,
-                  "enum": [
-                    null
-                  ],
+                  "enum": [null],
                   "description": "Removed"
                 }
               }
@@ -3044,9 +2775,7 @@
     "/students": {
       "get": {
         "summary": "The students the caller may see",
-        "tags": [
-          "students"
-        ],
+        "tags": ["students"],
         "description": "A teacher sees only students actively enrolled in a group they lead or teach in.",
         "security": [
           {
@@ -3091,9 +2820,7 @@
       },
       "post": {
         "summary": "Create a student record",
-        "tags": [
-          "students"
-        ],
+        "tags": ["students"],
         "requestBody": {
           "required": true,
           "content": {
@@ -3156,9 +2883,7 @@
     "/students/{id}": {
       "get": {
         "summary": "One student the caller may see",
-        "tags": [
-          "students"
-        ],
+        "tags": ["students"],
         "parameters": [
           {
             "schema": {
@@ -3221,9 +2946,7 @@
       },
       "patch": {
         "summary": "Change a student record",
-        "tags": [
-          "students"
-        ],
+        "tags": ["students"],
         "requestBody": {
           "required": true,
           "content": {
@@ -3306,9 +3029,7 @@
       },
       "delete": {
         "summary": "Remove a student record and everything attached to it",
-        "tags": [
-          "students"
-        ],
+        "tags": ["students"],
         "description": "Deactivating with PATCH is almost always the right move: deleting takes the enrollments, attendance and grades with it.",
         "parameters": [
           {
@@ -3335,9 +3056,7 @@
                 "schema": {
                   "type": "string",
                   "nullable": true,
-                  "enum": [
-                    null
-                  ],
+                  "enum": [null],
                   "description": "Removed"
                 }
               }
@@ -3379,9 +3098,7 @@
     "/groups": {
       "get": {
         "summary": "The groups the caller may see",
-        "tags": [
-          "groups"
-        ],
+        "tags": ["groups"],
         "security": [
           {
             "bearer": []
@@ -3425,9 +3142,7 @@
       },
       "post": {
         "summary": "Create a group",
-        "tags": [
-          "groups"
-        ],
+        "tags": ["groups"],
         "requestBody": {
           "required": true,
           "content": {
@@ -3500,9 +3215,7 @@
     "/groups/{id}": {
       "get": {
         "summary": "One group the caller may see",
-        "tags": [
-          "groups"
-        ],
+        "tags": ["groups"],
         "parameters": [
           {
             "schema": {
@@ -3565,9 +3278,7 @@
       },
       "patch": {
         "summary": "Change a group",
-        "tags": [
-          "groups"
-        ],
+        "tags": ["groups"],
         "requestBody": {
           "required": true,
           "content": {
@@ -3660,9 +3371,7 @@
       },
       "delete": {
         "summary": "Remove a group that holds no enrollment and no session",
-        "tags": [
-          "groups"
-        ],
+        "tags": ["groups"],
         "parameters": [
           {
             "schema": {
@@ -3688,9 +3397,7 @@
                 "schema": {
                   "type": "string",
                   "nullable": true,
-                  "enum": [
-                    null
-                  ],
+                  "enum": [null],
                   "description": "Removed"
                 }
               }
@@ -3742,9 +3449,7 @@
     "/subjects": {
       "get": {
         "summary": "Every subject, by name",
-        "tags": [
-          "subjects"
-        ],
+        "tags": ["subjects"],
         "security": [
           {
             "bearer": []
@@ -3788,9 +3493,7 @@
       },
       "post": {
         "summary": "Create a subject",
-        "tags": [
-          "subjects"
-        ],
+        "tags": ["subjects"],
         "requestBody": {
           "required": true,
           "content": {
@@ -3853,9 +3556,7 @@
     "/subjects/{id}": {
       "get": {
         "summary": "One subject",
-        "tags": [
-          "subjects"
-        ],
+        "tags": ["subjects"],
         "parameters": [
           {
             "schema": {
@@ -3918,9 +3619,7 @@
       },
       "patch": {
         "summary": "Change a subject",
-        "tags": [
-          "subjects"
-        ],
+        "tags": ["subjects"],
         "requestBody": {
           "required": true,
           "content": {
@@ -4003,9 +3702,7 @@
       },
       "delete": {
         "summary": "Remove a subject that nothing references",
-        "tags": [
-          "subjects"
-        ],
+        "tags": ["subjects"],
         "parameters": [
           {
             "schema": {
@@ -4031,9 +3728,7 @@
                 "schema": {
                   "type": "string",
                   "nullable": true,
-                  "enum": [
-                    null
-                  ],
+                  "enum": [null],
                   "description": "Removed"
                 }
               }
@@ -4085,9 +3780,7 @@
     "/enrollments": {
       "get": {
         "summary": "Enrollments in the groups the caller may see",
-        "tags": [
-          "enrollments"
-        ],
+        "tags": ["enrollments"],
         "parameters": [
           {
             "schema": {
@@ -4153,9 +3846,7 @@
       },
       "post": {
         "summary": "Enrol a student in a group",
-        "tags": [
-          "enrollments"
-        ],
+        "tags": ["enrollments"],
         "description": "Idempotent. A student who left and came back reuses the original row, so the join date keeps saying when they first arrived.",
         "requestBody": {
           "required": true,
@@ -4175,10 +3866,7 @@
                     "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                   }
                 },
-                "required": [
-                  "studentId",
-                  "groupId"
-                ]
+                "required": ["studentId", "groupId"]
               }
             }
           }
@@ -4243,9 +3931,7 @@
       },
       "delete": {
         "summary": "Withdraw a student from a group",
-        "tags": [
-          "enrollments"
-        ],
+        "tags": ["enrollments"],
         "description": "A withdrawal is reversible and keeps the attendance already recorded: the link is deactivated, never deleted.",
         "parameters": [
           {
@@ -4331,9 +4017,7 @@
     "/assignments": {
       "get": {
         "summary": "Which subject a group studies, and who teaches it",
-        "tags": [
-          "assignments"
-        ],
+        "tags": ["assignments"],
         "parameters": [
           {
             "schema": {
@@ -4409,9 +4093,7 @@
       },
       "post": {
         "summary": "Give a group a subject and a teacher for it",
-        "tags": [
-          "assignments"
-        ],
+        "tags": ["assignments"],
         "requestBody": {
           "required": true,
           "content": {
@@ -4484,9 +4166,7 @@
     "/assignments/{id}": {
       "patch": {
         "summary": "Hand a subject to a different teacher",
-        "tags": [
-          "assignments"
-        ],
+        "tags": ["assignments"],
         "requestBody": {
           "required": true,
           "content": {
@@ -4579,9 +4259,7 @@
       },
       "delete": {
         "summary": "Stop teaching a subject in a group",
-        "tags": [
-          "assignments"
-        ],
+        "tags": ["assignments"],
         "parameters": [
           {
             "schema": {
@@ -4607,9 +4285,7 @@
                 "schema": {
                   "type": "string",
                   "nullable": true,
-                  "enum": [
-                    null
-                  ],
+                  "enum": [null],
                   "description": "Removed"
                 }
               }
@@ -4651,9 +4327,7 @@
     "/attendance-sessions": {
       "get": {
         "summary": "Roll calls in the groups the caller may see, newest first",
-        "tags": [
-          "attendance"
-        ],
+        "tags": ["attendance"],
         "parameters": [
           {
             "schema": {
@@ -4729,9 +4403,7 @@
       },
       "post": {
         "summary": "Open the roll call for a group on a day",
-        "tags": [
-          "attendance"
-        ],
+        "tags": ["attendance"],
         "description": "Idempotent. Opening one that already exists returns it, so two teachers opening the same class at the same moment end up with one session rather than two.",
         "requestBody": {
           "required": true,
@@ -4795,9 +4467,7 @@
     "/attendance-sessions/{id}/records": {
       "get": {
         "summary": "How each student was marked in one roll call",
-        "tags": [
-          "attendance"
-        ],
+        "tags": ["attendance"],
         "parameters": [
           {
             "schema": {
@@ -4863,9 +4533,7 @@
       },
       "put": {
         "summary": "Save the whole roll call at once",
-        "tags": [
-          "attendance"
-        ],
+        "tags": ["attendance"],
         "description": "The screen saves the class in one call, inside one transaction. Only students actively enrolled in the group may be marked.",
         "requestBody": {
           "required": true,
@@ -4954,9 +4622,7 @@
     "/evaluations": {
       "get": {
         "summary": "Evaluations in the groups the caller may see, newest first",
-        "tags": [
-          "evaluations"
-        ],
+        "tags": ["evaluations"],
         "parameters": [
           {
             "schema": {
@@ -5022,9 +4688,7 @@
       },
       "post": {
         "summary": "Create an exam or a homework",
-        "tags": [
-          "evaluations"
-        ],
+        "tags": ["evaluations"],
         "requestBody": {
           "required": true,
           "content": {
@@ -5097,9 +4761,7 @@
     "/evaluations/{id}": {
       "patch": {
         "summary": "Change an evaluation",
-        "tags": [
-          "evaluations"
-        ],
+        "tags": ["evaluations"],
         "description": "Its group and subject are fixed. Moving it elsewhere is a different evaluation, and the unique constraint already says so.",
         "requestBody": {
           "required": true,
@@ -5193,9 +4855,7 @@
       },
       "delete": {
         "summary": "Remove an evaluation and the grades that belong to it",
-        "tags": [
-          "evaluations"
-        ],
+        "tags": ["evaluations"],
         "parameters": [
           {
             "schema": {
@@ -5221,9 +4881,7 @@
                 "schema": {
                   "type": "string",
                   "nullable": true,
-                  "enum": [
-                    null
-                  ],
+                  "enum": [null],
                   "description": "Removed"
                 }
               }
@@ -5265,9 +4923,7 @@
     "/evaluations/{id}/grades": {
       "get": {
         "summary": "Every grade on one evaluation",
-        "tags": [
-          "evaluations"
-        ],
+        "tags": ["evaluations"],
         "parameters": [
           {
             "schema": {
@@ -5333,9 +4989,7 @@
       },
       "put": {
         "summary": "Save the whole grade sheet at once",
-        "tags": [
-          "evaluations"
-        ],
+        "tags": ["evaluations"],
         "description": "A null score means the grade is still pending, which is not a zero. Only students actively enrolled in the group may be graded.",
         "requestBody": {
           "required": true,
@@ -5424,9 +5078,7 @@
     "/grades": {
       "get": {
         "summary": "Weighted average per student and subject",
-        "tags": [
-          "evaluations"
-        ],
+        "tags": ["evaluations"],
         "description": "Averages are weighted by each evaluation. A pending grade takes no part in the average: counting it as a zero would tell a family their child is failing a subject nobody has marked yet.",
         "parameters": [
           {
@@ -5495,9 +5147,7 @@
     "/school-events": {
       "get": {
         "summary": "Holidays, make-up days and events",
-        "tags": [
-          "school-events"
-        ],
+        "tags": ["school-events"],
         "description": "A range returns every event overlapping it, not only those starting inside it.",
         "parameters": [
           {
@@ -5564,9 +5214,7 @@
       },
       "post": {
         "summary": "Add an event to the calendar",
-        "tags": [
-          "school-events"
-        ],
+        "tags": ["school-events"],
         "requestBody": {
           "required": true,
           "content": {
@@ -5629,9 +5277,7 @@
     "/school-events/{id}": {
       "patch": {
         "summary": "Change an event",
-        "tags": [
-          "school-events"
-        ],
+        "tags": ["school-events"],
         "requestBody": {
           "required": true,
           "content": {
@@ -5714,9 +5360,7 @@
       },
       "delete": {
         "summary": "Remove an event",
-        "tags": [
-          "school-events"
-        ],
+        "tags": ["school-events"],
         "parameters": [
           {
             "schema": {
@@ -5742,9 +5386,7 @@
                 "schema": {
                   "type": "string",
                   "nullable": true,
-                  "enum": [
-                    null
-                  ],
+                  "enum": [null],
                   "description": "Removed"
                 }
               }
@@ -5783,12 +5425,475 @@
         }
       }
     },
+    "/events": {
+      "get": {
+        "summary": "Outings in the groups the caller may see, newest first",
+        "tags": ["events"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "query",
+            "name": "groupId",
+            "required": false
+          }
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Event"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create an outing for a group",
+        "tags": ["events"],
+        "description": "The title is unique within a group on a day.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewEventInput"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Event"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/{id}": {
+      "patch": {
+        "summary": "Change an outing",
+        "tags": ["events"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventChangesInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Event"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove an outing and the marks that belong to it",
+        "tags": ["events"],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": [null],
+                  "description": "Removed"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/{id}/participations": {
+      "get": {
+        "summary": "How each student was marked for one outing",
+        "tags": ["events"],
+        "description": "A student with no row is pending on both marks. The roster comes from the enrolments, not from here.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventParticipation"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/{id}/participations/{studentId}": {
+      "put": {
+        "summary": "Set a student's authorization, payment, or both",
+        "tags": ["events"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParticipationChangesInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "studentId",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventParticipation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/analytics/attendance-rate": {
       "get": {
         "summary": "Percentage of attendance over the records the caller may see",
-        "tags": [
-          "analytics"
-        ],
+        "tags": ["analytics"],
         "description": "Late counts as attendance; absent and excused do not. With no records at all the rate is 0 and `total` says why.",
         "parameters": [
           {
@@ -5874,9 +5979,7 @@
     "/analytics/absenteeism-trend": {
       "get": {
         "summary": "Absence rate per day, oldest first",
-        "tags": [
-          "analytics"
-        ],
+        "tags": ["analytics"],
         "parameters": [
           {
             "schema": {
@@ -5954,9 +6057,7 @@
     "/analytics/students-at-risk": {
       "get": {
         "summary": "Students whose absences reach the threshold, most absences first",
-        "tags": [
-          "analytics"
-        ],
+        "tags": ["analytics"],
         "parameters": [
           {
             "schema": {
@@ -6025,9 +6126,7 @@
     "/analytics/academic-summary": {
       "get": {
         "summary": "Average, area affinity, and the subjects that stand out either way",
-        "tags": [
-          "analytics"
-        ],
+        "tags": ["analytics"],
         "description": "Weighting happens inside a subject. Averaging across subjects and areas is unweighted: a subject is not worth more for having been examined more often.",
         "parameters": [
           {
@@ -6135,6 +6234,10 @@
     {
       "name": "school-events",
       "description": "Holidays, make-up days and events"
+    },
+    {
+      "name": "events",
+      "description": "Group outings, their authorizations and payments"
     },
     {
       "name": "analytics",

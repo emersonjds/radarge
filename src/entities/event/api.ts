@@ -1,82 +1,22 @@
-import { mutateCollection, readCollection } from "@/shared/lib/storage/db";
-import { eventSchema, type Event } from "./model";
+import type { components } from "@/shared/api/schema";
+import { apiClient } from "@/shared/lib/api/instance";
 
-export async function fetchEvents(): Promise<Event[]> {
-  const rows = await readCollection("events");
-  return rows.map((row) => eventSchema.parse(row));
-}
+export type Event = components["schemas"]["Event"];
+export type NewEventInput = components["schemas"]["NewEvent"];
+export type EventUpdate = components["schemas"]["EventChanges"];
 
-export async function fetchEventsByGroup(groupId: string): Promise<Event[]> {
-  const events = await fetchEvents();
-  return events.filter((event) => event.groupId === groupId);
-}
+export const fetchEvents = (): Promise<Event[]> => apiClient().request<Event[]>("/events");
 
-export interface NewEventInput {
-  groupId: string;
-  title: string;
-  date: string;
-  location: string;
-  cost: number;
-}
+export const fetchEventsByGroup = (groupId: string): Promise<Event[]> =>
+  apiClient().request<Event[]>(`/events?${new URLSearchParams({ groupId }).toString()}`);
 
-async function assertUnique(candidate: Event): Promise<void> {
-  const duplicate = (await fetchEvents()).some(
-    (event) =>
-      event.id !== candidate.id &&
-      event.groupId === candidate.groupId &&
-      event.title === candidate.title &&
-      event.date === candidate.date,
-  );
-  if (duplicate) {
-    throw new Error("Já existe um evento com esse nome e data nesta aula.");
-  }
-}
+export const createEvent = (input: NewEventInput): Promise<Event> =>
+  apiClient().request<Event>("/events", { method: "POST", body: input });
 
-export async function createEvent(input: NewEventInput): Promise<Event> {
-  const title = input.title.trim();
-  const event: Event = {
-    id: crypto.randomUUID(),
-    groupId: input.groupId,
-    title,
-    date: input.date,
-    location: input.location.trim(),
-    cost: input.cost,
-  };
-  eventSchema.parse(event);
-  await assertUnique(event);
-  await mutateCollection<Event>("events", (rows) => [...rows, event]);
-  return event;
-}
+export const updateEvent = (id: string, patch: EventUpdate): Promise<Event> =>
+  apiClient().request<Event>(`/events/${id}`, { method: "PATCH", body: patch });
 
-export interface EventUpdate {
-  title?: string;
-  date?: string;
-  location?: string;
-  cost?: number;
-}
-
-export async function updateEvent(id: string, patch: EventUpdate): Promise<Event> {
-  const current = (await fetchEvents()).find((event) => event.id === id);
-  if (!current) throw new Error("Evento não encontrado.");
-  const next: Event = {
-    ...current,
-    ...(patch.title !== undefined ? { title: patch.title.trim() } : {}),
-    ...(patch.date !== undefined ? { date: patch.date } : {}),
-    ...(patch.location !== undefined ? { location: patch.location.trim() } : {}),
-    ...(patch.cost !== undefined ? { cost: patch.cost } : {}),
-  };
-  eventSchema.parse(next);
-  await assertUnique(next);
-  await mutateCollection<Event>("events", (rows) =>
-    rows.map((event) => (event.id === id ? next : event)),
-  );
-  return next;
-}
-
-export async function deleteEvent(id: string): Promise<void> {
-  // Cascade: an event owns its participations.
-  await mutateCollection<{ eventId: string }>("eventParticipations", (rows) =>
-    rows.filter((row) => row.eventId !== id),
-  );
-  await mutateCollection<Event>("events", (rows) => rows.filter((event) => event.id !== id));
-}
+/** The API cascades the participations; nothing is deleted here by hand. */
+export const deleteEvent = async (id: string): Promise<void> => {
+  await apiClient().request(`/events/${id}`, { method: "DELETE" });
+};
