@@ -21,7 +21,8 @@ test("coordenador cria um evento para uma aula", async ({ page }) => {
   await page.getByRole("button", { name: "Novo evento" }).click();
   await expect(page.getByRole("heading", { name: "Novo evento" })).toBeVisible();
 
-  await page.getByLabel("Aula").selectOption({ label: "Reforço de Ciências — Quarta" });
+  await page.getByLabel("Aula").click();
+  await page.getByRole("option", { name: "Reforço de Ciências — Quarta" }).click();
   await page.getByLabel("Título").fill("Feira de Ciências");
   await page.getByLabel("Data").fill("2026-09-10");
   await page.getByLabel("Local").fill("Ginásio da ONG");

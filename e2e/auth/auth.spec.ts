@@ -125,7 +125,8 @@ test.describe("gestão de perfis (admin)", () => {
 
     await page.getByLabel("Nome").fill("Perfil de Teste");
     await page.getByLabel("Login de usuário").fill("teste");
-    await page.getByLabel("Papel").selectOption("teacher");
+    await page.getByLabel("Papel").click();
+    await page.getByRole("option", { name: "Professor" }).click();
     await page.getByLabel("Senha").fill("teste123");
     await page.getByRole("button", { name: "Criar perfil" }).click();
 
@@ -150,7 +151,8 @@ test.describe("gestão de perfis (admin)", () => {
     await item.getByRole("button", { name: "Editar Ricardo Alves" }).click();
 
     const modal = page.locator("form").filter({ hasText: "Editar perfil" });
-    await modal.getByLabel("Papel").selectOption("admin");
+    await modal.getByLabel("Papel").click();
+    await page.getByRole("option", { name: "Administrador" }).click();
     await modal.getByRole("button", { name: "Salvar" }).click();
 
     await expect(item.getByText("Administrador")).toBeVisible();
