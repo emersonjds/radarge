@@ -14,7 +14,7 @@ export interface ReportRow {
   name: string;
   turmaNome: string;
   nota: number;
-  freq: number;
+  freq: number | null;
   faltas: number;
   aptidao: Area | null;
   emRisco: boolean;
@@ -74,7 +74,9 @@ export function StudentsReportTable({ linhas, carregando }: StudentsReportTableP
                   </TableCell>
                   <TableCell className={td}>{linha.turmaNome}</TableCell>
                   <TableCell className={td}>{formatScore(linha.nota)}</TableCell>
-                  <TableCell className={td}>{formatPercent(linha.freq)}</TableCell>
+                  <TableCell className={td}>
+                    {linha.freq === null ? "—" : formatPercent(linha.freq)}
+                  </TableCell>
                   <TableCell className={td}>
                     {linha.aptidao ? areaLabels[linha.aptidao] : "—"}
                   </TableCell>

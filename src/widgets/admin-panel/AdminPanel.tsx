@@ -3,13 +3,15 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useStudents } from "@/entities/student/queries";
-import type { AttendanceRecord, AttendanceStatus } from "@/entities/attendance-record/model";
-import { useAttendanceRecords } from "@/entities/attendance-record/queries";
-import { useAttendanceSessions } from "@/entities/attendance-session/queries";
 import { useProfiles } from "@/entities/profile/queries";
 import { useGroups } from "@/entities/group/queries";
 import { useEnrollments } from "@/entities/enrollment/queries";
-import { studentsAtRisk, attendanceRate, absenteeismTrend } from "@/features/analytics/model";
+import {
+  useAbsenteeismTrend,
+  useAttendanceRate,
+  useStudentsAtRisk,
+} from "@/features/analytics/queries";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { formatPercent } from "@/shared/lib/format";
 import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
@@ -58,16 +60,19 @@ export function AdminPanel() {
   const turmas = useGroups();
   const enrollments = useEnrollments();
   const perfis = useProfiles();
-  const presencas = useAttendanceRecords();
-  const chamadas = useAttendanceSessions();
+  const taxaFrequencia = useAttendanceRate();
+  const tendenciaFrequencia = useAbsenteeismTrend();
+  // Zero traz todo aluno que já foi chamado alguma vez, com a frequência dele. Quem
+  // não aparece nunca teve chamada, e isso é diferente de ter frequência perfeita.
+  const riscoAbsenteismo = useStudentsAtRisk({ threshold: 0 });
 
   const totalAlunos = alunos.data?.length ?? 0;
   const totalProfessores = perfis.data?.filter((perfil) => perfil.role === "teacher").length ?? 0;
-  const frequenciaGeral = attendanceRate(presencas.data ?? []);
+  const analyticsError =
+    taxaFrequencia.error ?? tendenciaFrequencia.error ?? riscoAbsenteismo.error;
 
   const alunoPorId = new Map((alunos.data ?? []).map((aluno) => [aluno.id, aluno]));
   const turmaPorId = new Map((turmas.data ?? []).map((turma) => [turma.id, turma]));
-  const chamadaPorId = new Map((chamadas.data ?? []).map((chamada) => [chamada.id, chamada]));
 
   const turmasDoAluno = new Map<string, string[]>();
   for (const enrollment of enrollments.data ?? []) {
@@ -78,29 +83,37 @@ export function AdminPanel() {
     ]);
   }
 
-  const presencasPorTurma = new Map<string, AttendanceRecord[]>();
-  const recordsByStudent = new Map<string, AttendanceRecord[]>();
-  for (const presenca of presencas.data ?? []) {
-    const chamada = chamadaPorId.get(presenca.sessionId);
-    if (chamada) {
-      presencasPorTurma.set(chamada.groupId, [
-        ...(presencasPorTurma.get(chamada.groupId) ?? []),
-        presenca,
-      ]);
-    }
-    recordsByStudent.set(presenca.studentId, [
-      ...(recordsByStudent.get(presenca.studentId) ?? []),
-      presenca,
-    ]);
-  }
+  const frequenciaPorAluno = new Map(
+    (riscoAbsenteismo.data ?? []).map((risco) => [risco.studentId, risco.attendance]),
+  );
 
-  const frequenciaPorTurma = (turmas.data ?? []).map((turma) => ({
-    groupId: turma.id,
-    label: turma.name.split("—")[0].trim(),
-    attendance: attendanceRate(presencasPorTurma.get(turma.id) ?? []),
-  }));
+  // Uma aula sem nenhuma chamada não vira barra: zero por cento seria tão falso
+  // quanto cem, e o gráfico compara aulas que já foram chamadas.
+  const frequenciaPorTurma = (turmas.data ?? [])
+    .map((turma) => {
+      const frequenciasConhecidas = (alunos.data ?? [])
+        .filter((aluno) => (turmasDoAluno.get(aluno.id) ?? []).includes(turma.id))
+        .map((aluno) => frequenciaPorAluno.get(aluno.id))
+        .filter((frequencia): frequencia is number => frequencia !== undefined);
 
-  const alertas = studentsAtRisk(recordsByStudent, LIMITE_FALTAS_RISCO)
+      return {
+        groupId: turma.id,
+        label: turma.name.split("—")[0].trim(),
+        frequenciasConhecidas,
+      };
+    })
+    .filter((turma) => turma.frequenciasConhecidas.length > 0)
+    .map(({ groupId, label, frequenciasConhecidas }) => ({
+      groupId,
+      label,
+      attendance: Math.round(
+        frequenciasConhecidas.reduce((total, frequencia) => total + frequencia, 0) /
+          frequenciasConhecidas.length,
+      ),
+    }));
+
+  const alertas = (riscoAbsenteismo.data ?? [])
+    .filter((risco) => risco.absences >= LIMITE_FALTAS_RISCO)
     .slice(0, MAX_ALERTAS)
     .map((risco) => {
       const aluno = alunoPorId.get(risco.studentId);
@@ -115,18 +128,22 @@ export function AdminPanel() {
       };
     });
 
-  const registrosPorData: { date: string; status: AttendanceStatus }[] = [];
-  for (const presenca of presencas.data ?? []) {
-    const chamada = chamadaPorId.get(presenca.sessionId);
-    if (chamada) registrosPorData.push({ date: chamada.date, status: presenca.status });
-  }
-  const tendencia = absenteeismTrend(registrosPorData).map((ponto) => ({
+  const tendencia = (tendenciaFrequencia.data ?? []).map((ponto) => ({
     data: ponto.date,
     attendance: 100 - ponto.absenceRate,
   }));
 
   return (
     <div className="flex flex-col gap-6">
+      {analyticsError && (
+        <p role="alert" className="text-sm text-destructive">
+          {messageForError(
+            analyticsError,
+            "Não foi possível carregar os indicadores de frequência.",
+          )}
+        </p>
+      )}
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
           label="Total de alunos"
@@ -148,7 +165,13 @@ export function AdminPanel() {
         />
         <StatCard
           label="Frequência geral"
-          value={presencas.isLoading ? "…" : formatPercent(frequenciaGeral)}
+          value={
+            taxaFrequencia.isLoading
+              ? "…"
+              : taxaFrequencia.isError
+                ? "—"
+                : formatPercent(taxaFrequencia.data?.rate ?? 0)
+          }
           icon={<CheckCircleIcon />}
         />
       </div>
@@ -164,7 +187,9 @@ export function AdminPanel() {
           <h2 className="mb-4 text-lg font-semibold text-foreground">
             Alertas de baixa frequência
           </h2>
-          {alertas.length === 0 ? (
+          {riscoAbsenteismo.isLoading ? (
+            <p className="text-sm text-muted-foreground">Carregando…</p>
+          ) : alertas.length === 0 ? (
             <p className="text-sm text-muted-foreground">Sem dados ainda.</p>
           ) : (
             <ul className="flex flex-col gap-3">

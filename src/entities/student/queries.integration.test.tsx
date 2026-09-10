@@ -1,27 +1,59 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { http, HttpResponse } from "msw";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { waitFor } from "@testing-library/react";
-import { resetDb } from "@/shared/lib/storage/db";
+import { server } from "../../test/msw/server";
+import { resetApiClient } from "@/shared/lib/api/instance";
 import { renderHookWithQuery } from "@/test/react-query";
-import { fetchEnrollmentsByGroup } from "@/entities/enrollment/api";
 import { useStudentsByGroup } from "./queries";
 
-describe("useStudentsByGroup (integration, over the store)", () => {
-  beforeEach(async () => {
-    await resetDb();
-  });
+const API_URL = "http://api.test";
 
+const enrolledStudent = {
+  id: "student-enrolled",
+  name: "Aluno Matriculado",
+  birthDate: "2013-01-01",
+  guardianName: "Responsável",
+  guardianPhone: "(11) 90000-0000",
+  active: true,
+};
+
+const otherStudent = {
+  id: "student-other-group",
+  name: "Aluno de Outra Aula",
+  birthDate: "2013-02-02",
+  guardianName: "Responsável",
+  guardianPhone: "(11) 90000-0001",
+  active: true,
+};
+
+const enrollment = {
+  id: "enrollment-1",
+  studentId: enrolledStudent.id,
+  groupId: "turma-mat-b",
+  joinedAt: "2026-07-05",
+  active: true,
+};
+
+beforeEach(() => {
+  vi.stubEnv("NEXT_PUBLIC_API_URL", API_URL);
+  resetApiClient();
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
+describe("useStudentsByGroup (integration)", () => {
   it("returns only students enrolled in the requested aula", async () => {
+    server.use(
+      http.get("*/students", () => HttpResponse.json([enrolledStudent, otherStudent])),
+      http.get("*/enrollments", () => HttpResponse.json([enrollment])),
+    );
+
     const { result } = renderHookWithQuery(() => useStudentsByGroup("turma-mat-b"));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    const students = result.current.data ?? [];
-    expect(students.length).toBeGreaterThan(0);
-
-    const enrollments = await fetchEnrollmentsByGroup("turma-mat-b");
-    const enrolledIds = new Set(
-      enrollments.filter((row) => row.active).map((row) => row.studentId),
-    );
-    expect(students.every((student) => enrolledIds.has(student.id))).toBe(true);
+    expect(result.current.data).toEqual([enrolledStudent]);
   });
 });

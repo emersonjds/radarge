@@ -4,7 +4,12 @@ import type { Group } from "@/entities/group/model";
 import type { Student } from "@/entities/student/model";
 import { buildEventNotice, whatsappLink } from "./notice";
 
-const group: Group = { id: "g1", name: "Reforço de Matemática — Segunda", shift: "afternoon", teacherId: "t1" };
+const group: Group = {
+  id: "g1",
+  name: "Reforço de Matemática — Segunda",
+  shift: "afternoon",
+  teacherId: "t1",
+};
 
 const student: Student = {
   id: "s1",

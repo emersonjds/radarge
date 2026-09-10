@@ -9,31 +9,14 @@ export const roleLabels: Record<Role, string> = {
   admin: "Administrador",
 };
 
-export const profileSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  email: z.string().email().optional(),
-  role: roleSchema,
-  jobTitle: z.string().optional(),
-  username: z.string(),
-  // Demo-only: SHA-256 hex of the password (see shared/lib/auth/password).
-  passwordHash: z.string(),
-  active: z.boolean(),
-});
-
-export type Profile = z.infer<typeof profileSchema>;
-
 export const MIN_PASSWORD_LENGTH = 8;
 
 export const PASSWORD_MIN_LENGTH_MESSAGE = `Senha deve ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`;
 
 /**
- * What the profile form collects. Splitting it from `profileSchema` is what lets the
- * messages be user-facing Portuguese: the entity schema also parses stored records,
- * where a message would never be read.
- *
- * Password is required on create and optional on edit (blank means "keep the current
- * password"), so the shape is built per mode rather than branched in the submit handler.
+ * Built per mode because the password rule differs: required on create, optional on
+ * edit, where blank means "keep the current one". Modelling that in the schema keeps
+ * it out of the submit handler.
  */
 export const profileFormSchema = (mode: "create" | "edit") =>
   z.object({

@@ -2,21 +2,15 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  setAttendanceRecord,
-  fetchAttendanceRecords,
-  fetchAttendanceRecordsByStudent,
   fetchAttendanceRecordsBySession,
+  fetchAttendanceRecordsByStudent,
+  saveRollCall,
 } from "./api";
 
 export const attendanceRecordKeys = {
-  all: ["attendanceRecords"],
   bySession: (sessionId: string) => ["attendanceRecords", "session", sessionId],
   byStudent: (studentId: string) => ["attendanceRecords", "student", studentId],
 };
-
-export function useAttendanceRecords() {
-  return useQuery({ queryKey: attendanceRecordKeys.all, queryFn: fetchAttendanceRecords });
-}
 
 export function useAttendanceRecordsBySession(sessionId: string) {
   return useQuery({
@@ -34,18 +28,19 @@ export function useAttendanceRecordsByStudent(studentId: string) {
   });
 }
 
-export function useSetAttendanceRecord() {
+export function useSaveRollCall() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: setAttendanceRecord,
-    onSuccess: (record) => {
-      queryClient.invalidateQueries({ queryKey: attendanceRecordKeys.all });
+    mutationFn: saveRollCall,
+    onSuccess: (_records, input) => {
       queryClient.invalidateQueries({
-        queryKey: attendanceRecordKeys.bySession(record.sessionId),
+        queryKey: attendanceRecordKeys.bySession(input.sessionId),
       });
-      queryClient.invalidateQueries({
-        queryKey: attendanceRecordKeys.byStudent(record.studentId),
-      });
+      // Every student on the sheet moved, and their per-student views are keyed
+      // individually, so the whole branch goes rather than each key by hand.
+      queryClient.invalidateQueries({ queryKey: ["attendanceRecords", "student"] });
+      // The rates and risk lists are SQL aggregates over the same rows just saved.
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
     },
   });
 }

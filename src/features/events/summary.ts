@@ -1,4 +1,7 @@
-import { defaultParticipation, type EventParticipation } from "@/entities/event-participation/model";
+import {
+  defaultParticipation,
+  type EventParticipation,
+} from "@/entities/event-participation/model";
 import type { Event } from "@/entities/event/model";
 
 export interface EventSummary {
@@ -19,7 +22,9 @@ export function summarizeParticipation(
   participations: EventParticipation[],
   studentIds: string[],
 ): EventSummary {
-  const byStudentId = new Map(participations.map((participation) => [participation.studentId, participation]));
+  const byStudentId = new Map(
+    participations.map((participation) => [participation.studentId, participation]),
+  );
 
   let authorized = 0;
   let pendingAuthorization = 0;

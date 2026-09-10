@@ -75,7 +75,7 @@ Você trata segurança como pilar tão importante quanto performance. **Conhece 
 
 ### CSP (Content Security Policy)
 
-- Mínimo aceitável: `default-src 'self'; script-src 'self' 'nonce-XXX'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests`.
+- Mínimo aceitável: `default-src 'self'; script-src 'self' 'nonce-XXX'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.radarge.example; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests`.
 - Use **nonces por request** (não `'unsafe-inline'` em script). Next.js: gere nonce no middleware/proxy e propague via header.
 - `frame-ancestors 'none'` previne clickjacking — substitui o legacy `X-Frame-Options: DENY`.
 - Reporte violações com `Content-Security-Policy-Report-Only` antes de enforcar.

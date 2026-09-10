@@ -7,12 +7,14 @@ desempenho (média ponderada) em dashboards (mobile + desktop).
 ## Stack
 
 - **Next.js 16** (App Router) · **React 19** · **TypeScript**
-- **CSS Modules + design tokens** (sem Tailwind) — tokens em `src/app/globals.css`
+- **Tailwind CSS 4** com tokens em CSS custom properties no `@theme` de `src/app/globals.css`
+  (CSS-first, sem `tailwind.config`) · **shadcn/ui** em `src/shared/ui`
 - **TanStack Query** nos hooks de dados · **Zod** para os tipos de domínio
 - **Vitest** + Testing Library para testes
-- Backend-alvo: **Supabase** (Postgres + RLS + RPCs). Hoje os dados vivem em
-  `localStorage` (fase de protótipo) atrás de fetchers assíncronos, então trocar
-  pelo Supabase depois é um adapter — sem mexer nas features.
+- **react-hook-form + zod** em todo formulário (ver `docs/specs/form-pattern.md`)
+- Backend: a **`radarge-api`** (Node, Fastify, Postgres), no repositório irmão
+  `personal-projects/radarge-api`. O contrato publicado em `openapi.json` gera os tipos
+  do front, então divergência vira erro de `pnpm type-check` e não `undefined` em tela.
 
 ## Arquitetura — Feature-Sliced Design
 
@@ -50,8 +52,8 @@ pnpm test:e2e     # playwright (E2E)
 Três camadas, conforme o CLAUDE.md §8:
 
 - **Unitário** — lógica pura (analytics, storage, format, validação zod): `src/**/*.test.ts`.
-- **Integração** — hooks TanStack + fetchers sobre o store, com harness MSW
-  pronto para o Supabase futuro: `src/**/*.integration.test.tsx` e `src/test/`.
+- **Integração** — hooks TanStack e fetchers contra a radarge-api mockada com MSW:
+  `src/**/*.integration.test.tsx` e `src/test/`.
 - **E2E (Playwright)** — fluxos reais no browser com evidências PNG em
   `e2e/<feature>/evidencias/`: personas, troca de persona, guardas de rota e
   chamada. Rode com `pnpm test:e2e` (na 1ª vez: `npx playwright install chromium`).

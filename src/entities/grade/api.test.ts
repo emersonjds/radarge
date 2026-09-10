@@ -1,30 +1,42 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { resetDb } from "@/shared/lib/storage/db";
+import { http, HttpResponse } from "msw";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { server } from "../../test/msw/server";
+import { resetApiClient } from "@/shared/lib/api/instance";
 import { fetchGrades, fetchGradesByStudent } from "./api";
 
-describe("grade api (derived)", () => {
-  beforeEach(async () => {
-    await resetDb();
+const API_URL = "http://api.test";
+
+const average = { studentId: "aluno-1", subjectId: "materia-matematica", score: 8.2 };
+
+beforeEach(() => {
+  vi.stubEnv("NEXT_PUBLIC_API_URL", API_URL);
+  resetApiClient();
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
+describe("grades against the API", () => {
+  it("derives an id from the average, since the SQL aggregate carries none", async () => {
+    server.use(http.get("*/grades", () => HttpResponse.json([average])));
+
+    await expect(fetchGrades()).resolves.toEqual([
+      { id: "aluno-1-materia-matematica", ...average },
+    ]);
   });
 
-  it("returns one derived grade per (student, subject) with scores in [0, 10]", async () => {
-    const grades = await fetchGrades();
-    const keys = grades.map((grade) => `${grade.studentId}:${grade.subjectId}`);
-    expect(new Set(keys).size).toBe(keys.length);
-    for (const grade of grades) {
-      expect(grade.score).toBeGreaterThanOrEqual(0);
-      expect(grade.score).toBeLessThanOrEqual(10);
-    }
-    expect(grades).toHaveLength(6 * 3 + 6 * 2 + 6 * 2);
-  });
+  it("filters by student through a query param, not a client-side filter", async () => {
+    let receivedUrl: string | null = null;
+    server.use(
+      http.get("*/grades", ({ request }) => {
+        receivedUrl = request.url;
+        return HttpResponse.json([average]);
+      }),
+    );
 
-  it("filters derived grades by student", async () => {
-    const grades = await fetchGradesByStudent("aluno-1");
-    expect(grades).toHaveLength(3);
-    for (const grade of grades) {
-      expect(grade.studentId).toBe("aluno-1");
-      expect(grade.score).toBeGreaterThanOrEqual(0);
-      expect(grade.score).toBeLessThanOrEqual(10);
-    }
+    await fetchGradesByStudent("aluno-1");
+
+    expect(new URL(receivedUrl ?? "").searchParams.get("studentId")).toBe("aluno-1");
   });
 });

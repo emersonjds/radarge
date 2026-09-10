@@ -1,41 +1,30 @@
-import { mutateCollection, readCollection } from "@/shared/lib/storage/db";
-import { attendanceSessionSchema, type AttendanceSession } from "./model";
+import type { components } from "@/shared/api/schema";
+import { apiClient } from "@/shared/lib/api/instance";
 
-export async function fetchAttendanceSessions(): Promise<AttendanceSession[]> {
-  const rows = await readCollection("attendanceSessions");
-  return rows.map((row) => attendanceSessionSchema.parse(row));
-}
+export type AttendanceSession = components["schemas"]["AttendanceSession"];
 
-export async function fetchAttendanceSessionsByGroup(
-  groupId: string,
-): Promise<AttendanceSession[]> {
-  const sessions = await fetchAttendanceSessions();
-  return sessions
-    .filter((session) => session.groupId === groupId)
-    .sort((sessionA, sessionB) => sessionB.date.localeCompare(sessionA.date));
-}
-
+/**
+ * The teacher is not sent: the API takes it from the caller. A session is unique per
+ * (group, date) as a database constraint, so opening one that exists answers the
+ * existing row rather than a conflict.
+ */
 export interface NewAttendanceSession {
   groupId: string;
   date: string;
-  teacherId: string;
 }
 
-/**
- * Create a class session. A session is unique per (group, date) — creating one
- * that already exists returns the existing record instead of duplicating it.
- * The real uniqueness guard will live in Postgres constraints later.
- */
-export async function createAttendanceSession(
-  input: NewAttendanceSession,
-): Promise<AttendanceSession> {
-  const session = attendanceSessionSchema.parse({
-    id: `session-${input.groupId}-${input.date}`,
-    ...input,
+export const fetchAttendanceSessions = (): Promise<AttendanceSession[]> =>
+  apiClient().request<AttendanceSession[]>("/attendance-sessions");
+
+export const fetchAttendanceSessionsByGroup = async (
+  groupId: string,
+): Promise<AttendanceSession[]> => {
+  const sessions = await fetchAttendanceSessions();
+  return sessions.filter((session) => session.groupId === groupId);
+};
+
+export const createAttendanceSession = (input: NewAttendanceSession): Promise<AttendanceSession> =>
+  apiClient().request<AttendanceSession>("/attendance-sessions", {
+    method: "POST",
+    body: input,
   });
-  await mutateCollection<AttendanceSession>("attendanceSessions", (rows) => {
-    const exists = rows.some((row) => row.groupId === session.groupId && row.date === session.date);
-    return exists ? rows : [...rows, session];
-  });
-  return session;
-}

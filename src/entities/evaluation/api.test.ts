@@ -1,41 +1,123 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { mutateCollection, resetDb } from "@/shared/lib/storage/db";
-import { createEvaluation, deleteEvaluation, fetchEvaluationsByAssignment } from "./api";
+import { http, HttpResponse } from "msw";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { server } from "../../test/msw/server";
+import { resetApiClient } from "@/shared/lib/api/instance";
+import {
+  createEvaluation,
+  deleteEvaluation,
+  fetchEvaluations,
+  fetchEvaluationsByAssignment,
+  updateEvaluation,
+} from "./api";
 
-const base = {
+const API_URL = "http://api.test";
+
+const evaluation = {
+  id: "eval-1",
   groupId: "turma-mat-b",
   subjectId: "materia-matematica",
+  name: "P1",
   type: "exam",
   date: "2026-07-01",
   weight: 3,
-} as const;
+};
 
-describe("evaluation api (over the store)", () => {
-  beforeEach(async () => {
-    await resetDb();
+beforeEach(() => {
+  vi.stubEnv("NEXT_PUBLIC_API_URL", API_URL);
+  resetApiClient();
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
+describe("evaluations against the API", () => {
+  it("lists what the API returns, untouched", async () => {
+    server.use(http.get("*/evaluations", () => HttpResponse.json([evaluation])));
+
+    await expect(fetchEvaluations()).resolves.toEqual([evaluation]);
   });
 
-  it("creates an evaluation for a lecionamento", async () => {
-    const created = await createEvaluation({ ...base, name: "P1" });
-    const list = await fetchEvaluationsByAssignment(base.groupId, base.subjectId);
-    expect(list.some((e) => e.id === created.id && e.name === "P1")).toBe(true);
+  it("filters by group and subject through query params, not a client-side filter", async () => {
+    let receivedUrl: string | null = null;
+    server.use(
+      http.get("*/evaluations", ({ request }) => {
+        receivedUrl = request.url;
+        return HttpResponse.json([evaluation]);
+      }),
+    );
+
+    await fetchEvaluationsByAssignment("turma-mat-b", "materia-matematica");
+
+    const searchParams = new URL(receivedUrl ?? "").searchParams;
+    expect(searchParams.get("groupId")).toBe("turma-mat-b");
+    expect(searchParams.get("subjectId")).toBe("materia-matematica");
   });
 
-  it("rejects a duplicate (group, subject, name, date)", async () => {
-    await createEvaluation({ ...base, name: "P1" });
-    await expect(createEvaluation({ ...base, name: "P1" })).rejects.toThrow();
+  it("sends the new evaluation as the contract describes it", async () => {
+    let received: unknown = null;
+    server.use(
+      http.post("*/evaluations", async ({ request }) => {
+        received = await request.json();
+        return HttpResponse.json(evaluation, { status: 201 });
+      }),
+    );
+
+    await createEvaluation({
+      groupId: "turma-mat-b",
+      subjectId: "materia-matematica",
+      name: "P1",
+      type: "exam",
+      date: "2026-07-01",
+      weight: 3,
+    });
+
+    expect(received).toEqual({
+      groupId: "turma-mat-b",
+      subjectId: "materia-matematica",
+      name: "P1",
+      type: "exam",
+      date: "2026-07-01",
+      weight: 3,
+    });
   });
 
-  it("cascade-deletes the evaluation's grades", async () => {
-    const created = await createEvaluation({ ...base, name: "P1" });
-    await mutateCollection("evaluationGrades", (rows) => [
-      ...rows,
-      { id: "eg-x", evaluationId: created.id, studentId: "aluno-1", score: 8 },
-    ]);
-    await deleteEvaluation(created.id);
-    const remaining = await mutateCollection("evaluationGrades", (rows) => rows);
-    expect(
-      remaining.some((row) => (row as { evaluationId: string }).evaluationId === created.id),
-    ).toBe(false);
+  it("surfaces a duplicate (group, subject, name, date) as the API's own conflict code", async () => {
+    server.use(
+      http.post("*/evaluations", () =>
+        HttpResponse.json({ code: "conflict", message: "already exists" }, { status: 409 }),
+      ),
+    );
+
+    const failure = createEvaluation({
+      groupId: "turma-mat-b",
+      subjectId: "materia-matematica",
+      name: "P1",
+      type: "exam",
+      date: "2026-07-01",
+      weight: 3,
+    });
+
+    await expect(failure).rejects.toMatchObject({ code: "conflict" });
+  });
+
+  it("patches only what changed", async () => {
+    let received: unknown = null;
+    server.use(
+      http.patch("*/evaluations/eval-1", async ({ request }) => {
+        received = await request.json();
+        return HttpResponse.json({ ...evaluation, name: "P1 refeita" });
+      }),
+    );
+
+    await updateEvaluation("eval-1", { name: "P1 refeita" });
+
+    expect(received).toEqual({ name: "P1 refeita" });
+  });
+
+  it("treats the 204 on delete as success, and lets the API cascade the grades", async () => {
+    server.use(http.delete("*/evaluations/eval-1", () => new HttpResponse(null, { status: 204 })));
+
+    await expect(deleteEvaluation("eval-1")).resolves.toBeUndefined();
   });
 });

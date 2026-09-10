@@ -20,7 +20,6 @@ export function useSetParticipation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: SetParticipationInput) => setParticipation(input),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: eventParticipationKeys.all }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: eventParticipationKeys.all }),
   });
 }
