@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { ACCOUNTS, seedAuthAccounts } from "../seed-api";
+import { ACCOUNTS, seedAll } from "../seed-api";
 
 /**
  * Runs against a real radarge-api, not a mock. A mocked session would answer
@@ -7,7 +7,7 @@ import { ACCOUNTS, seedAuthAccounts } from "../seed-api";
  * the part that actually carries a session across a reload.
  */
 test.beforeAll(async () => {
-  await seedAuthAccounts();
+  await seedAll();
 });
 
 const signIn = async (page: Page, username: string, password: string): Promise<void> => {
