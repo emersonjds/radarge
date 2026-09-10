@@ -1,5 +1,5 @@
 import { expect, test, type BrowserContext } from "@playwright/test";
-import { newPageIn, signInContext } from "../helpers";
+import { newPageIn, signInContext, captureScreen } from "../helpers";
 import { ACCOUNTS } from "../seed-api";
 
 const MOBILE_VIEWPORT = { width: 375, height: 812 };
@@ -23,7 +23,7 @@ test("escopo: professor de outra aula não vê os eventos do outro professor", a
   await expect(page.getByText("Visita ao Planetário")).toHaveCount(0);
   await expect(page.getByText("Nenhum evento cadastrado ainda.")).toBeVisible();
 
-  await page.screenshot({ path: "e2e/events/evidencias/escopo-professor.png", fullPage: true });
+  await captureScreen(page, "e2e/events/evidencias/escopo-professor.png");
 });
 
 test("coordenador cria um evento para uma aula", async () => {
@@ -43,12 +43,12 @@ test("coordenador cria um evento para uma aula", async () => {
 
   await expect(page.getByRole("heading", { name: "Novo evento" })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "E2E Eventos — Aula B" })).toBeVisible();
-  const cartao = page.getByRole("button").filter({ hasText: "Feira de Ciências" });
-  await expect(cartao).toBeVisible();
-  await expect(cartao).toContainText("R$ 15,00");
-  await expect(cartao).toContainText("10/09/2026");
+  const card = page.getByRole("button").filter({ hasText: "Feira de Ciências" });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText("R$ 15,00");
+  await expect(card).toContainText("10/09/2026");
 
-  await page.screenshot({ path: "e2e/events/evidencias/evento-criado.png", fullPage: true });
+  await captureScreen(page, "e2e/events/evidencias/evento-criado.png");
 });
 
 test("professor registra autorização e pagamento de um aluno", async () => {
@@ -59,10 +59,10 @@ test("professor registra autorização e pagamento de um aluno", async () => {
   await expect(page.getByRole("heading", { name: "Passeio ao Zoológico" })).toBeVisible();
 
   const item = page.getByRole("listitem").filter({ hasText: "Benjamin Harrison" });
-  const autorizacao = item.getByLabel("Autorização de Benjamin Harrison");
-  const pagamento = item.getByLabel("Pagamento de Benjamin Harrison");
-  await expect(autorizacao).toHaveValue("pending");
-  await expect(pagamento).toHaveValue("pending");
+  const authorization = item.getByLabel("Autorização de Benjamin Harrison");
+  const payment = item.getByLabel("Pagamento de Benjamin Harrison");
+  await expect(authorization).toHaveValue("pending");
+  await expect(payment).toHaveValue("pending");
 
   const statAutorizados = page.getByText("Autorizados", { exact: true }).locator("..").locator("p.text-2xl");
   const statPagos = page.getByText("Pagos", { exact: true }).locator("..").locator("p.text-2xl");
@@ -72,19 +72,19 @@ test("professor registra autorização e pagamento de um aluno", async () => {
   const pagosAntes = Number(await statPagos.textContent());
   const arrecadadoAntes = (await statArrecadado.textContent())!;
 
-  await autorizacao.selectOption("authorized");
-  await expect(autorizacao).toHaveValue("authorized");
+  await authorization.selectOption("authorized");
+  await expect(authorization).toHaveValue("authorized");
   await expect(statAutorizados).toHaveText(String(autorizadosAntes + 1));
 
-  await page.screenshot({ path: "e2e/events/evidencias/autorizacao-registrada.png", fullPage: true });
+  await captureScreen(page, "e2e/events/evidencias/autorizacao-registrada.png");
 
-  await pagamento.selectOption("paid");
-  await expect(pagamento).toHaveValue("paid");
+  await payment.selectOption("paid");
+  await expect(payment).toHaveValue("paid");
   await expect(statPagos).toHaveText(String(pagosAntes + 1));
   await expect(statArrecadado).not.toHaveText(arrecadadoAntes);
   await expect(statArrecadado).toContainText("R$");
 
-  await page.screenshot({ path: "e2e/events/evidencias/pagamento-registrado.png", fullPage: true });
+  await captureScreen(page, "e2e/events/evidencias/pagamento-registrado.png");
 });
 
 test("botão de WhatsApp abre a mensagem de aviso já preenchida, sem abrir o WhatsApp de verdade", async () => {
@@ -98,12 +98,12 @@ test("botão de WhatsApp abre a mensagem de aviso já preenchida, sem abrir o Wh
 
   const href = await link.getAttribute("href");
   expect(href).toMatch(/^https:\/\/wa\.me\/55\d+\?text=/);
-  const texto = decodeURIComponent(href!.split("?text=")[1]);
-  expect(texto).toContain("Passeio ao Zoológico");
-  expect(texto).toContain("Marcus Thorne");
+  const text = decodeURIComponent(href!.split("?text=")[1]);
+  expect(text).toContain("Passeio ao Zoológico");
+  expect(text).toContain("Marcus Thorne");
   await expect(link).toHaveAttribute("target", "_blank");
 
-  await page.screenshot({ path: "e2e/events/evidencias/aviso-whatsapp.png", fullPage: true });
+  await captureScreen(page, "e2e/events/evidencias/aviso-whatsapp.png");
 });
 
 test("evento gratuito não mostra coluna nem contadores de pagamento", async () => {
@@ -118,7 +118,7 @@ test("evento gratuito não mostra coluna nem contadores de pagamento", async () 
   await expect(page.getByText("Arrecadado")).toHaveCount(0);
   await expect(page.getByText("Total de alunos")).toBeVisible();
 
-  await page.screenshot({ path: "e2e/events/evidencias/evento-gratuito.png", fullPage: true });
+  await captureScreen(page, "e2e/events/evidencias/evento-gratuito.png");
 });
 
 test.describe("detalhe do evento (mobile 375px)", () => {
@@ -130,18 +130,18 @@ test.describe("detalhe do evento (mobile 375px)", () => {
     await expect(page.getByRole("heading", { name: "Passeio ao Zoológico" })).toBeVisible();
 
     // Regressão: numa tabela larga esses controles ficam fora da viewport de 375px
-    // e só aparecem com rolagem lateral — o professor não alcança em sala.
+    // e só aparecem com rolagem lateral — o teacher não alcança em sala.
     const primeiroItem = page
       .getByRole("listitem")
       .filter({ has: page.getByLabel(/^Autorização de /) })
       .first();
-    const pagamento = primeiroItem.getByLabel(/^Pagamento de /);
+    const payment = primeiroItem.getByLabel(/^Pagamento de /);
     const whatsapp = primeiroItem.getByRole("link", { name: "WhatsApp" });
-    await expect(pagamento).toBeVisible();
+    await expect(payment).toBeVisible();
     await expect(whatsapp).toBeVisible();
-    await pagamento.scrollIntoViewIfNeeded();
+    await payment.scrollIntoViewIfNeeded();
     await whatsapp.scrollIntoViewIfNeeded();
-    const caixaPagamento = await pagamento.boundingBox();
+    const caixaPagamento = await payment.boundingBox();
     const caixaWhatsapp = await whatsapp.boundingBox();
     expect(caixaPagamento!.x).toBeGreaterThanOrEqual(0);
     expect(caixaPagamento!.x + caixaPagamento!.width).toBeLessThanOrEqual(MOBILE_VIEWPORT.width);
@@ -153,6 +153,6 @@ test.describe("detalhe do evento (mobile 375px)", () => {
     );
     expect(overflow).toBeLessThanOrEqual(0);
 
-    await page.screenshot({ path: "e2e/events/evidencias/mobile-evento.png", fullPage: true });
+    await captureScreen(page, "e2e/events/evidencias/mobile-evento.png");
   });
 });

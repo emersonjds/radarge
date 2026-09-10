@@ -837,8 +837,91 @@ const seedChamada = async (token: string): Promise<void> => {
   });
 };
 
+/**
+ * Specs stamp their throwaway rows with `Date.now()` so a rerun never collides with
+ * the last one, but nothing ever deleted them — the panel accumulated one "Redação
+ * E2E 1789…" turma, one "Filosofia E2E 1789…" matéria, one "P2 1789…" avaliação and
+ * so on per run, forever. These patterns are exactly what those specs emit and
+ * nothing a person would type by hand: a real matéria is never named "Filosofia
+ * E2E <13-digit number>".
+ */
+const STALE_GROUP = /^Redação E2E \d+$/;
+const STALE_SUBJECT = /^Filosofia E2E \d+$/;
+const STALE_EVALUATION = /^P[23] \d+$/;
+const STALE_STUDENT = /^Aluno Teste E2E \d+$/;
+const STALE_PROFILE_USERNAME = /^perfil\.(teste|papel|inativo|ciclo)\.\d+$/;
+
+const deleteRow = async (
+  token: string,
+  collection: string,
+  id: string,
+  label: string,
+  failures: string[],
+): Promise<void> => {
+  const response = await apiRequest(`${collection}/${id}`, "DELETE", token);
+  if (!response.ok) {
+    failures.push(`${collection}/${id} (${label}): ${String(response.status)}`);
+  }
+};
+
+/**
+ * Removes every leftover a previous run's timestamped fixture created, before this
+ * run seeds anything. Assignments go first because the API refuses to delete a
+ * group or a subject still referenced by one (409 conflict). A row this cannot
+ * remove is reported, not swallowed — a silent `catch {}` here would just let the
+ * litter keep growing under a different reason.
+ */
+const sweepLeftovers = async (token: string): Promise<void> => {
+  const [groups, subjects, evaluations, students, profiles, assignments] = await Promise.all([
+    apiList<Identified & { name: string }>("/groups", token),
+    apiList<Identified & { name: string }>("/subjects", token),
+    apiList<Identified & { name: string }>("/evaluations", token),
+    apiList<Identified & { name: string }>("/students", token),
+    apiList<Identified & { username: string }>("/profiles", token),
+    apiList<Identified & { groupId: string; subjectId: string }>("/assignments", token),
+  ]);
+
+  const staleGroups = groups.filter((group) => STALE_GROUP.test(group.name));
+  const staleSubjects = subjects.filter((subject) => STALE_SUBJECT.test(subject.name));
+  const staleGroupIds = new Set(staleGroups.map((group) => group.id));
+  const staleSubjectIds = new Set(staleSubjects.map((subject) => subject.id));
+
+  const failures: string[] = [];
+
+  for (const assignment of assignments) {
+    if (staleGroupIds.has(assignment.groupId) || staleSubjectIds.has(assignment.subjectId)) {
+      await deleteRow(token, "/assignments", assignment.id, "assignment on a stale row", failures);
+    }
+  }
+
+  for (const evaluation of evaluations.filter((row) => STALE_EVALUATION.test(row.name))) {
+    await deleteRow(token, "/evaluations", evaluation.id, evaluation.name, failures);
+  }
+
+  for (const group of staleGroups) {
+    await deleteRow(token, "/groups", group.id, group.name, failures);
+  }
+
+  for (const subject of staleSubjects) {
+    await deleteRow(token, "/subjects", subject.id, subject.name, failures);
+  }
+
+  for (const student of students.filter((row) => STALE_STUDENT.test(row.name))) {
+    await deleteRow(token, "/students", student.id, student.name, failures);
+  }
+
+  for (const profile of profiles.filter((row) => STALE_PROFILE_USERNAME.test(row.username))) {
+    await deleteRow(token, "/profiles", profile.id, profile.username, failures);
+  }
+
+  if (failures.length > 0) {
+    throw new Error(`sweepLeftovers could not remove: ${failures.join(", ")}`);
+  }
+};
+
 export const seedAll = async (): Promise<void> => {
   const token = await seedAccounts();
+  await sweepLeftovers(token);
   const subjects = await seedSubjects(token);
 
   await seedAcademicStructure(token, subjects);

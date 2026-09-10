@@ -1,5 +1,5 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
-import { newPageIn, signInContext } from "../helpers";
+import { newPageIn, signInContext, captureScreen } from "../helpers";
 import { ACCOUNTS, adminToken, findByName } from "../seed-api";
 
 const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
@@ -45,17 +45,14 @@ test.describe("detalhe do aluno (desktop)", () => {
     const page = await newPageIn(adminContext, DESKTOP_VIEWPORT);
     await page.goto("/reports");
 
-    const linha = page.getByRole("row").filter({ hasText: "Aluno Detalhe Um" });
-    await linha.getByRole("link", { name: "Ver relatório de Aluno Detalhe Um" }).click();
+    const row = page.getByRole("row").filter({ hasText: "Aluno Detalhe Um" });
+    await row.getByRole("link", { name: "Ver relatório de Aluno Detalhe Um" }).click();
 
     await expect(page).toHaveURL(`/reports?studentId=${ids.um}`);
     await expect(page.getByRole("heading", { name: "Aluno Detalhe Um" })).toBeVisible();
     await expect(page.getByText("404")).toHaveCount(0);
 
-    await page.screenshot({
-      path: "e2e/student-detail/evidencias/admin-detalhe-aluno.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/student-detail/evidencias/admin-detalhe-aluno.png");
   });
 
   test("professor abre o detalhe a partir da lista de alunos", async () => {
@@ -70,17 +67,14 @@ test.describe("detalhe do aluno (desktop)", () => {
     await expect(page.getByText("E2E Detalhe — Aula B")).toBeVisible();
     await expect(page.getByText("404")).toHaveCount(0);
 
-    await page.screenshot({
-      path: "e2e/student-detail/evidencias/professor-detalhe-aluno.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/student-detail/evidencias/professor-detalhe-aluno.png");
   });
 
   test("escopo: professor não acessa a ficha de aluno de outro professor, nem por link direto (PII)", async () => {
     const page = await newPageIn(professor1Context, DESKTOP_VIEWPORT);
     await page.goto(`/students?aluno=${ids.dois}`);
 
-    // Aluno Detalhe Dois é aluno do outro professor — pra este professor o aluno
+    // Aluno Detalhe Dois é aluno do outro teacher — pra este teacher o aluno
     // "não existe", ponto final.
     await expect(page.getByText("Aluno não encontrado.")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Aluno Detalhe Dois" })).toHaveCount(0);
@@ -89,10 +83,7 @@ test.describe("detalhe do aluno (desktop)", () => {
     await expect(page.locator('a[href^="tel:"]')).toHaveCount(0);
     await expect(page.getByText("E2E Detalhe — Aula C")).toHaveCount(0);
 
-    await page.screenshot({
-      path: "e2e/student-detail/evidencias/escopo-professor.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/student-detail/evidencias/escopo-professor.png");
 
     await page.getByRole("link", { name: "Voltar para Alunos" }).click();
     await expect(page).toHaveURL("/students");
@@ -110,10 +101,7 @@ test.describe("detalhe do aluno (desktop)", () => {
     await expect(page.getByText("E2E Detalhe — Aula A")).toBeVisible();
     await expect(page.getByText("E2E Detalhe — Aula B")).toBeVisible();
 
-    await page.screenshot({
-      path: "e2e/student-detail/evidencias/aluno-proprio-professor.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/student-detail/evidencias/aluno-proprio-professor.png");
   });
 
   test("aluno sem aula matriculada mostra estado vazio", async () => {
@@ -124,10 +112,7 @@ test.describe("detalhe do aluno (desktop)", () => {
     await expect(page.getByText("Sem aulas matriculadas.")).toBeVisible();
     await expect(page.getByText("—", { exact: true })).toHaveCount(2);
 
-    await page.screenshot({
-      path: "e2e/student-detail/evidencias/aluno-sem-aula.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/student-detail/evidencias/aluno-sem-aula.png");
   });
 
   test("aluno inativo mostra badge INATIVO e aviso", async () => {
@@ -142,10 +127,7 @@ test.describe("detalhe do aluno (desktop)", () => {
       ),
     ).toBeVisible();
 
-    await page.screenshot({
-      path: "e2e/student-detail/evidencias/aluno-inativo.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/student-detail/evidencias/aluno-inativo.png");
   });
 
   test("aluno inexistente mostra estado de erro com botão de voltar funcional", async () => {
@@ -155,10 +137,7 @@ test.describe("detalhe do aluno (desktop)", () => {
     await expect(page.getByText("Aluno não encontrado.")).toBeVisible();
     await expect(page.getByText("404")).toHaveCount(0);
 
-    await page.screenshot({
-      path: "e2e/student-detail/evidencias/aluno-nao-encontrado.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/student-detail/evidencias/aluno-nao-encontrado.png");
 
     await page.getByRole("link", { name: "Voltar para Relatórios" }).click();
     await expect(page).toHaveURL("/reports");
@@ -171,15 +150,12 @@ test.describe("detalhe do aluno (desktop)", () => {
 
     await expect(page.getByRole("heading", { name: "Resumo de presença" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Desempenho acadêmico" })).toHaveCount(0);
-    await page.screenshot({
-      path: "e2e/student-detail/evidencias/aba-presenca.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/student-detail/evidencias/aba-presenca.png");
 
     await page.getByRole("tab", { name: "Notas" }).click();
     await expect(page.getByRole("heading", { name: "Desempenho acadêmico" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Resumo de presença" })).toHaveCount(0);
-    await page.screenshot({ path: "e2e/student-detail/evidencias/aba-notas.png", fullPage: true });
+    await captureScreen(page, "e2e/student-detail/evidencias/aba-notas.png");
   });
 });
 
@@ -198,9 +174,6 @@ test.describe("detalhe do aluno (mobile 375px)", () => {
     await page.getByRole("tab", { name: "Presença" }).click();
     await expect(page.getByRole("heading", { name: "Resumo de presença" })).toBeVisible();
 
-    await page.screenshot({
-      path: "e2e/student-detail/evidencias/mobile-detalhe-aluno.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/student-detail/evidencias/mobile-detalhe-aluno.png");
   });
 });

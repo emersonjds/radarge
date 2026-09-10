@@ -1,5 +1,5 @@
 import { expect, test, type BrowserContext } from "@playwright/test";
-import { newPageIn, signInContext } from "../helpers";
+import { newPageIn, signInContext, captureScreen, captureEvidence } from "../helpers";
 import { ACCOUNTS, adminToken, findByName } from "../seed-api";
 
 let adminContext: BrowserContext;
@@ -21,10 +21,10 @@ test("central de análise: panorama, recorte por turma e export CSV", async () =
   await expect(panorama.getByText("Área forte")).toBeVisible();
   await expect(panorama.getByText("Média por área")).toBeVisible();
 
-  const linhaEnzo = page.getByRole("row").filter({ hasText: "Enzo Ferreira" });
-  await expect(linhaEnzo).toContainText("Exatas");
+  const enzoRow = page.getByRole("row").filter({ hasText: "Enzo Ferreira" });
+  await expect(enzoRow).toContainText("Exatas");
 
-  await page.screenshot({ path: "e2e/reports/evidencias/central-relatorios.png", fullPage: true });
+  await captureEvidence(panorama, "e2e/reports/evidencias/central-relatorios.png");
 
   await page.getByLabel("Selecionar aula").selectOption({ label: "E2E Relatorios — Aula A" });
   await expect(
@@ -45,8 +45,8 @@ test("ficha do aluno traz frequência e bloco acadêmico com aptidão", async ()
   const page = await newPageIn(adminContext, { width: 1280, height: 800 });
   await page.goto("/reports");
 
-  const linhaEnzo = page.getByRole("row").filter({ hasText: "Enzo Ferreira" });
-  await linhaEnzo.getByRole("link", { name: "Abrir relatório de Enzo Ferreira" }).click();
+  const enzoRow = page.getByRole("row").filter({ hasText: "Enzo Ferreira" });
+  await enzoRow.getByRole("link", { name: "Abrir relatório de Enzo Ferreira" }).click();
   await expect(page).toHaveURL(`/reports?studentId=${enzo.id}`);
 
   await expect(page.getByRole("heading", { name: "Enzo Ferreira" })).toBeVisible();
@@ -59,5 +59,5 @@ test("ficha do aluno traz frequência e bloco acadêmico com aptidão", async ()
   await expect(page.getByText("Aptidão: Exatas")).toBeVisible();
   await expect(page.getByText("Notas por matéria")).toBeVisible();
 
-  await page.screenshot({ path: "e2e/reports/evidencias/ficha-aluno.png", fullPage: true });
+  await captureScreen(page, "e2e/reports/evidencias/ficha-aluno.png");
 });

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { ACCOUNTS, seedAll } from "../seed-api";
+import { captureScreen } from "../helpers";
 
 /**
  * Runs against a real radarge-api, not a mock. A mocked session would answer
@@ -23,7 +24,7 @@ test("entra com credencial válida e chega ao painel", async ({ page }) => {
 
   await expect(page).toHaveURL("/");
   await expect(page.getByText(account.name).first()).toBeVisible();
-  await page.screenshot({ path: "e2e/auth-real/evidencias/login-valido.png", fullPage: true });
+  await captureScreen(page, "e2e/auth-real/evidencias/login-valido.png");
 });
 
 test("credencial inválida mostra texto nosso, nunca a mensagem do servidor", async ({ page }) => {
@@ -34,10 +35,7 @@ test("credencial inválida mostra texto nosso, nunca a mensagem do servidor", as
   await expect(alert).toHaveText("Usuário ou senha incorretos.");
   await expect(alert).not.toContainText("credential");
   await expect(page).toHaveURL(/\/login/);
-  await page.screenshot({
-    path: "e2e/auth-real/evidencias/credencial-invalida.png",
-    fullPage: true,
-  });
+  await captureScreen(page, "e2e/auth-real/evidencias/credencial-invalida.png");
 });
 
 test("sessão sobrevive ao recarregar, mesmo com o token morrendo na memória", async ({ page }) => {
@@ -49,10 +47,7 @@ test("sessão sobrevive ao recarregar, mesmo com o token morrendo na memória", 
 
   await expect(page).toHaveURL("/");
   await expect(page.getByText(account.name).first()).toBeVisible();
-  await page.screenshot({
-    path: "e2e/auth-real/evidencias/sessao-apos-reload.png",
-    fullPage: true,
-  });
+  await captureScreen(page, "e2e/auth-real/evidencias/sessao-apos-reload.png");
 });
 
 test("senha provisória leva à tela de definição de senha", async ({ page }) => {
@@ -61,7 +56,7 @@ test("senha provisória leva à tela de definição de senha", async ({ page }) 
 
   await expect(page).toHaveURL(/\/change-password/);
   await expect(page.getByRole("heading", { name: "Defina sua senha" })).toBeVisible();
-  await page.screenshot({ path: "e2e/auth-real/evidencias/senha-provisoria.png", fullPage: true });
+  await captureScreen(page, "e2e/auth-real/evidencias/senha-provisoria.png");
 });
 
 test("sair encerra a sessão de verdade: voltar ao painel não entra", async ({ page }) => {
@@ -74,5 +69,5 @@ test("sair encerra a sessão de verdade: voltar ao painel não entra", async ({ 
 
   await page.goto("/");
   await expect(page).toHaveURL(/\/login/);
-  await page.screenshot({ path: "e2e/auth-real/evidencias/logout-revogado.png", fullPage: true });
+  await captureScreen(page, "e2e/auth-real/evidencias/logout-revogado.png");
 });

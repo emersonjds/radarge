@@ -1,4 +1,4 @@
-import { expect, type Browser, type BrowserContext, type Page } from "@playwright/test";
+import { expect, type Browser, type BrowserContext, type Locator, type Page } from "@playwright/test";
 import type { TestAccount } from "./seed-api";
 
 export interface Viewport {
@@ -39,4 +39,17 @@ export async function newPageIn(context: BrowserContext, viewport?: Viewport): P
 
 export function sidebar(page: Page) {
   return page.getByRole("navigation", { name: "Navegação principal" });
+}
+
+/**
+ * The panel fades a screen in over 500ms, so a capture fired straight after
+ * navigation freezes it near zero opacity and reads as a broken screen.
+ */
+export async function captureEvidence(target: Locator, path: string): Promise<void> {
+  await target.scrollIntoViewIfNeeded();
+  await target.screenshot({ path, animations: "disabled" });
+}
+
+export async function captureScreen(page: Page, path: string): Promise<void> {
+  await page.screenshot({ path, animations: "disabled" });
 }

@@ -1,5 +1,5 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
-import { newPageIn, signInContext, sidebar } from "../helpers";
+import { newPageIn, signInContext, sidebar, captureScreen, captureEvidence } from "../helpers";
 import { ACCOUNTS } from "../seed-api";
 
 const MOBILE_VIEWPORT = { width: 375, height: 812 };
@@ -9,20 +9,20 @@ async function openMenu(page: Page) {
 }
 
 let adminContext: BrowserContext;
-let professorContext: BrowserContext;
+let teacherContext: BrowserContext;
 let coordinatorContext: BrowserContext;
 
 // One sign-in per account for the whole file: every test below opens its own tab
 // from these already-authenticated contexts instead of signing in again.
 test.beforeAll(async ({ browser }) => {
   adminContext = await signInContext(browser, ACCOUNTS.perfisAdmin);
-  professorContext = await signInContext(browser, ACCOUNTS.perfisProfessor);
+  teacherContext = await signInContext(browser, ACCOUNTS.perfisProfessor);
   coordinatorContext = await signInContext(browser, ACCOUNTS.perfisCoordenador);
 });
 
 test.describe("visão por papel", () => {
   test("professor vê apenas Chamada e Alunos, home mostra lista de alunos", async () => {
-    const page = await newPageIn(professorContext, MOBILE_VIEWPORT);
+    const page = await newPageIn(teacherContext, MOBILE_VIEWPORT);
     await page.goto("/");
 
     await expect(page.getByText("Meus alunos")).toBeVisible();
@@ -36,7 +36,7 @@ test.describe("visão por papel", () => {
     await expect(nav.getByRole("link", { name: "Relatórios" })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "Perfis" })).toHaveCount(0);
 
-    await page.screenshot({ path: "e2e/auth/evidencias/professor-home.png", fullPage: true });
+    await captureScreen(page, "e2e/auth/evidencias/professor-home.png");
   });
 
   test("admin vê Painel, Alunos, Relatórios e Perfis, e abre /users", async () => {
@@ -51,14 +51,16 @@ test.describe("visão por papel", () => {
     await expect(nav.getByRole("link", { name: "Eventos", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Perfis" })).toBeVisible();
 
-    await page.screenshot({ path: "e2e/auth/evidencias/admin-home.png", fullPage: true });
+    await captureScreen(page, "e2e/auth/evidencias/admin-home.png");
 
     await openMenu(page);
     await nav.getByRole("link", { name: "Perfis" }).click();
     await expect(page).toHaveURL("/users");
     await expect(page.getByRole("heading", { name: "Perfis", exact: true })).toBeVisible();
 
-    await page.screenshot({ path: "e2e/auth/evidencias/admin-perfis.png", fullPage: true });
+    // Viewport shot, not fullPage: the claim is the heading and the URL, not the
+    // whole (ever-growing) roster of profiles below the fold.
+    await captureScreen(page, "e2e/auth/evidencias/admin-perfis.png");
   });
 
   test("coordenador vê Painel, Alunos, Relatórios sem Perfis, e deep link /users volta pra home", async () => {
@@ -73,7 +75,7 @@ test.describe("visão por papel", () => {
     await expect(nav.getByRole("link", { name: "Eventos", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Perfis" })).toHaveCount(0);
 
-    await page.screenshot({ path: "e2e/auth/evidencias/coordenador-home.png", fullPage: true });
+    await captureScreen(page, "e2e/auth/evidencias/coordenador-home.png");
 
     await page.goto("/users");
     await expect(page).toHaveURL("/");
@@ -87,7 +89,7 @@ test.describe("guard de auth", () => {
     await page.goto("/students");
     await expect(page).toHaveURL("/login");
 
-    await page.screenshot({ path: "e2e/auth/evidencias/guard-sem-sessao.png", fullPage: true });
+    await captureScreen(page, "e2e/auth/evidencias/guard-sem-sessao.png");
   });
 
   test("sem sessão, / redireciona pra /login", async ({ browser }) => {
@@ -98,7 +100,7 @@ test.describe("guard de auth", () => {
   });
 
   test("professor não acessa /reports (redireciona pra home)", async () => {
-    const page = await newPageIn(professorContext);
+    const page = await newPageIn(teacherContext);
     await page.goto("/reports");
     await expect(page).toHaveURL("/");
     await expect(page.getByText("Meus alunos")).toBeVisible();
@@ -137,14 +139,15 @@ test.describe("gestão de perfis (admin)", () => {
     expect(alvo?.width).toBeGreaterThanOrEqual(44);
     expect(alvo?.height).toBeGreaterThanOrEqual(44);
 
-    await page.screenshot({ path: "e2e/auth/evidencias/perfil-criado.png", fullPage: true });
+    // Frames the new profile's own row, not the whole (ever-growing) roster.
+    await captureEvidence(item, "e2e/auth/evidencias/perfil-criado.png");
   });
 
   test("admin edita o papel de um perfil e o badge muda", async () => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
 
-    // Perfil descartável criado aqui mesmo: editar o professor fixo do arquivo
+    // Perfil descartável criado aqui mesmo: editar o teacher fixo do arquivo
     // mudaria o regente das aulas usadas pelo resto desta suíte.
     const username = `perfil.papel.${Date.now()}`;
     await page.getByLabel("Nome").fill("Perfil Papel E2E");
@@ -168,7 +171,8 @@ test.describe("gestão de perfis (admin)", () => {
 
     await expect(item.getByText("Administrador")).toBeVisible();
 
-    await page.screenshot({ path: "e2e/auth/evidencias/perfil-editado.png", fullPage: true });
+    // Frames the edited profile's own row, not the whole (ever-growing) roster.
+    await captureEvidence(item, "e2e/auth/evidencias/perfil-editado.png");
   });
 
   test("admin desativa um perfil e a conta não consegue mais entrar", async ({ browser }) => {
@@ -190,7 +194,8 @@ test.describe("gestão de perfis (admin)", () => {
     await item.getByRole("button", { name: "Desativar Perfil Inativo E2E" }).click();
     await expect(item.getByText("Inativo", { exact: true })).toBeVisible();
 
-    await page.screenshot({ path: "e2e/auth/evidencias/perfil-desativado.png", fullPage: true });
+    // Frames the deactivated profile's own row, not the whole (ever-growing) roster.
+    await captureEvidence(item, "e2e/auth/evidencias/perfil-desativado.png");
 
     // A API responde 401 igual à senha errada — não existe mais "cargo sem perfil
     // ativo", existe só a conta que não entra mais. Sem sessão prévia: não conta
