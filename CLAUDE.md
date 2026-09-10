@@ -69,21 +69,23 @@ src/
 
 ## 6. Dados / API
 
-> **Estado atual: front-only, sem backend.** Não existe cliente Supabase no repo — `@supabase/ssr` não está instalado e não há `supabase/migrations/`. Tudo abaixo de "backend-alvo" é plano, não código.
+> **O backend é a `radarge-api`** — Node, Fastify, Postgres, no repositório irmão `personal-projects/radarge-api`. O plano de Supabase foi descartado em 2026-09-05: o front é static export e não tem servidor, então toda proteção mora na API e não em RLS.
 
-- Os dados vivem em **localStorage** (`src/shared/lib/storage/`, chave `radarge.db.v2`), com seed de demonstração em `seed.ts`.
-- Os fetchers de `entities/*/api.ts` são **assíncronos** e têm assinatura estável — é isso que deixa o Supabase entrar depois como adapter, sem mexer nas features. Mantenha-os assim.
-- Login é **por cargo, sem senha** (`features/auth/authenticate.ts` → primeiro perfil ativo do cargo). É demo; trocar por Supabase Auth.
-- Analytics hoje é calculado em JS sobre o store (`features/analytics/model.ts`) — temporário.
-- **Backend-alvo (ainda não implementado)**: Supabase (Postgres + RLS + RPCs), acessado direto pelo browser com a **publishable key** (a proteção real é a RLS). A `service_role` NUNCA vai para o frontend. Ao migrar: analytics vira view/RPC no Postgres, não recálculo no cliente.
+- **O contrato é a fonte da verdade dos tipos.** `openapi.json` na raiz é o snapshot publicado pela API; `pnpm api:types` gera `src/shared/api/schema.d.ts` a partir dele. Divergência de contrato vira erro de `pnpm type-check`, não `undefined` em tela.
+- **O cliente HTTP vive em `src/shared/lib/api/`.** Base URL por `NEXT_PUBLIC_API_URL`, `credentials: "include"` em toda chamada, access token só em memória (`token-store.ts`), e refresh de tentativa única no 401 — duas chamadas falhando juntas compartilham a mesma promessa, senão a segunda apresenta um token já rotacionado, a API entende como reuso e derruba a sessão.
+- **A `message` de erro da API nunca vai para a tela.** Ela responde `{ code, message }`; o código é para rotear, o texto que o usuário lê é nosso.
+- Os fetchers de `entities/*/api.ts` são **assíncronos** e têm assinatura estável — é o que permite trocar a origem dos dados sem mexer nas features. Mantenha-os assim.
+- **Migração em curso**: `localStorage` (`src/shared/lib/storage/`) ainda é a origem de várias entidades e sai conforme cada card entra. Analytics é calculado em JS sobre o store (`features/analytics/model.ts`) e passa a vir de `/analytics`, que já agrega em SQL.
+- **Senha provisória**: senha que o usuário não escolheu vale para um login só. A API responde `403` com `code: "password_change_required"` até a troca, e o perfil traz `mustChangePassword`.
 
 ## 7. Segurança
 
 - Nunca commitar secrets/tokens/chaves de API
-- RLS é a proteção real: professor só lê/escreve as próprias turmas (`professor_id = auth.uid()`); admin lê e gere tudo
-- Coluna `papel` em `perfis` nunca gravável por `authenticated` (evita autopromoção a admin)
-- Dados de aluno são PII (frequentemente menor de idade) — nunca logar nome/matrícula completos, mascarar em telemetria
-- Validar status de presença e unicidade de chamada no servidor (constraints), nunca confiar só no cliente
+- **A API é a proteção real**, não o cliente: o escopo do professor é `WHERE` no SQL dela, e uma tela que esconde um botão não protege nada. Esconder é UX; a recusa vem do servidor
+- O access token vive **só em memória**. Nunca em `localStorage`, nunca em cookie legível — um XSS não pode levar a sessão. O refresh é cookie httpOnly que o front não toca
+- Papel nunca é gravável por auto-atualização — a API recusa, e o front não tenta
+- Dados de aluno são PII (frequentemente menor de idade) — nunca logar nome/telefone completos, mascarar em telemetria
+- Unicidade de chamada e faixa de nota são constraints no banco. O cliente valida para dar erro rápido, nunca como se fosse a garantia
 
 ## 8. Review (antes de concluir)
 
@@ -98,7 +100,7 @@ src/
 Toda feature/implementação que passa pelo fluxo SDD **deve** ter as três camadas — e o E2E vale mais que os mocks (já pega bug de regra de servidor que os unit não pegam):
 
 1. **Unitário** — lógica pura (libs, derivações, regras).
-2. **Integração com MSW** — fetchers/queries contra o Supabase mockado (`src/test/msw/`).
+2. **Integração com MSW** — fetchers e queries contra a radarge-api mockada (`src/test/msw/`).
 3. **E2E de tela (Playwright)** — fluxo real no browser, **com prints de evidência em PNG**. As evidências ficam em `e2e/<feature>/evidencias/*.png` (gere rodando o spec; não invente prints).
 
 ## 9. Agentes disponíveis
