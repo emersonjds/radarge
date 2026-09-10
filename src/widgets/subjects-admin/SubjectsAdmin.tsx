@@ -13,15 +13,15 @@ export function SubjectsAdmin() {
   const deleteSubject = useDeleteSubject();
   // undefined = modal closed; null = creating; Subject = editing.
   const [editing, setEditing] = useState<Subject | null | undefined>(undefined);
-  const [erro, setErro] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  async function remover(subject: Subject) {
+  async function remove(subject: Subject) {
     if (!window.confirm(`Excluir a matéria ${subject.name}?`)) return;
-    setErro(null);
+    setError(null);
     try {
       await deleteSubject.mutateAsync(subject.id);
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível remover.");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Não foi possível remover.");
     }
   }
 
@@ -34,9 +34,9 @@ export function SubjectsAdmin() {
         </Button>
       </header>
 
-      {erro && (
+      {error && (
         <p role="alert" className="text-sm text-destructive">
-          {erro}
+          {error}
         </p>
       )}
 
@@ -63,7 +63,7 @@ export function SubjectsAdmin() {
                   icon={Trash2}
                   label={`Excluir ${subject.name}`}
                   tone="destructive"
-                  onClick={() => remover(subject)}
+                  onClick={() => remove(subject)}
                 />
               </div>
             </li>

@@ -15,9 +15,9 @@ export function EvaluationsPanel({ groupId, subjectId }: { groupId: string; subj
   const [creating, setCreating] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
 
-  function remover(evaluation: Evaluation) {
-    const aviso = `Excluir a avaliação ${evaluation.name}? As notas lançadas nela serão apagadas.`;
-    if (window.confirm(aviso)) deleteEvaluation.mutate(evaluation.id);
+  function remove(evaluation: Evaluation) {
+    const warning = `Excluir a avaliação ${evaluation.name}? As notas lançadas nela serão apagadas.`;
+    if (window.confirm(warning)) deleteEvaluation.mutate(evaluation.id);
   }
 
   return (
@@ -55,7 +55,7 @@ export function EvaluationsPanel({ groupId, subjectId }: { groupId: string; subj
                     icon={Trash2}
                     label={`Excluir ${evaluation.name}`}
                     tone="destructive"
-                    onClick={() => remover(evaluation)}
+                    onClick={() => remove(evaluation)}
                   />
                 </div>
               </div>

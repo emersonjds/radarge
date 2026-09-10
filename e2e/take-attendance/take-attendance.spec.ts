@@ -71,7 +71,7 @@ test.describe("mobile roll call (cards)", () => {
   });
 });
 
-test.describe("chamada desktop", () => {
+test.describe("desktop roll call", () => {
   test("the sidebar shows roll call and the screen renders", async () => {
     const page = await newPageIn(teacherContext, DESKTOP_VIEWPORT);
     await page.goto("/attendance");
