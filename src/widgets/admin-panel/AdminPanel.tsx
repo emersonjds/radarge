@@ -9,6 +9,7 @@ import { useEnrollments } from "@/entities/enrollment/queries";
 import {
   useAbsenteeismTrend,
   useAttendanceRate,
+  useAttendanceRateByGroup,
   useStudentsAtRisk,
 } from "@/features/analytics/queries";
 import { messageForError } from "@/shared/lib/api/error-message";
@@ -64,6 +65,7 @@ export function AdminPanel() {
   // A student missing from the list has no roll-call at all, which is not the same
   // as a perfect attendance rate.
   const studentsAtRisk = useStudentsAtRisk({ threshold: 0 });
+  const groupAttendanceRates = useAttendanceRateByGroup((groups.data ?? []).map((group) => group.id));
 
   const totalStudents = students.data?.length ?? 0;
   const activeStudents = students.data?.filter((student) => student.active).length ?? 0;
@@ -92,34 +94,16 @@ export function AdminPanel() {
     ]);
   }
 
-  const attendanceRateByStudent = new Map(
-    (studentsAtRisk.data ?? []).map((risk) => [risk.studentId, risk.attendance]),
-  );
-
   // A group with no roll-call yet gets no bar: zero percent would be as false as a
   // hundred, and the chart compares groups that have actually been called.
-  const attendanceRateByGroup = (groups.data ?? [])
-    .map((group) => {
-      const knownRates = (students.data ?? [])
-        .filter((student) => (groupIdsByStudent.get(student.id) ?? []).includes(group.id))
-        .map((student) => attendanceRateByStudent.get(student.id))
-        .filter((rate): rate is number => rate !== undefined);
-
-      return {
-        groupId: group.id,
-        // Full name, not the part before "—": two groups sharing a subject
-        // ("Reforço de Matemática — Segunda" / "— Terça") only differ after it.
-        label: group.name,
-        knownRates,
-      };
-    })
-    .filter((group) => group.knownRates.length > 0)
-    .map(({ groupId, label, knownRates }) => ({
-      groupId,
-      label,
-      attendance: Math.round(
-        knownRates.reduce((total, rate) => total + rate, 0) / knownRates.length,
-      ),
+  const attendanceRateByGroup = groupAttendanceRates.data
+    .filter((group) => group.total > 0)
+    .map((group) => ({
+      groupId: group.groupId,
+      // Full name, not the part before "—": two groups sharing a subject
+      // ("Reforço de Matemática — Segunda" / "— Terça") only differ after it.
+      label: groupById.get(group.groupId)?.name ?? "",
+      attendance: group.rate,
     }));
 
   const alerts = (studentsAtRisk.data ?? [])

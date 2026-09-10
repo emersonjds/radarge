@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   fetchAbsenteeismTrend,
   fetchAcademicSummary,
@@ -24,6 +24,34 @@ export function useAttendanceRate(filter: AttendanceRateFilter = {}, enabled = t
     queryKey: analyticsKeys.attendanceRate(filter),
     queryFn: () => fetchAttendanceRate(filter),
     enabled,
+  });
+}
+
+export interface GroupAttendanceRate {
+  groupId: string;
+  rate: number;
+  total: number;
+}
+
+// The server aggregates attendance per group the same way it aggregates the
+// overall rate (present records over total records); this keeps the "por aula"
+// chart honest with the KPI above it instead of re-deriving a class figure from
+// each student's rate across every class they attend.
+export function useAttendanceRateByGroup(groupIds: string[]) {
+  return useQueries({
+    queries: groupIds.map((groupId) => ({
+      queryKey: analyticsKeys.attendanceRate({ groupId }),
+      queryFn: () => fetchAttendanceRate({ groupId }),
+    })),
+    combine: (results) => ({
+      data: results.flatMap((result, index): GroupAttendanceRate[] =>
+        result.data === undefined
+          ? []
+          : [{ groupId: groupIds[index], rate: result.data.rate, total: result.data.total }],
+      ),
+      isLoading: results.some((result) => result.isLoading),
+      isError: results.some((result) => result.isError),
+    }),
   });
 }
 
