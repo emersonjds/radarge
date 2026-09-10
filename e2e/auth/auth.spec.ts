@@ -9,29 +9,6 @@ async function openMenu(page: Page) {
 
 test.use({ viewport: MOBILE_VIEWPORT });
 
-test.describe("login", () => {
-  test("tela de login mostra seletor de cargo, sem campo de senha, e entra como Professor", async ({
-    page,
-  }) => {
-    await page.goto("/login");
-
-    const select = page.getByLabel("Entrar como");
-    await expect(select).toBeVisible();
-    await expect(page.getByRole("option", { name: "Administrador" })).toHaveCount(1);
-    await expect(page.getByRole("option", { name: "Professor" })).toHaveCount(1);
-    await expect(page.getByRole("option", { name: "Coordenador" })).toHaveCount(1);
-    await expect(page.getByLabel("Senha")).toHaveCount(0);
-
-    await select.selectOption({ label: "Professor" });
-    await page.getByRole("button", { name: "Entrar" }).click();
-
-    await expect(page).toHaveURL("/");
-    await expect(page.getByText("Meus alunos")).toBeVisible();
-
-    await page.screenshot({ path: "e2e/auth/evidencias/login-professor.png", fullPage: true });
-  });
-});
-
 test.describe("visão por papel", () => {
   test("professor vê apenas Chamada e Alunos, home mostra lista de alunos", async ({ page }) => {
     await login(page, "Professor");

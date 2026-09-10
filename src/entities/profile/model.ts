@@ -52,3 +52,28 @@ export const profileFormSchema = (mode: "create" | "edit") =>
   });
 
 export type ProfileFormValues = z.infer<ReturnType<typeof profileFormSchema>>;
+
+/** Credentials the sign-in screen collects. */
+export const credentialsFormSchema = z.object({
+  username: z.string().trim().min(1, "Informe o usuário."),
+  password: z.string().min(1, "Informe a senha."),
+});
+
+export type CredentialsFormValues = z.infer<typeof credentialsFormSchema>;
+
+/**
+ * The current password is only checked for presence: the floor applies to the
+ * password being set, and rejecting a short current one would leak that it is
+ * wrong before the API ever answers.
+ */
+export const passwordChangeFormSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Informe a senha atual."),
+    newPassword: z.string().min(MIN_PASSWORD_LENGTH, PASSWORD_MIN_LENGTH_MESSAGE),
+  })
+  .refine((values) => values.newPassword !== values.currentPassword, {
+    path: ["newPassword"],
+    message: "A nova senha precisa ser diferente da atual.",
+  });
+
+export type PasswordChangeFormValues = z.infer<typeof passwordChangeFormSchema>;

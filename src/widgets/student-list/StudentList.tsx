@@ -26,7 +26,7 @@ const LIMITE_FALTAS_RISCO = 3;
 const th = "px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground";
 const td = "px-5 py-4 text-sm text-foreground";
 export function StudentList() {
-  const { role, profile, loading: carregandoSessao } = useSession();
+  const { role, profile, status: sessionStatus } = useSession();
   const { data: alunos, isLoading: carregandoAlunos } = useStudents();
   const { data: turmas, isLoading: carregandoTurmas } = useGroups();
   const { data: enrollments, isLoading: carregandoMatriculas } = useEnrollments();
@@ -39,7 +39,7 @@ export function StudentList() {
   const deleteStudent = useDeleteStudent();
 
   const carregando =
-    carregandoSessao ||
+    sessionStatus === "loading" ||
     carregandoAlunos ||
     carregandoTurmas ||
     carregandoMatriculas ||
