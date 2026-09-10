@@ -107,7 +107,9 @@ export function AdminPanel() {
 
       return {
         groupId: group.id,
-        label: group.name.split("—")[0].trim(),
+        // Full name, not the part before "—": two groups sharing a subject
+        // ("Reforço de Matemática — Segunda" / "— Terça") only differ after it.
+        label: group.name,
         knownRates,
       };
     })
@@ -194,7 +196,7 @@ export function AdminPanel() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <h2 className="text-lg font-semibold text-foreground">Frequência por aula</h2>
           <p className="mb-2 text-sm text-muted-foreground">Comparativo de presença por aula</p>

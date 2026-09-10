@@ -23,7 +23,9 @@ export function TrendLineChart({ points }: TrendLineChartProps) {
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
-    yaxis: { max: 100, labels: { formatter: (value) => `${Math.round(value)}%` } },
+    // min pinned alongside max: a flat series (every point equal) makes ApexCharts
+    // pick its own range and overshoot past 100%, which attendance never does.
+    yaxis: { min: 0, max: 100, labels: { formatter: (value) => `${Math.round(value)}%` } },
     grid: { borderColor: "#f2f4f7" },
     tooltip: { y: { formatter: (value) => `${Math.round(value)}%` } },
   };
