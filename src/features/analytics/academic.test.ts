@@ -11,10 +11,10 @@ import {
 } from "./academic";
 
 const subjects: Subject[] = [
-  { id: "mat", name: "Matemática", area: "exatas" },
-  { id: "fis", name: "Física", area: "exatas" },
-  { id: "hist", name: "História", area: "humanas" },
-  { id: "geo", name: "Geografia", area: "humanas" },
+  { id: "mat", name: "Matemática", area: "exact_sciences" },
+  { id: "fis", name: "Física", area: "exact_sciences" },
+  { id: "hist", name: "História", area: "humanities" },
+  { id: "geo", name: "Geografia", area: "humanities" },
 ];
 
 function grade(studentId: string, subjectId: string, score: number): Grade {
@@ -34,10 +34,10 @@ describe("academic analytics", () => {
   });
 
   it("aptidão é a área de maior média", () => {
-    expect(studentAptitude(marcus, subjects)).toBe("exatas");
+    expect(studentAptitude(marcus, subjects)).toBe("exact_sciences");
     const affinity = areaAffinity(marcus, subjects);
-    expect(affinity[0]).toEqual({ area: "exatas", average: 8.5 });
-    expect(affinity[affinity.length - 1].area).toBe("humanas");
+    expect(affinity[0]).toEqual({ area: "exact_sciences", average: 8.5 });
+    expect(affinity[affinity.length - 1].area).toBe("humanities");
   });
 
   it("matérias de destaque e de atenção ordenam por nota", () => {
@@ -57,7 +57,7 @@ describe("academic analytics", () => {
     ];
     const summary = classAcademicSummary(turma, subjects);
     expect(summary.averageScore).toBe(6);
-    expect(summary.topArea).toBe("exatas");
+    expect(summary.topArea).toBe("exact_sciences");
     expect(summary.topSubjects[0]).toEqual({ subject: subjects[0], score: 7 });
   });
 

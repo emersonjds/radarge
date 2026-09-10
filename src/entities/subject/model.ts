@@ -1,15 +1,15 @@
 import { z } from "zod";
 
-export const areaSchema = z.enum(["exatas", "biologicas", "linguagens", "humanas"]);
+export const areaSchema = z.enum(["exact_sciences", "biological_sciences", "languages", "humanities"]);
 export type Area = z.infer<typeof areaSchema>;
 
-export const AREAS: Area[] = ["exatas", "biologicas", "linguagens", "humanas"];
+export const AREAS: Area[] = ["exact_sciences", "biological_sciences", "languages", "humanities"];
 
 export const areaLabels: Record<Area, string> = {
-  exatas: "Exatas",
-  biologicas: "Biológicas",
-  linguagens: "Linguagens",
-  humanas: "Humanas",
+  exact_sciences: "Exatas",
+  biological_sciences: "Biológicas",
+  languages: "Linguagens",
+  humanities: "Humanas",
 };
 
 export const subjectSchema = z.object({

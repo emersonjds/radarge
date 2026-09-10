@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const shiftSchema = z.enum(["manhã", "afternoon", "evening"]);
+export const shiftSchema = z.enum(["morning", "afternoon", "evening"]);
 export type Shift = z.infer<typeof shiftSchema>;
 
 export const groupSchema = z.object({
@@ -13,7 +13,7 @@ export const groupSchema = z.object({
 export type Group = z.infer<typeof groupSchema>;
 
 export const shiftLabels: Record<Shift, string> = {
-  manhã: "Manhã",
+  morning: "Manhã",
   afternoon: "Tarde",
   evening: "Noite",
 };

@@ -9,7 +9,7 @@ describe("subject writes (over the store)", () => {
   });
 
   it("creates and updates a subject", async () => {
-    const created = await createSubject({ name: "Filosofia", area: "humanas" });
+    const created = await createSubject({ name: "Filosofia", area: "humanities" });
     expect(created.id).toBeTruthy();
     await updateSubject(created.id, { name: "Sociologia" });
     const found = (await fetchSubjects()).find((s) => s.id === created.id);
@@ -17,13 +17,13 @@ describe("subject writes (over the store)", () => {
   });
 
   it("deletes an unused subject", async () => {
-    const created = await createSubject({ name: "Filosofia", area: "humanas" });
+    const created = await createSubject({ name: "Filosofia", area: "humanities" });
     await deleteSubject(created.id);
     expect((await fetchSubjects()).some((s) => s.id === created.id)).toBe(false);
   });
 
   it("refuses to delete a subject used by an assignment", async () => {
-    const created = await createSubject({ name: "Filosofia", area: "humanas" });
+    const created = await createSubject({ name: "Filosofia", area: "humanities" });
     await createAssignment({
       groupId: "turma-mat-b",
       subjectId: created.id,
