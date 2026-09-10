@@ -124,7 +124,7 @@ export function ProfilesAdmin() {
               <input
                 id="perfil-senha"
                 type="password"
-                minLength={6}
+                minLength={8}
                 autoComplete="new-password"
                 value={form.password}
                 onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}

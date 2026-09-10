@@ -66,6 +66,6 @@ describe("profile management + auth (integration, over the store)", () => {
         role: "teacher",
         password: "123",
       }),
-    ).rejects.toThrow(/pelo menos 6/);
+    ).rejects.toThrow(/pelo menos 8/);
   });
 });

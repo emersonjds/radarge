@@ -118,7 +118,7 @@ function ProfileFormBody({ profile, onClose }: ProfileFormBodyProps) {
         <input
           id="editar-senha"
           type="password"
-          minLength={6}
+          minLength={8}
           autoComplete="new-password"
           placeholder="Deixe em branco para manter"
           value={password}

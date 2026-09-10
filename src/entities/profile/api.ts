@@ -5,7 +5,7 @@ import { profileSchema, type Profile } from "./model";
 /** Profile without the credential — safe to hand to the UI layer. */
 export type PublicProfile = Omit<Profile, "passwordHash">;
 
-const MIN_PASSWORD_LENGTH = 6;
+const MIN_PASSWORD_LENGTH = 8;
 
 export function toPublicProfile(profile: Profile): PublicProfile {
   return {
@@ -53,7 +53,7 @@ export interface NewProfileInput {
 export async function createProfile(input: NewProfileInput): Promise<PublicProfile> {
   const username = input.username.trim().toLowerCase();
   if (input.password.length < MIN_PASSWORD_LENGTH) {
-    throw new Error("Senha deve ter pelo menos 6 caracteres.");
+    throw new Error("Senha deve ter pelo menos 8 caracteres.");
   }
   const existing = await fetchAllProfiles();
   if (existing.some((profile) => profile.username === username)) {
@@ -104,7 +104,7 @@ export async function updateProfile(id: string, patch: ProfileUpdate): Promise<P
   }
   if (patch.password) {
     if (patch.password.length < MIN_PASSWORD_LENGTH) {
-      throw new Error("Senha deve ter pelo menos 6 caracteres.");
+      throw new Error("Senha deve ter pelo menos 8 caracteres.");
     }
     next.passwordHash = await hashPassword(patch.password);
   }
