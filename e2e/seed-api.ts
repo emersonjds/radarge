@@ -181,7 +181,7 @@ export const ACCOUNTS = {
     password: "definitiva-pivot-prof-1",
   },
 
-  // reports/reports.spec.ts — central de análise and ficha do aluno.
+  // reports/reports.spec.ts — the analysis centre and the student record.
   reportsAdmin: {
     name: "Admin Relatorios E2E",
     username: "e2e.relatorios",
@@ -197,7 +197,7 @@ export const ACCOUNTS = {
     password: "definitiva-relatorios-prof-1",
   },
 
-  // student-detail/student-detail.spec.ts — ficha do aluno per role and scoping.
+  // student-detail/student-detail.spec.ts — the student record per role, and scoping.
   detailAdmin: {
     name: "Admin Detalhe E2E",
     username: "e2e.detalhe",
@@ -546,53 +546,53 @@ const seedAcademicStructure = async (
   token: string,
   subjects: Map<SubjectName, Identified>,
 ): Promise<void> => {
-  const professor1Id = await profileIdOf(token, ACCOUNTS.academicaProfessor1.username);
-  const professor2Id = await profileIdOf(token, ACCOUNTS.academicaProfessor2.username);
+  const teacher1Id = await profileIdOf(token, ACCOUNTS.academicaProfessor1.username);
+  const teacher2Id = await profileIdOf(token, ACCOUNTS.academicaProfessor2.username);
 
   await seedGroup(token, subjects, {
     name: "Reforço de Matemática — Segunda",
     shift: "afternoon",
-    teacherId: professor1Id,
+    teacherId: teacher1Id,
     subject: "Matemática",
   });
   await seedGroup(token, subjects, {
     name: "Reforço de Português — Quarta",
     shift: "morning",
-    teacherId: professor1Id,
+    teacherId: teacher1Id,
     subject: "Português",
   });
   await seedGroup(token, subjects, {
     name: "Reforço de Ciências — Quarta",
     shift: "afternoon",
-    teacherId: professor2Id,
+    teacherId: teacher2Id,
     subject: "Ciências",
   });
 };
 
 /** auth.spec.ts's "excluir professor regente" needs exactly one teacher with 2 turmas. */
-const seedPerfis = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
-  const professorId = await profileIdOf(token, ACCOUNTS.profilesTeacher.username);
+const seedProfiles = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
+  const teacherId = await profileIdOf(token, ACCOUNTS.profilesTeacher.username);
 
   await seedGroup(token, subjects, {
     name: "E2E Perfis — Aula A",
     shift: "afternoon",
-    teacherId: professorId,
+    teacherId: teacherId,
   });
   await seedGroup(token, subjects, {
     name: "E2E Perfis — Aula B",
     shift: "morning",
-    teacherId: professorId,
+    teacherId: teacherId,
   });
 };
 
 /** evaluations.spec.ts creates its own avaliações against one turma with one aluno. */
-const seedNotas = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
-  const professorId = await profileIdOf(token, ACCOUNTS.gradesTeacher.username);
+const seedGrades = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
+  const teacherId = await profileIdOf(token, ACCOUNTS.gradesTeacher.username);
 
   const group = await seedGroup(token, subjects, {
     name: "E2E Notas — Aula",
     shift: "afternoon",
-    teacherId: professorId,
+    teacherId: teacherId,
     subject: "Matemática",
   });
 
@@ -611,9 +611,9 @@ const seedNotas = async (token: string, subjects: Map<SubjectName, Identified>):
  * something to act on), and one with none (the scoping test starts from an empty group).
  * Benjamin's marks are reset to pending on every run, so "escopo" always starts clean.
  */
-const seedEventos = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
-  const professor1Id = await profileIdOf(token, ACCOUNTS.eventsTeacher1.username);
-  const professor2Id = await profileIdOf(token, ACCOUNTS.eventsTeacher2.username);
+const seedEvents = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
+  const teacher1Id = await profileIdOf(token, ACCOUNTS.eventsTeacher1.username);
+  const teacher2Id = await profileIdOf(token, ACCOUNTS.eventsTeacher2.username);
 
   // The coordinator test creates "Feira de Ciências" live through the UI, on the
   // teacher-2 group the scoping test expects to start empty. Clear it so a rerun's
@@ -626,13 +626,13 @@ const seedEventos = async (token: string, subjects: Map<SubjectName, Identified>
   const groupA = await seedGroup(token, subjects, {
     name: "E2E Eventos — Aula A",
     shift: "afternoon",
-    teacherId: professor1Id,
+    teacherId: teacher1Id,
     subject: "Matemática",
   });
   await seedGroup(token, subjects, {
     name: "E2E Eventos — Aula B",
     shift: "afternoon",
-    teacherId: professor2Id,
+    teacherId: teacher2Id,
     subject: "Ciências",
   });
 
@@ -651,7 +651,7 @@ const seedEventos = async (token: string, subjects: Map<SubjectName, Identified>
     groups: [groupA],
   });
 
-  const zoologico = await seedEvent(token, groupA, {
+  const zooTrip = await seedEvent(token, groupA, {
     title: "Passeio ao Zoológico",
     date: "2026-09-05",
     location: "Zoológico Municipal",
@@ -664,7 +664,7 @@ const seedEventos = async (token: string, subjects: Map<SubjectName, Identified>
     cost: 0,
   });
 
-  await apiRequest(`/events/${zoologico.id}/participations/${benjamin.id}`, "PUT", token, {
+  await apiRequest(`/events/${zooTrip.id}/participations/${benjamin.id}`, "PUT", token, {
     authorization: "pending",
     payment: "pending",
   });
@@ -685,24 +685,24 @@ const removeStaleFixture = async (token: string, name: string): Promise<void> =>
 const seedPivot = async (token: string): Promise<void> => {
   await removeStaleFixture(token, "João Pedro Silva");
 
-  const professorId = await profileIdOf(token, ACCOUNTS.pivotTeacher.username);
-  await seedGroup(token, new Map(), { name: "E2E Pivot — Aula", shift: "afternoon", teacherId: professorId });
+  const teacherId = await profileIdOf(token, ACCOUNTS.pivotTeacher.username);
+  await seedGroup(token, new Map(), { name: "E2E Pivot — Aula", shift: "afternoon", teacherId: teacherId });
 };
 
 /** "Enzo Ferreira" scores high in Matemática and lower in Português: aptitude reads "Exatas". */
-const seedRelatorios = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
-  const professorId = await profileIdOf(token, ACCOUNTS.reportsTeacher.username);
+const seedReports = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
+  const teacherId = await profileIdOf(token, ACCOUNTS.reportsTeacher.username);
 
   const groupA = await seedGroup(token, subjects, {
     name: "E2E Relatorios — Aula A",
     shift: "afternoon",
-    teacherId: professorId,
+    teacherId: teacherId,
     subject: "Matemática",
   });
   const groupB = await seedGroup(token, subjects, {
     name: "E2E Relatorios — Aula B",
     shift: "morning",
-    teacherId: professorId,
+    teacherId: teacherId,
     subject: "Português",
   });
 
@@ -746,31 +746,31 @@ const seedRelatorios = async (token: string, subjects: Map<SubjectName, Identifi
  * turmas under one professor, a student owned only by the other professor, one with no
  * turma at all, and one inactive.
  */
-const seedDetalhe = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
-  const professor1Id = await profileIdOf(token, ACCOUNTS.detailTeacher1.username);
-  const professor2Id = await profileIdOf(token, ACCOUNTS.detailTeacher2.username);
+const seedStudentDetail = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
+  const teacher1Id = await profileIdOf(token, ACCOUNTS.detailTeacher1.username);
+  const teacher2Id = await profileIdOf(token, ACCOUNTS.detailTeacher2.username);
 
   const groupA = await seedGroup(token, subjects, {
     name: "E2E Detalhe — Aula A",
     shift: "afternoon",
-    teacherId: professor1Id,
+    teacherId: teacher1Id,
     subject: "Matemática",
   });
   const groupB = await seedGroup(token, subjects, {
     name: "E2E Detalhe — Aula B",
     shift: "morning",
-    teacherId: professor1Id,
+    teacherId: teacher1Id,
     subject: "Português",
   });
   await seedGroup(token, subjects, {
     name: "E2E Detalhe — Aula C",
     shift: "afternoon",
-    teacherId: professor2Id,
+    teacherId: teacher2Id,
     subject: "Ciências",
   });
   const groupC = await findByName<Identified & { name: string }>(token, "/groups", "E2E Detalhe — Aula C");
 
-  const alunoUm = await seedStudent(token, {
+  const studentOne = await seedStudent(token, {
     name: "Aluno Detalhe Um",
     birthDate: "2012-04-11",
     guardianName: "Responsável do Aluno Detalhe Um",
@@ -778,16 +778,16 @@ const seedDetalhe = async (token: string, subjects: Map<SubjectName, Identified>
     groups: [groupA, groupB],
   });
 
-  // Without at least one roll call, the ficha's "Presença" tab has no month to
+  // Without at least one roll call, the record's "Presença" tab has no month to
   // summarize and renders an empty state instead of a heading — real, but not what
   // the tab-switching spec means to exercise.
-  const sessao = await apiRequest("/attendance-sessions", "POST", token, {
+  const session = await apiRequest("/attendance-sessions", "POST", token, {
     groupId: groupA.id,
     date: "2026-03-16",
   });
-  const { id: sessionId } = (await sessao.json()) as Identified;
+  const { id: sessionId } = (await session.json()) as Identified;
   await apiRequest(`/attendance-sessions/${sessionId}/records`, "PUT", token, {
-    entries: [{ studentId: alunoUm.id, status: "present" }],
+    entries: [{ studentId: studentOne.id, status: "present" }],
   });
   await seedStudent(token, {
     name: "Aluno Detalhe Dois",
@@ -813,12 +813,12 @@ const seedDetalhe = async (token: string, subjects: Map<SubjectName, Identified>
   });
 };
 
-const seedChamada = async (token: string): Promise<void> => {
-  const professorId = await profileIdOf(token, ACCOUNTS.rollCallTeacher.username);
+const seedRollCall = async (token: string): Promise<void> => {
+  const teacherId = await profileIdOf(token, ACCOUNTS.rollCallTeacher.username);
   const group = await seedGroup(token, new Map(), {
     name: "E2E Chamada — Aula",
     shift: "afternoon",
-    teacherId: professorId,
+    teacherId: teacherId,
   });
 
   await seedStudent(token, {
@@ -925,11 +925,11 @@ export const seedAll = async (): Promise<void> => {
   const subjects = await seedSubjects(token);
 
   await seedAcademicStructure(token, subjects);
-  await seedPerfis(token, subjects);
-  await seedNotas(token, subjects);
-  await seedEventos(token, subjects);
+  await seedProfiles(token, subjects);
+  await seedGrades(token, subjects);
+  await seedEvents(token, subjects);
   await seedPivot(token);
-  await seedRelatorios(token, subjects);
-  await seedDetalhe(token, subjects);
-  await seedChamada(token);
+  await seedReports(token, subjects);
+  await seedStudentDetail(token, subjects);
+  await seedRollCall(token);
 };

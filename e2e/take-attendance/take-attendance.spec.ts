@@ -30,19 +30,19 @@ test.describe("mobile roll call (cards)", () => {
 
     const rows = page.locator('[aria-label^="Status de presença de"]');
     await expect(rows.first()).toBeVisible();
-    const totalInicial = await rows.count();
-    expect(totalInicial).toBeGreaterThan(0);
+    const initialTotal = await rows.count();
+    expect(initialTotal).toBeGreaterThan(0);
 
-    const primeiroNome = (await rows.first().getAttribute("aria-label"))!.replace(
+    const firstStudentName = (await rows.first().getAttribute("aria-label"))!.replace(
       "Status de presença de ",
       "",
     );
 
-    await page.getByPlaceholder("Buscar aluno por nome...").fill(primeiroNome);
+    await page.getByPlaceholder("Buscar aluno por nome...").fill(firstStudentName);
     await expect(rows).toHaveCount(1);
 
     await page.getByPlaceholder("Buscar aluno por nome...").fill("");
-    await expect(rows).toHaveCount(totalInicial);
+    await expect(rows).toHaveCount(initialTotal);
 
     await rows.first().getByRole("button", { name: "Ausente" }).click();
     await expect(rows.first().getByRole("button", { name: "Ausente" })).toHaveAttribute(

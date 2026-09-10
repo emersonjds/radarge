@@ -22,7 +22,7 @@ interface StudentIds {
 
 let ids: StudentIds;
 let adminContext: BrowserContext;
-let professor1Context: BrowserContext;
+let teacher1Context: BrowserContext;
 
 test.beforeAll(async ({ browser }) => {
   const token = await adminToken();
@@ -37,7 +37,7 @@ test.beforeAll(async ({ browser }) => {
   };
 
   adminContext = await signInContext(browser, ACCOUNTS.detailAdmin);
-  professor1Context = await signInContext(browser, ACCOUNTS.detailTeacher1);
+  teacher1Context = await signInContext(browser, ACCOUNTS.detailTeacher1);
 });
 
 test.describe("student detail (desktop)", () => {
@@ -56,7 +56,7 @@ test.describe("student detail (desktop)", () => {
   });
 
   test("teacher opens the detail from the student list", async () => {
-    const page = await newPageIn(professor1Context, DESKTOP_VIEWPORT);
+    const page = await newPageIn(teacher1Context, DESKTOP_VIEWPORT);
     await page.goto("/students");
 
     await page.getByRole("link", { name: "Ver detalhes de Aluno Detalhe Um" }).click();
@@ -71,7 +71,7 @@ test.describe("student detail (desktop)", () => {
   });
 
   test("scope: a teacher cannot reach another teacher's student record, not even by direct link (PII)", async () => {
-    const page = await newPageIn(professor1Context, DESKTOP_VIEWPORT);
+    const page = await newPageIn(teacher1Context, DESKTOP_VIEWPORT);
     await page.goto(`/students?aluno=${ids.dois}`);
 
     // Aluno Detalhe Dois é aluno do outro teacher — pra este teacher o aluno
@@ -91,7 +91,7 @@ test.describe("student detail (desktop)", () => {
   });
 
   test("teacher sees the full record of their own student, including guardian PII", async () => {
-    const page = await newPageIn(professor1Context, DESKTOP_VIEWPORT);
+    const page = await newPageIn(teacher1Context, DESKTOP_VIEWPORT);
     await page.goto(`/students?aluno=${ids.um}`);
 
     await expect(page.getByRole("heading", { name: "Aluno Detalhe Um" })).toBeVisible();
@@ -161,7 +161,7 @@ test.describe("student detail (desktop)", () => {
 
 test.describe("student detail (mobile 375px)", () => {
   test("teacher views the student detail with usable tabs", async () => {
-    const page = await newPageIn(professor1Context, MOBILE_VIEWPORT);
+    const page = await newPageIn(teacher1Context, MOBILE_VIEWPORT);
     await page.goto(`/students?aluno=${ids.um}`);
 
     await expect(page.getByRole("heading", { name: "Aluno Detalhe Um" })).toBeVisible();
