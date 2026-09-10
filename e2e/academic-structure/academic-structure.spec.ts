@@ -21,6 +21,8 @@ test.describe("academic structure admin", () => {
 
     await page.getByRole("button", { name: "Adicionar aula" }).click();
     await page.getByLabel("Nome").fill("Redação I");
+    await page.getByLabel("Professor regente").click();
+    await page.getByRole("option", { name: "Ricardo Alves" }).click();
     await page.getByRole("button", { name: "Salvar" }).click();
     await expect(page.getByText("Redação I")).toBeVisible();
 

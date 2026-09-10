@@ -11,10 +11,10 @@ test.describe("ong reforço pivot: ficha cadastral e matrícula N:N", () => {
     await expect(page.getByRole("heading", { name: "Alunos" })).toBeVisible({ timeout: 10000 });
 
     await page.getByRole("button", { name: "Adicionar aluno" }).click();
-    await page.locator("#aluno-nome").fill("João Pedro Silva");
-    await page.locator("#aluno-nascimento").fill("2010-03-15");
-    await page.locator("#aluno-responsavel").fill("Maria Silva");
-    await page.locator("#aluno-telefone").fill("(11) 98765-4321");
+    await page.getByLabel("Nome", { exact: true }).fill("João Pedro Silva");
+    await page.getByLabel("Data de nascimento").fill("2010-03-15");
+    await page.getByLabel("Nome do responsável").fill("Maria Silva");
+    await page.getByLabel("Telefone do responsável").fill("(11) 98765-4321");
     await page.getByRole("button", { name: "Salvar" }).click();
 
     await expect(page.getByText("João Pedro Silva")).toBeVisible({ timeout: 5000 });

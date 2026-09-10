@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import type { Event } from "@/entities/event/model";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { eventFormSchema, type Event, type EventFormValues } from "@/entities/event/model";
 import { useCreateEvent, useUpdateEvent } from "@/entities/event/queries";
 import type { Group } from "@/entities/group/model";
-import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
-import { Label } from "@/shared/ui/label";
-
-const controlClasses =
-  "h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20";
+import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 
 export interface EventFormModalProps {
   event: Event | null | undefined;
@@ -21,8 +22,8 @@ export function EventFormModal({ event, groups, onClose }: EventFormModalProps) 
   return (
     <Dialog
       open={event !== undefined}
-      onOpenChange={(aberto) => {
-        if (!aberto) onClose();
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
     >
       <DialogContent className="max-w-lg">
@@ -44,126 +45,137 @@ function EventFormBody({ event, groups, onClose }: EventFormBodyProps) {
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
 
-  const [groupId, setGroupId] = useState(event?.groupId ?? groups[0]?.id ?? "");
-  const [title, setTitle] = useState(event?.title ?? "");
-  const [date, setDate] = useState(event?.date ?? "");
-  const [location, setLocation] = useState(event?.location ?? "");
-  const [cost, setCost] = useState(event?.cost ?? 0);
-  const [erro, setErro] = useState<string | null>(null);
-  const saving = createEvent.isPending || updateEvent.isPending;
+  const form = useForm<EventFormValues>({
+    resolver: zodResolver(eventFormSchema),
+    defaultValues: {
+      groupId: event?.groupId ?? "",
+      title: event?.title ?? "",
+      date: event?.date ?? "",
+      location: event?.location ?? "",
+      cost: event?.cost ?? 0,
+    },
+  });
 
-  async function save(formEvent: FormEvent<HTMLFormElement>) {
-    formEvent.preventDefault();
-    if (saving) return;
-    setErro(null);
+  const submit = async (values: EventFormValues) => {
     try {
       if (event) {
-        await updateEvent.mutateAsync({
-          id: event.id,
-          patch: { title, date, location, cost },
-        });
+        await updateEvent.mutateAsync({ id: event.id, patch: values });
       } else {
-        await createEvent.mutateAsync({ groupId, title, date, location, cost });
+        await createEvent.mutateAsync(values);
       }
       onClose();
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível salvar o evento.");
+    } catch (error) {
+      form.setError("root", {
+        message: messageForError(error, "Não foi possível salvar o evento."),
+      });
     }
-  }
+  };
+
+  const { isSubmitting, errors } = form.formState;
 
   return (
-    <form onSubmit={save}>
-      <DialogTitle className="mb-6 text-foreground">{event ? "Editar evento" : "Novo evento"}</DialogTitle>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(submit)} noValidate>
+        <DialogTitle className="mb-6 text-foreground">
+          {event ? "Editar evento" : "Novo evento"}
+        </DialogTitle>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="evento-aula">
-          Aula
-        </Label>
-        <select
-          id="evento-aula"
-          value={groupId}
-          onChange={(e) => setGroupId(e.target.value)}
-          required
-          disabled={Boolean(event)}
-          className={controlClasses}
-        >
-          {groups.map((group) => (
-            <option key={group.id} value={group.id}>
-              {group.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="evento-titulo">
-          Título
-        </Label>
-        <input
-          id="evento-titulo"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          autoFocus
-          className={controlClasses}
+        <FormField
+          control={form.control}
+          name="groupId"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Aula</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange} disabled={Boolean(event)}>
+                <FormControl>
+                  <SelectTrigger className="h-11 w-full">
+                    <SelectValue placeholder="Selecione a aula" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {groups.map((group) => (
+                    <SelectItem key={group.id} value={group.id}>
+                      {group.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="evento-data">
-          Data
-        </Label>
-        <input
-          id="evento-data"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-          className={controlClasses}
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Título</FormLabel>
+              <FormControl>
+                <Input autoFocus className="h-11" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="evento-local">
-          Local
-        </Label>
-        <input
-          id="evento-local"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          required
-          className={controlClasses}
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Data</FormLabel>
+              <FormControl>
+                <Input type="date" className="h-11" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="evento-valor">
-          Valor por aluno (R$)
-        </Label>
-        <input
-          id="evento-valor"
-          type="number"
-          min={0}
-          step={0.01}
-          value={cost}
-          onChange={(e) => setCost(Number(e.target.value))}
-          required
-          className={controlClasses}
+        <FormField
+          control={form.control}
+          name="location"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Local</FormLabel>
+              <FormControl>
+                <Input className="h-11" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      {erro && (
-        <p role="alert" className="mb-5 text-sm text-destructive">
-          {erro}
-        </p>
-      )}
+        <FormField
+          control={form.control}
+          name="cost"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Valor por aluno (R$)</FormLabel>
+              <FormControl>
+                <Input type="number" min={0} step={0.01} className="h-11" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancelar
-        </Button>
-        <Button disabled={saving}>{saving ? "Salvando…" : "Salvar"}</Button>
-      </div>
-    </form>
+        {errors.root && (
+          <p role="alert" className="mb-5 text-sm text-destructive">
+            {errors.root.message}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-3">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando…" : "Salvar"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

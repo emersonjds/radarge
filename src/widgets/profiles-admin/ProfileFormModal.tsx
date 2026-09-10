@@ -1,16 +1,23 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { roleLabels, roleSchema, type Role } from "@/entities/profile/model";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  profileFormSchema,
+  roleLabels,
+  roleSchema,
+  type ProfileFormValues,
+} from "@/entities/profile/model";
 import { useUpdateProfile } from "@/entities/profile/queries";
 import type { PublicProfile } from "@/entities/profile/api";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
 import { Button } from "@/shared/ui/button";
-import { Label } from "@/shared/ui/label";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 
 const ROLES = roleSchema.options;
-const control =
-  "h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20";
 
 export interface ProfileFormModalProps {
   profile: PublicProfile | null;
@@ -21,8 +28,8 @@ export function ProfileFormModal({ profile, onClose }: ProfileFormModalProps) {
   return (
     <Dialog
       open={profile !== null}
-      onOpenChange={(aberto) => {
-        if (!aberto) onClose();
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
     >
       <DialogContent className="max-w-lg">
@@ -40,107 +47,125 @@ interface ProfileFormBodyProps {
 function ProfileFormBody({ profile, onClose }: ProfileFormBodyProps) {
   const updateProfile = useUpdateProfile();
 
-  const [name, setName] = useState(profile.name);
-  const [username, setUsername] = useState(profile.username);
-  const [role, setRole] = useState<Role>(profile.role);
-  const [password, setPassword] = useState("");
-  const [erro, setErro] = useState<string | null>(null);
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema("edit")),
+    defaultValues: {
+      name: profile.name,
+      username: profile.username,
+      role: profile.role,
+      password: "",
+    },
+  });
 
-  async function salvar(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (updateProfile.isPending) return;
-    setErro(null);
+  const submit = async (values: ProfileFormValues) => {
     try {
       await updateProfile.mutateAsync({
         id: profile.id,
-        patch: { name, username, role, password: password || undefined },
+        patch: { ...values, password: values.password || undefined },
       });
       onClose();
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível salvar o perfil.");
+    } catch (error) {
+      form.setError("root", {
+        message: messageForError(error, "Não foi possível salvar o perfil."),
+      });
     }
-  }
+  };
+
+  const { isSubmitting, errors } = form.formState;
 
   return (
-    <form onSubmit={salvar}>
-      <DialogTitle className="mb-6 text-foreground">Editar perfil</DialogTitle>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(submit)} noValidate>
+        <DialogTitle className="mb-6 text-foreground">Editar perfil</DialogTitle>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="editar-nome">
-          Nome
-        </Label>
-        <input
-          id="editar-nome"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          required
-          autoFocus
-          className={control}
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Nome</FormLabel>
+              <FormControl>
+                <Input autoFocus className="h-11" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="editar-usuario">
-          Login de usuário
-        </Label>
-        <input
-          id="editar-usuario"
-          autoCapitalize="none"
-          value={username}
-          onChange={(event) => setUsername(event.target.value)}
-          required
-          className={control}
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Login de usuário</FormLabel>
+              <FormControl>
+                <Input autoCapitalize="none" className="h-11" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="editar-papel">
-          Papel
-        </Label>
-        <select
-          id="editar-papel"
-          value={role}
-          onChange={(event) => setRole(event.target.value as Role)}
-          className={control}
-        >
-          {ROLES.map((opcao) => (
-            <option key={opcao} value={opcao}>
-              {roleLabels[opcao]}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="editar-senha">
-          Nova senha
-        </Label>
-        <input
-          id="editar-senha"
-          type="password"
-          minLength={8}
-          autoComplete="new-password"
-          placeholder="Deixe em branco para manter"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          className={control}
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Papel</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger className="h-11 w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {ROLES.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {roleLabels[role]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      {erro && (
-        <p role="alert" className="mb-5 text-sm text-destructive">
-          {erro}
-        </p>
-      )}
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Nova senha</FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="Deixe em branco para manter"
+                  className="h-11"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancelar
-        </Button>
-        <Button disabled={updateProfile.isPending}>
-          {updateProfile.isPending ? "Salvando…" : "Salvar"}
-        </Button>
-      </div>
-    </form>
+        {errors.root && (
+          <p role="alert" className="mb-5 text-sm text-destructive">
+            {errors.root.message}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-3">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando…" : "Salvar"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

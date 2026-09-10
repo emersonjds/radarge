@@ -1,7 +1,15 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { roleLabels, roleSchema, type Role } from "@/entities/profile/model";
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  profileFormSchema,
+  roleLabels,
+  roleSchema,
+  type ProfileFormValues,
+  type Role,
+} from "@/entities/profile/model";
 import {
   useCreateProfile,
   useDeleteProfile,
@@ -12,53 +20,63 @@ import { useGroups } from "@/entities/group/queries";
 import { useSession } from "@/features/session/use-session";
 import type { PublicProfile } from "@/entities/profile/api";
 import { ProfileFormModal } from "./ProfileFormModal";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { Label } from "@/shared/ui/label";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
 import { Pencil, Power, PowerOff, Trash2 } from "lucide-react";
 import { IconButton } from "@/shared/ui/icon-button";
 
 const ROLES = roleSchema.options;
-const EMPTY_FORM = { name: "", username: "", role: "teacher" as Role, password: "" };
+const EMPTY_FORM_VALUES: ProfileFormValues = {
+  name: "",
+  username: "",
+  role: "teacher" as Role,
+  password: "",
+};
 
-const control =
-  "h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20";
 export function ProfilesAdmin() {
   const { profileId } = useSession();
-  const { data: perfis, isLoading } = useProfiles();
-  const { data: aulas } = useGroups();
+  const { data: profiles, isLoading } = useProfiles();
+  const { data: groups } = useGroups();
   const createProfile = useCreateProfile();
   const setActive = useSetProfileActive();
   const deleteProfile = useDeleteProfile();
 
-  function confirmarExclusao(perfil: PublicProfile) {
-    const regencias = (aulas ?? []).filter((aula) => aula.teacherId === perfil.id).length;
-    const aviso =
-      regencias > 0
-        ? `${perfil.name} é regente de ${regencias} ${regencias === 1 ? "aula" : "aulas"}, que ficarão sem professor. Excluir o perfil mesmo assim?`
-        : `Excluir o perfil de ${perfil.name}?`;
-    if (window.confirm(aviso)) deleteProfile.mutate(perfil.id);
+  function confirmDelete(profile: PublicProfile) {
+    const teachingCount = (groups ?? []).filter((group) => group.teacherId === profile.id).length;
+    const warning =
+      teachingCount > 0
+        ? `${profile.name} é regente de ${teachingCount} ${teachingCount === 1 ? "aula" : "aulas"}, que ficarão sem professor. Excluir o perfil mesmo assim?`
+        : `Excluir o perfil de ${profile.name}?`;
+    if (window.confirm(warning)) deleteProfile.mutate(profile.id);
   }
 
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [erro, setErro] = useState<string | null>(null);
-  const [criado, setCriado] = useState<string | null>(null);
-  const [editando, setEditando] = useState<PublicProfile | null>(null);
+  const [createdMessage, setCreatedMessage] = useState<string | null>(null);
+  const [editingProfile, setEditingProfile] = useState<PublicProfile | null>(null);
 
-  async function criar(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (createProfile.isPending) return;
-    setErro(null);
-    setCriado(null);
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema("create")),
+    defaultValues: EMPTY_FORM_VALUES,
+  });
+
+  const submit = async (values: ProfileFormValues) => {
+    setCreatedMessage(null);
     try {
-      const perfil = await createProfile.mutateAsync(form);
-      setCriado(`Perfil de ${perfil.name} criado.`);
-      setForm(EMPTY_FORM);
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível criar o perfil.");
+      const profile = await createProfile.mutateAsync(values);
+      setCreatedMessage(`Perfil de ${profile.name} criado.`);
+      form.reset(EMPTY_FORM_VALUES);
+    } catch (error) {
+      form.setError("root", {
+        message: messageForError(error, "Não foi possível criar o perfil."),
+      });
     }
-  }
+  };
+
+  const { isSubmitting, errors } = form.formState;
 
   return (
     <div className="flex flex-col gap-6">
@@ -71,86 +89,100 @@ export function ProfilesAdmin() {
 
       <section className="rounded-xl border bg-card p-4 shadow-sm md:p-5">
         <h2 className="mb-5 text-lg font-semibold text-foreground">Novo perfil</h2>
-        <form onSubmit={criar} className="flex flex-col gap-5">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div>
-              <Label className="mb-1.5" htmlFor="perfil-nome">
-                Nome
-              </Label>
-              <input
-                id="perfil-nome"
-                value={form.name}
-                onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-                required
-                className={control}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(submit)} noValidate className="flex flex-col gap-5">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome</FormLabel>
+                    <FormControl>
+                      <Input className="h-11" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div>
-              <Label className="mb-1.5" htmlFor="perfil-usuario">
-                Login de usuário
-              </Label>
-              <input
-                id="perfil-usuario"
-                autoCapitalize="none"
-                value={form.username}
-                onChange={(event) => setForm((prev) => ({ ...prev, username: event.target.value }))}
-                required
-                className={control}
-              />
-            </div>
-            <div>
-              <Label className="mb-1.5" htmlFor="perfil-papel">
-                Papel
-              </Label>
-              <select
-                id="perfil-papel"
-                value={form.role}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, role: event.target.value as Role }))
-                }
-                className={control}
-              >
-                {ROLES.map((role) => (
-                  <option key={role} value={role}>
-                    {roleLabels[role]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label className="mb-1.5" htmlFor="perfil-senha">
-                Senha
-              </Label>
-              <input
-                id="perfil-senha"
-                type="password"
-                minLength={8}
-                autoComplete="new-password"
-                value={form.password}
-                onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
-                required
-                className={control}
-              />
-            </div>
-          </div>
 
-          {erro && (
-            <p role="alert" className="text-sm text-destructive">
-              {erro}
-            </p>
-          )}
-          {criado && (
-            <p role="status" className="text-sm text-success-600">
-              {criado}
-            </p>
-          )}
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Login de usuário</FormLabel>
+                    <FormControl>
+                      <Input autoCapitalize="none" className="h-11" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <div>
-            <Button type="submit" size="sm" disabled={createProfile.isPending}>
-              {createProfile.isPending ? "Criando…" : "Criar perfil"}
-            </Button>
-          </div>
-        </form>
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Papel</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="h-11 w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ROLES.map((role) => (
+                          <SelectItem key={role} value={role}>
+                            {roleLabels[role]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        autoComplete="new-password"
+                        className="h-11"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {errors.root && (
+              <p role="alert" className="text-sm text-destructive">
+                {errors.root.message}
+              </p>
+            )}
+            {createdMessage && (
+              <p role="status" className="text-sm text-success-600">
+                {createdMessage}
+              </p>
+            )}
+
+            <div>
+              <Button type="submit" size="sm" disabled={isSubmitting}>
+                {isSubmitting ? "Criando…" : "Criar perfil"}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </section>
 
       <section className="rounded-xl border bg-card p-4 shadow-sm md:p-5">
@@ -159,54 +191,54 @@ export function ProfilesAdmin() {
           <p className="text-sm text-muted-foreground">Carregando…</p>
         ) : (
           <ul className="flex flex-col gap-3">
-            {(perfis ?? []).map((perfil) => {
-              const souEu = perfil.id === profileId;
+            {(profiles ?? []).map((profile) => {
+              const isCurrentUser = profile.id === profileId;
               return (
                 <li
-                  key={perfil.id}
+                  key={profile.id}
                   className="flex flex-wrap items-center gap-3 rounded-xl border border-border px-4 py-3"
                 >
                   <div className="mr-auto min-w-0">
                     <p
                       className={cn(
                         "flex items-center gap-2 font-medium",
-                        perfil.active ? "text-foreground" : "text-muted-foreground",
+                        profile.active ? "text-foreground" : "text-muted-foreground",
                       )}
                     >
-                      {perfil.name}
-                      {souEu && <Badge variant="outline">Você</Badge>}
+                      {profile.name}
+                      {isCurrentUser && <Badge variant="outline">Você</Badge>}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      @{perfil.username} · {roleLabels[perfil.role]}
+                      @{profile.username} · {roleLabels[profile.role]}
                     </p>
                   </div>
-                  <Badge variant={perfil.active ? "success" : "secondary"}>
-                    {perfil.active ? "Ativo" : "Inativo"}
+                  <Badge variant={profile.active ? "success" : "secondary"}>
+                    {profile.active ? "Ativo" : "Inativo"}
                   </Badge>
                   <div className="flex items-center gap-1">
                     <IconButton
                       icon={Pencil}
-                      label={`Editar ${perfil.name}`}
-                      onClick={() => setEditando(perfil)}
+                      label={`Editar ${profile.name}`}
+                      onClick={() => setEditingProfile(profile)}
                     />
-                    {!souEu && (
+                    {!isCurrentUser && (
                       <>
                         <IconButton
-                          icon={perfil.active ? PowerOff : Power}
+                          icon={profile.active ? PowerOff : Power}
                           label={
-                            perfil.active ? `Desativar ${perfil.name}` : `Ativar ${perfil.name}`
+                            profile.active ? `Desativar ${profile.name}` : `Ativar ${profile.name}`
                           }
                           disabled={setActive.isPending}
                           onClick={() =>
-                            setActive.mutate({ id: perfil.id, active: !perfil.active })
+                            setActive.mutate({ id: profile.id, active: !profile.active })
                           }
                         />
                         <IconButton
                           icon={Trash2}
-                          label={`Excluir ${perfil.name}`}
+                          label={`Excluir ${profile.name}`}
                           tone="destructive"
                           disabled={deleteProfile.isPending}
-                          onClick={() => confirmarExclusao(perfil)}
+                          onClick={() => confirmDelete(profile)}
                         />
                       </>
                     )}
@@ -218,7 +250,7 @@ export function ProfilesAdmin() {
         )}
       </section>
 
-      <ProfileFormModal profile={editando} onClose={() => setEditando(null)} />
+      <ProfileFormModal profile={editingProfile} onClose={() => setEditingProfile(null)} />
     </div>
   );
 }

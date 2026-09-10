@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import type { Student } from "@/entities/student/model";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { studentFormSchema, type Student, type StudentFormValues } from "@/entities/student/model";
 import { useCreateStudent, useUpdateStudent } from "@/entities/student/queries";
-import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
-import { Label } from "@/shared/ui/label";
-import { Input } from "@/shared/ui/input";
 import { Checkbox } from "@/shared/ui/checkbox";
+import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
 
 export interface StudentFormModalProps {
   student: Student | null | undefined;
@@ -18,13 +20,13 @@ export function StudentFormModal({ student, onClose }: StudentFormModalProps) {
   return (
     <Dialog
       open={student !== undefined}
-      onOpenChange={(aberto) => {
-        if (!aberto) onClose();
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
     >
       <DialogContent className="max-w-lg">
         {student !== undefined && (
-          <StudentFormBody key={student?.id ?? "novo"} student={student} onClose={onClose} />
+          <StudentFormBody key={student?.id ?? "new"} student={student} onClose={onClose} />
         )}
       </DialogContent>
     </Dialog>
@@ -40,116 +42,136 @@ function StudentFormBody({ student, onClose }: StudentFormBodyProps) {
   const createStudent = useCreateStudent();
   const updateStudent = useUpdateStudent();
 
-  const [name, setName] = useState(student?.name ?? "");
-  const [birthDate, setBirthDate] = useState(student?.birthDate ?? "");
-  const [guardianName, setGuardianName] = useState(student?.guardianName ?? "");
-  const [guardianPhone, setGuardianPhone] = useState(student?.guardianPhone ?? "");
-  const [active, setActive] = useState(student?.active ?? true);
-  const [erro, setErro] = useState<string | null>(null);
+  const form = useForm<StudentFormValues>({
+    resolver: zodResolver(studentFormSchema),
+    defaultValues: {
+      name: student?.name ?? "",
+      birthDate: student?.birthDate ?? "",
+      guardianName: student?.guardianName ?? "",
+      guardianPhone: student?.guardianPhone ?? "",
+      active: student?.active ?? true,
+    },
+  });
 
-  const salvando = createStudent.isPending || updateStudent.isPending;
-
-  async function salvar(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (salvando) return;
-    setErro(null);
+  const submit = async (values: StudentFormValues) => {
     try {
       if (student) {
-        await updateStudent.mutateAsync({
-          id: student.id,
-          patch: { name, birthDate, guardianName, guardianPhone, active },
-        });
+        await updateStudent.mutateAsync({ id: student.id, patch: values });
       } else {
-        await createStudent.mutateAsync({ name, birthDate, guardianName, guardianPhone });
+        await createStudent.mutateAsync(values);
       }
       onClose();
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível salvar o aluno.");
+    } catch (error) {
+      form.setError("root", {
+        message: messageForError(error, "Não foi possível salvar o aluno."),
+      });
     }
-  }
+  };
+
+  const { isSubmitting, errors } = form.formState;
 
   return (
-    <form onSubmit={salvar}>
-      <DialogTitle className="mb-6 text-foreground">
-        {student ? "Editar aluno" : "Adicionar aluno"}
-      </DialogTitle>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(submit)} noValidate>
+        <DialogTitle className="mb-6 text-foreground">
+          {student ? "Editar aluno" : "Adicionar aluno"}
+        </DialogTitle>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="aluno-nome">
-          Nome
-        </Label>
-        <Input
-          id="aluno-nome"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          required
-          autoFocus
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Nome</FormLabel>
+              <FormControl>
+                <Input autoFocus className="h-11" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="aluno-nascimento">
-          Data de nascimento
-        </Label>
-        <Input
-          id="aluno-nascimento"
-          type="date"
-          value={birthDate}
-          onChange={(event) => setBirthDate(event.target.value)}
-          required
+        <FormField
+          control={form.control}
+          name="birthDate"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Data de nascimento</FormLabel>
+              <FormControl>
+                <Input type="date" className="h-11" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="aluno-responsavel">
-          Nome do responsável
-        </Label>
-        <Input
-          id="aluno-responsavel"
-          value={guardianName}
-          onChange={(event) => setGuardianName(event.target.value)}
-          required
+        <FormField
+          control={form.control}
+          name="guardianName"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Nome do responsável</FormLabel>
+              <FormControl>
+                <Input className="h-11" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="aluno-telefone">
-          Telefone do responsável
-        </Label>
-        <Input
-          id="aluno-telefone"
-          type="tel"
-          inputMode="tel"
-          placeholder="(11) 91234-5678"
-          value={guardianPhone}
-          onChange={(event) => setGuardianPhone(event.target.value)}
-          required
+        <FormField
+          control={form.control}
+          name="guardianPhone"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Telefone do responsável</FormLabel>
+              <FormControl>
+                <Input
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="(11) 91234-5678"
+                  className="h-11"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      {student && (
-        <div className="mb-5 flex items-center gap-2">
-          <Checkbox
-            id="aluno-ativo"
-            checked={active}
-            onCheckedChange={(checked) => setActive(checked === true)}
+        {student && (
+          <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="mb-5 flex flex-row items-center gap-2">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                  />
+                </FormControl>
+                <FormLabel>Ativo</FormLabel>
+              </FormItem>
+            )}
           />
-          <Label htmlFor="aluno-ativo">Ativo</Label>
+        )}
+
+        {errors.root && (
+          <p role="alert" className="mb-5 text-sm text-destructive">
+            {errors.root.message}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-3">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando…" : "Salvar"}
+          </Button>
         </div>
-      )}
-
-      {erro && (
-        <p role="alert" className="mb-5 text-sm text-destructive">
-          {erro}
-        </p>
-      )}
-
-      <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancelar
-        </Button>
-        <Button disabled={salvando}>{salvando ? "Salvando…" : "Salvar"}</Button>
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 }

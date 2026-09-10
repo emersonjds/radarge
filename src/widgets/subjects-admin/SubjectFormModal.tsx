@@ -1,15 +1,21 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { AREAS, areaLabels, type Area } from "@/entities/subject/model";
-import type { Subject } from "@/entities/subject/model";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  AREAS,
+  areaLabels,
+  subjectFormSchema,
+  type Subject,
+  type SubjectFormValues,
+} from "@/entities/subject/model";
 import { useCreateSubject, useUpdateSubject } from "@/entities/subject/queries";
-import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
-import { Label } from "@/shared/ui/label";
-
-const controlClasses =
-  "h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20";
+import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 
 export interface SubjectFormModalProps {
   subject: Subject | null | undefined;
@@ -20,8 +26,8 @@ export function SubjectFormModal({ subject, onClose }: SubjectFormModalProps) {
   return (
     <Dialog
       open={subject !== undefined}
-      onOpenChange={(aberto) => {
-        if (!aberto) onClose();
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
     >
       <DialogContent className="max-w-lg">
@@ -37,77 +43,92 @@ function SubjectFormBody({ subject, onClose }: { subject: Subject | null; onClos
   const createSubject = useCreateSubject();
   const updateSubject = useUpdateSubject();
 
-  const [name, setName] = useState(subject?.name ?? "");
-  const [area, setArea] = useState<Area>(subject?.area ?? "exact_sciences");
-  const [erro, setErro] = useState<string | null>(null);
-  const saving = createSubject.isPending || updateSubject.isPending;
+  const form = useForm<SubjectFormValues>({
+    resolver: zodResolver(subjectFormSchema),
+    defaultValues: {
+      name: subject?.name ?? "",
+      area: subject?.area ?? "exact_sciences",
+    },
+  });
 
-  async function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (saving) return;
-    setErro(null);
+  const submit = async (values: SubjectFormValues) => {
     try {
       if (subject) {
-        await updateSubject.mutateAsync({ id: subject.id, patch: { name: name.trim(), area } });
+        await updateSubject.mutateAsync({ id: subject.id, patch: values });
       } else {
-        await createSubject.mutateAsync({ name, area });
+        await createSubject.mutateAsync(values);
       }
       onClose();
-    } catch {
-      setErro("Não foi possível salvar a matéria.");
+    } catch (error) {
+      form.setError("root", {
+        message: messageForError(error, "Não foi possível salvar a matéria."),
+      });
     }
-  }
+  };
+
+  const { isSubmitting, errors } = form.formState;
 
   return (
-    <form onSubmit={save}>
-      <DialogTitle className="mb-6 text-foreground">
-        {subject ? "Editar matéria" : "Adicionar matéria"}
-      </DialogTitle>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(submit)} noValidate>
+        <DialogTitle className="mb-6 text-foreground">
+          {subject ? "Editar matéria" : "Adicionar matéria"}
+        </DialogTitle>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="materia-nome">
-          Nome
-        </Label>
-        <input
-          id="materia-nome"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          required
-          autoFocus
-          className={controlClasses}
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Nome</FormLabel>
+              <FormControl>
+                <Input autoFocus className="h-11" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="materia-area">
-          Área
-        </Label>
-        <select
-          id="materia-area"
-          value={area}
-          onChange={(event) => setArea(event.target.value as Area)}
-          className={controlClasses}
-        >
-          {AREAS.map((value) => (
-            <option key={value} value={value}>
-              {areaLabels[value]}
-            </option>
-          ))}
-        </select>
-      </div>
+        <FormField
+          control={form.control}
+          name="area"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Área</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger className="h-11 w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {AREAS.map((area) => (
+                    <SelectItem key={area} value={area}>
+                      {areaLabels[area]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      {erro && (
-        <p role="alert" className="mb-5 text-sm text-destructive">
-          {erro}
-        </p>
-      )}
+        {errors.root && (
+          <p role="alert" className="mb-5 text-sm text-destructive">
+            {errors.root.message}
+          </p>
+        )}
 
-      <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancelar
-        </Button>
-        <Button disabled={saving}>{saving ? "Salvando…" : "Salvar"}</Button>
-      </div>
-    </form>
+        <div className="flex justify-end gap-3">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando…" : "Salvar"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
