@@ -22,3 +22,33 @@ export const profileSchema = z.object({
 });
 
 export type Profile = z.infer<typeof profileSchema>;
+
+export const MIN_PASSWORD_LENGTH = 8;
+
+export const PASSWORD_MIN_LENGTH_MESSAGE = `Senha deve ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`;
+
+/**
+ * What the profile form collects. Splitting it from `profileSchema` is what lets the
+ * messages be user-facing Portuguese: the entity schema also parses stored records,
+ * where a message would never be read.
+ *
+ * Password is required on create and optional on edit (blank means "keep the current
+ * password"), so the shape is built per mode rather than branched in the submit handler.
+ */
+export const profileFormSchema = (mode: "create" | "edit") =>
+  z.object({
+    name: z.string().trim().min(1, "Informe o nome."),
+    username: z.string().trim().min(1, "Informe o login de usuário."),
+    role: roleSchema,
+    password:
+      mode === "create"
+        ? z.string().min(MIN_PASSWORD_LENGTH, PASSWORD_MIN_LENGTH_MESSAGE)
+        : z
+            .string()
+            .refine(
+              (value) => value === "" || value.length >= MIN_PASSWORD_LENGTH,
+              PASSWORD_MIN_LENGTH_MESSAGE,
+            ),
+  });
+
+export type ProfileFormValues = z.infer<ReturnType<typeof profileFormSchema>>;
