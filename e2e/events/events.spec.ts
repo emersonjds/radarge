@@ -1,28 +1,40 @@
-import { expect, test, type Page } from "@playwright/test";
-import { login } from "../helpers";
+import { expect, test, type BrowserContext } from "@playwright/test";
+import { newPageIn, signInContext } from "../helpers";
+import { ACCOUNTS } from "../seed-api";
 
 const MOBILE_VIEWPORT = { width: 375, height: 812 };
 
-/**
- * Bruno (perfil-bruno) is the second seeded teacher — the standard `login`
- * helper always returns the first active profile of a role, so scope tests
- * that need him set the demo session directly (same storage key as `login`).
- */
-async function loginAsBruno(page: Page) {
-  await page.goto("/login");
-  await page.evaluate(() => window.localStorage.setItem("radarge.session", "perfil-bruno"));
-  await page.goto("/events");
-}
+let professor1Context: BrowserContext;
+let professor2Context: BrowserContext;
+let coordinatorContext: BrowserContext;
 
-test("coordenador cria um evento para uma aula", async ({ page }) => {
-  await login(page, "Coordenador");
+test.beforeAll(async ({ browser }) => {
+  professor1Context = await signInContext(browser, ACCOUNTS.eventosProfessor1);
+  professor2Context = await signInContext(browser, ACCOUNTS.eventosProfessor2);
+  coordinatorContext = await signInContext(browser, ACCOUNTS.eventosCoordenador);
+});
+
+test("escopo: professor de outra aula não vê os eventos do outro professor", async () => {
+  const page = await newPageIn(professor2Context);
+  await page.goto("/events");
+
+  await expect(page.getByRole("heading", { name: "Eventos" })).toBeVisible();
+  await expect(page.getByText("Passeio ao Zoológico")).toHaveCount(0);
+  await expect(page.getByText("Visita ao Planetário")).toHaveCount(0);
+  await expect(page.getByText("Nenhum evento cadastrado ainda.")).toBeVisible();
+
+  await page.screenshot({ path: "e2e/events/evidencias/escopo-professor.png", fullPage: true });
+});
+
+test("coordenador cria um evento para uma aula", async () => {
+  const page = await newPageIn(coordinatorContext);
   await page.goto("/events");
 
   await page.getByRole("button", { name: "Novo evento" }).click();
   await expect(page.getByRole("heading", { name: "Novo evento" })).toBeVisible();
 
   await page.getByLabel("Aula").click();
-  await page.getByRole("option", { name: "Reforço de Ciências — Quarta" }).click();
+  await page.getByRole("option", { name: "E2E Eventos — Aula B" }).click();
   await page.getByLabel("Título").fill("Feira de Ciências");
   await page.getByLabel("Data").fill("2026-09-10");
   await page.getByLabel("Local").fill("Ginásio da ONG");
@@ -30,7 +42,7 @@ test("coordenador cria um evento para uma aula", async ({ page }) => {
   await page.getByRole("button", { name: "Salvar" }).click();
 
   await expect(page.getByRole("heading", { name: "Novo evento" })).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "Reforço de Ciências — Quarta" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "E2E Eventos — Aula B" })).toBeVisible();
   const cartao = page.getByRole("button").filter({ hasText: "Feira de Ciências" });
   await expect(cartao).toBeVisible();
   await expect(cartao).toContainText("R$ 15,00");
@@ -39,8 +51,8 @@ test("coordenador cria um evento para uma aula", async ({ page }) => {
   await page.screenshot({ path: "e2e/events/evidencias/evento-criado.png", fullPage: true });
 });
 
-test("professor registra autorização e pagamento de um aluno", async ({ page }) => {
-  await login(page, "Professor");
+test("professor registra autorização e pagamento de um aluno", async () => {
+  const page = await newPageIn(professor1Context);
   await page.goto("/events");
 
   await page.getByRole("button").filter({ hasText: "Passeio ao Zoológico" }).click();
@@ -75,10 +87,8 @@ test("professor registra autorização e pagamento de um aluno", async ({ page }
   await page.screenshot({ path: "e2e/events/evidencias/pagamento-registrado.png", fullPage: true });
 });
 
-test("botão de WhatsApp abre a mensagem de aviso já preenchida, sem abrir o WhatsApp de verdade", async ({
-  page,
-}) => {
-  await login(page, "Professor");
+test("botão de WhatsApp abre a mensagem de aviso já preenchida, sem abrir o WhatsApp de verdade", async () => {
+  const page = await newPageIn(professor1Context);
   await page.goto("/events");
   await page.getByRole("button").filter({ hasText: "Passeio ao Zoológico" }).click();
 
@@ -96,8 +106,8 @@ test("botão de WhatsApp abre a mensagem de aviso já preenchida, sem abrir o Wh
   await page.screenshot({ path: "e2e/events/evidencias/aviso-whatsapp.png", fullPage: true });
 });
 
-test("evento gratuito não mostra coluna nem contadores de pagamento", async ({ page }) => {
-  await login(page, "Professor");
+test("evento gratuito não mostra coluna nem contadores de pagamento", async () => {
+  const page = await newPageIn(professor1Context);
   await page.goto("/events");
   await page.getByRole("button").filter({ hasText: "Visita ao Planetário" }).click();
 
@@ -111,22 +121,9 @@ test("evento gratuito não mostra coluna nem contadores de pagamento", async ({ 
   await page.screenshot({ path: "e2e/events/evidencias/evento-gratuito.png", fullPage: true });
 });
 
-test("escopo: professor de outra aula não vê os eventos de Ricardo", async ({ page }) => {
-  await loginAsBruno(page);
-
-  await expect(page.getByRole("heading", { name: "Eventos" })).toBeVisible();
-  await expect(page.getByText("Passeio ao Zoológico")).toHaveCount(0);
-  await expect(page.getByText("Visita ao Planetário")).toHaveCount(0);
-  await expect(page.getByText("Nenhum evento cadastrado ainda.")).toBeVisible();
-
-  await page.screenshot({ path: "e2e/events/evidencias/escopo-professor.png", fullPage: true });
-});
-
 test.describe("detalhe do evento (mobile 375px)", () => {
-  test.use({ viewport: MOBILE_VIEWPORT });
-
-  test("professor consegue marcar autorização e pagamento no celular", async ({ page }) => {
-    await login(page, "Professor");
+  test("professor consegue marcar autorização e pagamento no celular", async () => {
+    const page = await newPageIn(professor1Context, MOBILE_VIEWPORT);
     await page.goto("/events");
 
     await page.getByRole("button").filter({ hasText: "Passeio ao Zoológico" }).click();

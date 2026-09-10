@@ -1,11 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { login } from "../helpers";
+import { newPageIn, signInContext } from "../helpers";
+import { ACCOUNTS } from "../seed-api";
 
 test.describe("painel admin", () => {
-  test.use({ viewport: { width: 1280, height: 900 } });
-
-  test("KPIs e gráficos ApexCharts renderizam", async ({ page }) => {
-    await login(page, "Administrador");
+  test("KPIs e gráficos ApexCharts renderizam", async ({ browser }) => {
+    const context = await signInContext(browser, ACCOUNTS.painelAdmin);
+    const page = await newPageIn(context, { width: 1280, height: 900 });
+    await page.goto("/");
     await expect(page.getByText("Total de alunos")).toBeVisible();
     await expect(page.getByText("Total de professores")).toBeVisible();
     await expect(page.getByText("Frequência geral")).toBeVisible();
@@ -17,10 +18,10 @@ test.describe("painel admin", () => {
 });
 
 test.describe("painel coordenação", () => {
-  test.use({ viewport: { width: 375, height: 812 } });
-
-  test("coordenador vê o painel", async ({ page }) => {
-    await login(page, "Coordenador");
+  test("coordenador vê o painel", async ({ browser }) => {
+    const context = await signInContext(browser, ACCOUNTS.painelCoordenador);
+    const page = await newPageIn(context, { width: 375, height: 812 });
+    await page.goto("/");
 
     await expect(page.getByText("Total de alunos")).toBeVisible();
     await expect(page.locator(".apexcharts-canvas").first()).toBeVisible({ timeout: 15000 });

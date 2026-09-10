@@ -10,6 +10,11 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "e2e",
+  // The API rotates the refresh cookie on every use and revokes the whole session
+  // if an already-spent cookie is presented again (theft protection). Each spec file
+  // signs in once with its own account into its own context, so nothing here needs
+  // to share a session across files or workers — one worker just keeps the run simple.
+  workers: 1,
   use: {
     baseURL: "http://localhost:3000",
   },
@@ -25,20 +30,9 @@ export default defineConfig({
       testMatch: /.*\.setup\.ts/,
     },
     {
-      // Signs in through the form on every run, because these are the specs that
-      // assert what signing in does. They cannot start from a restored session.
-      name: "auth",
-      testMatch: /auth-real\/.*\.spec\.ts/,
-      use: { ...devices["Desktop Chrome"] },
-      dependencies: ["setup"],
-    },
-    {
       name: "chromium",
-      testIgnore: /auth-real\/.*\.spec\.ts/,
-      use: {
-        ...devices["Desktop Chrome"],
-        storageState: "e2e/.auth/teacher.json",
-      },
+      testIgnore: /.*\.setup\.ts/,
+      use: { ...devices["Desktop Chrome"] },
       dependencies: ["setup"],
     },
   ],
