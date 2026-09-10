@@ -1,61 +1,64 @@
-# Bloco de indicadores — Detalhe do evento
+# Indicator block: event detail
 
-Escopo: `src/widgets/events/EventDetail.tsx`, a faixa de indicadores entre o cabeçalho do
-evento e a lista de alunos. Não mexe no cabeçalho nem na lista.
+Scope: `src/widgets/events/EventDetail.tsx`, the indicator strip between the event header and the
+student list. It does not touch the header or the list.
 
-## Decisões (resumo)
+## Decisions (summary)
 
-1. **`Arrecadado` vira um cartão de destaque próprio**, não mais um tile igual aos outros — é
-   a resposta à primeira pergunta de leitura ("dá pra ir?").
-2. **O valor `R$ 25,00` e o total esperado `de R$ 50,00 esperados` são dois parágrafos
-   separados**, nunca uma string concatenada — é isso que elimina a quebra de linha.
-3. **Sete indicadores viram três grupos**: cartão de dinheiro (1) → autorização (3) →
-   pagamento (3). Cada grupo é um `grid-cols-3` fechado — acabou o órfão de grid.
-4. **Cor entra como reforço, nunca como único portador de significado** — todo tile tem
-   rótulo em texto; a cor (sucesso/aviso/erro/neutro) é decoração adicional.
-5. **O bloco inteiro ganha o mesmo cartão (`border` + `bg-card` + `shadow-sm`) do cabeçalho
-   e da lista** — os tiles deixam de flutuar em `bg-muted` solto.
-6. Nenhum ícone novo nos tiles de contagem — rótulo + cor de fundo já resolvem a leitura
-   rápida; ícone por tile é enfeite não pedido (YAGNI). Reavaliar só se teste com usuário
-   mostrar que a cor sozinha não basta.
-7. Barra de progresso é dois `div`s com token de cor, não um componente novo — é estática,
-   não interativa; não justifica `pnpm dlx shadcn add progress`.
+1. **`Arrecadado` becomes a highlight card of its own**, no longer a tile like all the others. It
+   is the answer to the first question a reader asks: can the trip go ahead?
+2. **The value `R$ 25,00` and the expected total `de R$ 50,00 esperados` are two separate
+   paragraphs**, never one concatenated string. That is what removes the line break.
+3. **Seven indicators become three groups**: money card (1) → authorization (3) → payment (3).
+   Each group is a closed `grid-cols-3`, which ends the orphan tile in the grid.
+4. **Color comes in as reinforcement, never as the only carrier of meaning**: every tile has a
+   text label, and the color (success/warning/error/neutral) is extra on top.
+5. **The whole block gets the same card (`border` + `bg-card` + `shadow-sm`) as the header and the
+   list**, so the tiles stop floating on loose `bg-muted`.
+6. No new icon on the count tiles: label plus background color already carry the fast read, and an
+   icon per tile is decoration nobody asked for (YAGNI). Revisit only if user testing shows color
+   alone is not enough.
+7. The progress bar is two `div`s with color tokens, not a new component: it is static and not
+   interactive, which does not justify `pnpm dlx shadcn add progress`.
 
-## Mapeamento de dados (`EventSummary`)
+## Data mapping (`EventSummary`)
 
-| Campo `EventSummary` | Rótulo PT-BR | Grupo |
+The label column holds the literal PT-BR UI copy, exactly as it is rendered.
+
+| `EventSummary` field | PT-BR label | Group |
 |---|---|---|
-| `collected` + `expected` | "Arrecadado" / "de {expected} esperados" | Dinheiro (topo) |
-| `authorized` | "Autorizados" | Autorização |
-| `pendingAuthorization` | "Aguardando" | Autorização |
-| `denied` | "Não autorizados" | Autorização |
-| `paid` | "Pagos" | Pagamento |
-| `pendingPayment` | "Pendentes de pagamento" | Pagamento |
-| `waived` | "Isentos" | Pagamento |
-| `total` | "Total de alunos" | Só no evento gratuito |
+| `collected` + `expected` | "Arrecadado" / "de {expected} esperados" | Money (top) |
+| `authorized` | "Autorizados" | Authorization |
+| `pendingAuthorization` | "Aguardando" | Authorization |
+| `denied` | "Não autorizados" | Authorization |
+| `paid` | "Pagos" | Payment |
+| `pendingPayment` | "Pendentes de pagamento" | Payment |
+| `waived` | "Isentos" | Payment |
+| `total` | "Total de alunos" | Free event only |
 
-Ordem de leitura, de cima para baixo, sempre: **dinheiro → autorização → pagamento**. É a
-ordem da pergunta do professor ("dá pra ir? quem falta autorizar? o resto é detalhe").
+Reading order, top to bottom, always: **money → authorization → payment**. It is the order of the
+teacher's own question: can the trip go ahead, who still has to authorize, everything else is
+detail.
 
 ---
 
-## Layout 375px (evento pago)
+## 375px layout (paid event)
 
-Largura de conteúdo assumida: 343px (viewport 375 − 16px de padding em cada lado, herdado
-do container da página).
+Assumed content width: 343px (375 viewport − 16px of padding on each side, inherited from the page
+container).
 
 ```
 ┌ Cartão de dinheiro ───────────────────────────┐ 343px, p-4, rounded-xl
 │ Arrecadado                             [50%]  │  label text-sm + badge %
 │ R$ 25,00                                      │  text-2xl font-bold text-brand-700
 │ de R$ 50,00 esperados                         │  text-sm text-muted-foreground
-│ ▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  barra h-2 rounded-full, decorativa
+│ ▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │  h-2 rounded-full bar, decorative
 └────────────────────────────────────────────────┘
   mt-4
 
 AUTORIZAÇÃO                                          text-xs font-semibold uppercase
                                                       tracking-wide text-muted-foreground
-┌─────────────┬─────────────┬─────────────┐  gap-2 (8px), cada coluna ≈ 109px
+┌─────────────┬─────────────┬─────────────┐  gap-2 (8px), each column ~109px
 │ Autorizados │  Aguardando │Não autoriz. │  label text-xs, cor por tom (ver tabela)
 │      8      │      3      │      1      │  text-2xl font-bold text-foreground
 └─────────────┴─────────────┴─────────────┘
@@ -68,11 +71,12 @@ PAGAMENTO
 └─────────────┴─────────────┴─────────────┘
 ```
 
-O rótulo "Pendentes de pagamento" e "Não autorizados" podem quebrar em 2 linhas dentro dos
-109px — aceitável e esperado: o bug era o **valor** quebrando, não o rótulo. Como é grid, as
-três colunas da mesma linha esticam juntas para a mesma altura; não distorce o layout.
+The labels "Pendentes de pagamento" and "Não autorizados" may wrap onto 2 lines inside those
+109px. That is acceptable and expected: the bug was the **value** wrapping, not the label. Since
+it is a grid, the three columns of the same row stretch together to the same height, so the layout
+does not distort.
 
-## Layout ≥1024px (evento pago)
+## ≥1024px layout (paid event)
 
 ```
 ┌ Cartão de dinheiro ──────────────────────────────────────────────────────────┐
@@ -89,54 +93,54 @@ três colunas da mesma linha esticam juntas para a mesma altura; não distorce o
 └─────────────────────────────────────┘   └───────────────────────────────────┘
 ```
 
-No cartão de dinheiro em desktop, o conteúdo vira `flex items-center justify-between
-gap-6`: bloco de texto (rótulo, valor, "de X esperados") à esquerda, badge de porcentagem +
-barra (largura fixa `w-48`) à direita — usa a largura extra em vez de crescer o texto.
+In the money card on desktop, the content becomes `flex items-center justify-between gap-6`: the
+text block (label, value, "de X esperados") on the left, the percentage badge plus the bar (fixed
+`w-48` width) on the right. It spends the extra width instead of growing the text.
 
 ---
 
-## Hierarquia visual
+## Visual hierarchy
 
-| Camada | O que é | Tamanho/peso | Cor |
+| Layer | What it is | Size/weight | Color |
 |---|---|---|---|
-| **Headline** | valor de `Arrecadado` | `text-2xl font-bold` | `text-brand-700` (única cor de marca no bloco — é o número que mais importa) |
-| **Secundário** | "de X esperados", badge %, rótulos de autorização | `text-sm` / `text-xs font-semibold` | `text-muted-foreground`, tom success/warning/error nos rótulos de autorização |
-| **Terciário** | valores de Autorizados/Aguardando/Não autorizados | `text-2xl font-bold text-foreground` | tint de fundo por tom, texto neutro |
-| **Quaternário** | grupo Pagamento inteiro (rótulo e valor) | `text-2xl font-semibold text-foreground` (peso 600, não 700) | neutro, sem tint de fundo |
+| **Headline** | the `Arrecadado` value | `text-2xl font-bold` | `text-brand-700` (the only brand color in the block: it is the number that matters most) |
+| **Secondary** | "de X esperados", the % badge, the authorization labels | `text-sm` / `text-xs font-semibold` | `text-muted-foreground`, success/warning/error tone on the authorization labels |
+| **Tertiary** | the `Autorizados` / `Aguardando` / `Não autorizados` values | `text-2xl font-bold text-foreground` | background tint by tone, neutral text |
+| **Quaternary** | the whole Payment group (label and value) | `text-2xl font-semibold text-foreground` (weight 600, not 700) | neutral, no background tint |
 
-Nota de tamanho: `Autorizados` e `Pagos` têm o valor travado em `text-2xl` pelo contrato de
-E2E (ver seção final) — por isso a hierarquia entre os grupos de autorização e pagamento não
-vem do tamanho da fonte (igual nos dois), e sim de **peso** (700 vs 600), **cor** (tint vs
-neutro) e **posição** (autorização vem antes, pagamento é o último grupo). Deixar os três
-tiles de uma mesma fileira com tamanhos diferentes ficaria visualmente quebrado — por isso
-`Aguardando` e `Não autorizados` também usam `text-2xl`, mesmo sem exigência de teste.
+Size note: the `Autorizados` and `Pagos` values are pinned to `text-2xl` by the E2E contract (see
+the final section). That is why the hierarchy between the authorization and payment groups does
+not come from font size, which is the same in both, but from **weight** (700 vs 600), **color**
+(tint vs neutral) and **position** (authorization comes first, payment is the last group). Giving
+the three tiles of one row different sizes would look broken, which is why `Aguardando` and
+`Não autorizados` also use `text-2xl`, even with no test requiring it.
 
-## Tom por tile (grupo Autorização)
+## Tone per tile (Authorization group)
 
-| Tile | `border` | `bg` | cor do rótulo |
+| Tile | `border` | `bg` | label color |
 |---|---|---|---|
 | Autorizados | `border-success-200` | `bg-success-50` | `text-success-700` |
 | Aguardando | `border-warning-300` | `bg-warning-50` | `text-warning-700` |
 | Não autorizados | `border-error-200` | `bg-error-50` | `text-error-700` |
 
-`Aguardando` usa `border-warning-300` (um tom mais forte que os `-200` dos vizinhos) —
-é o número acionável que o professor precisa ver primeiro ("quem falta autorizar"), o único
-tom com ênfase própria no grupo.
+`Aguardando` uses `border-warning-300`, one step stronger than the `-200` of its neighbors: it is
+the actionable number the teacher has to see first (who still has to authorize), the only tone
+with emphasis of its own in the group.
 
-Grupo Pagamento: todos os três tiles neutros — `border-border bg-gray-50`, rótulo
-`text-muted-foreground`. Reforça que, com o cartão de dinheiro já no topo, esse grupo é
-detalhe de apoio, não a resposta principal.
+Payment group: all three tiles neutral, `border-border bg-gray-50` with a `text-muted-foreground`
+label. It reinforces that, with the money card already at the top, this group is supporting
+detail, not the main answer.
 
-Reaproveite o padrão de cor de `src/shared/ui/badge.tsx` (`success: bg-success-50
-text-success-700`, `danger: bg-error-50 text-error-700`) — mesmos tokens, mesma lógica,
-apenas aplicados a um `div` de tile em vez de um `span` de badge.
+Reuse the color pattern from `src/shared/ui/badge.tsx` (`success: bg-success-50
+text-success-700`, `danger: bg-error-50 text-error-700`): same tokens, same logic, applied to a
+tile `div` instead of a badge `span`.
 
 ---
 
-## Composição de `collected` / `expected` (o núcleo do trabalho)
+## Composing `collected` / `expected` (the core of the work)
 
-O bug original era uma única string `${formatCurrency(collected)} de ${formatCurrency(expected)}`
-dentro do mesmo `p.text-2xl`. A correção é estrutural, não tipográfica:
+The original bug was a single string, `${formatCurrency(collected)} de ${formatCurrency(expected)}`,
+inside one `p.text-2xl`. The fix is structural, not typographic:
 
 ```
 <div>                                          ← parent compartilhado (contrato de E2E)
@@ -154,22 +158,22 @@ dentro do mesmo `p.text-2xl`. A correção é estrutural, não tipográfica:
 </div>
 ```
 
-- `formatCurrency(collected)` sozinho nunca quebra: o maior valor plausível
-  (`R$ 1.234,56`) ainda cabe numa linha em 343px com `text-2xl`.
-- `de {formatCurrency(expected)} esperados` é um `<p>` **irmão**, fora do `p.text-2xl` — pode
-  quebrar linha à vontade sem afetar o valor nem o teste (que só olha o `p.text-2xl`).
-- `porcentagem = Math.round((collected / expected) * 100)`, formatada com `formatPercent`
-  (já existe em `src/shared/lib/format.ts` — reaproveitar, não recriar).
-- Sem clamp em 100%: o modelo de domínio garante `paid ≤ total - waived`, logo
-  `collected ≤ expected` sempre — não vale defender um caso que a regra de negócio já
-  impede.
-- Barra de progresso é `aria-hidden="true"`: o valor já está por extenso no texto acima,
-  anunciar a barra de novo seria redundante para leitor de tela.
+- `formatCurrency(collected)` on its own never wraps: the largest plausible value
+  (`R$ 1.234,56`) still fits on one line at 343px with `text-2xl`.
+- `de {formatCurrency(expected)} esperados` is a **sibling** `<p>`, outside the `p.text-2xl`. It
+  can wrap as much as it likes without affecting the value or the test, which only looks at the
+  `p.text-2xl`.
+- `porcentagem = Math.round((collected / expected) * 100)`, formatted with `formatPercent` (it
+  already exists in `src/shared/lib/format.ts`: reuse it, do not rewrite it).
+- No clamp at 100%: the domain model guarantees `paid ≤ total - waived`, so `collected ≤ expected`
+  always. There is no point defending a case the business rule already prevents.
+- The progress bar is `aria-hidden="true"`: the value is already spelled out in the text above,
+  and announcing the bar again would be redundant for a screen reader.
 
-### Caso extremo: todos isentos (`expected === 0` com `total > 0`)
+### Edge case: everyone waived (`expected === 0` with `total > 0`)
 
-Só acontece quando `waived === total` (nesse caso `collected` também é sempre `0`, porque
-`paid` e `waived` são status mutuamente exclusivos por aluno). Cartão de dinheiro nesse caso:
+This happens only when `waived === total` (and then `collected` is always `0` too, because `paid`
+and `waived` are mutually exclusive statuses per student). The money card in that case:
 
 ```
 Arrecadado
@@ -177,15 +181,15 @@ R$ 0,00
 Todos os alunos estão isentos de pagamento.
 ```
 
-Sem badge de porcentagem, sem barra (dividir por zero não tem leitura útil). O valor
-continua em `p.text-2xl` com "R$ 0,00" — mantém o contrato de E2E (`toContainText("R$")`).
+No percentage badge, no bar (dividing by zero has no useful reading). The value stays in the
+`p.text-2xl` holding "R$ 0,00", which keeps the E2E contract (`toContainText("R$")`).
 
 ---
 
-## Variante: evento gratuito
+## Variant: free event
 
-Sem cartão de dinheiro, sem grupo Pagamento. A pergunta "dá pra ir" nesse caso é só
-autorização — o grupo de autorização sobe para o topo:
+No money card, no payment group. Here the "can we go" question is authorization alone, so the
+authorization group moves to the top:
 
 ```
 AUTORIZAÇÃO
@@ -195,25 +199,25 @@ AUTORIZAÇÃO
 └─────────────┴─────────────┴─────────────┘
   mt-3
 
-┌ Total de alunos ─────────────────────────┐  ← tile de largura cheia, não entra
-│ Total de alunos                      12  │     em nenhum grid — é isso que
-└────────────────────────────────────────────┘     elimina o órfão do grid quebrado.
+┌ Total de alunos ─────────────────────────┐  <- full-width tile, in no grid at all,
+│ Total de alunos                      12  │     so a broken 4+3 grid can never
+└────────────────────────────────────────────┘     leave a tile orphaned.
 ```
 
-O tile "Total de alunos" usa o mesmo padrão rótulo+valor do restante (`label` e
-`p.text-2xl` como filhos diretos do mesmo `div`), mas em `flex items-center
-justify-between` (rótulo à esquerda, valor à direita, mesma linha) em vez de empilhado —
-sozinho numa fileira, empilhado ficaria com muito espaço vazio.
+The "Total de alunos" tile uses the same label+value pattern as the rest (`label` and
+`p.text-2xl` as direct children of the same `div`), but in `flex items-center justify-between`
+(label on the left, value on the right, same line) instead of stacked: alone in a row, stacked
+would leave too much empty space.
 
-Em ≥1024px o mesmo tile mantém `flex justify-between`, apenas com `max-w-xs` para não
-esticar até a borda do card e virar uma barra vazia.
+At ≥1024px the same tile keeps `flex justify-between`, with only `max-w-xs` added so it does not
+stretch to the card's edge and turn into an empty bar.
 
 ---
 
-## Caso vazio: aula sem alunos matriculados (`total === 0`)
+## Empty case: class with no enrolled students (`total === 0`)
 
-Não renderiza nenhum tile, nenhum cartão de dinheiro — uma parede de zeros não informa
-nada. Um único bloco substitui o grupo inteiro:
+Render no tile and no money card: a wall of zeros informs nothing. A single block replaces the
+whole group:
 
 ```
 ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  border dashed border-border, py-8,
@@ -223,80 +227,79 @@ nada. Um único bloco substitui o grupo inteiro:
 └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
 ```
 
-Ícone decorativo opcional (`Users`, `lucide-react`, `aria-hidden`) acima do texto — nice-to-have,
-não bloqueia a entrega. Essa condição é checada antes de qualquer outra (`free`, isento etc.):
-se `total === 0`, é o único conteúdo do bloco.
+Optional decorative icon (`Users`, `lucide-react`, `aria-hidden`) above the text: nice to have, it
+does not block delivery. This condition is checked before any other (`free`, waived and so on): if
+`total === 0`, it is the only content of the block.
 
 ---
 
-## Tokens, espaçamento, container
+## Tokens, spacing, container
 
-- Container do bloco inteiro: `<section aria-label="Indicadores do evento" class="rounded-xl
-  border bg-card p-4 shadow-sm md:p-5">` — mesmo tratamento visual do cabeçalho e da lista
-  de alunos (`border`, `bg-card`, `shadow-sm`, `rounded-xl`), criando o mesmo ritmo de
-  cartões da tela (cabeçalho → indicadores → lista). É essa mudança que resolve os tiles
-  "flutuando": eles passam a viver dentro de um cartão real, não soltos em `bg-muted`.
-- Espaçamento interno: `gap-4` entre cartão de dinheiro e primeira fileira; `border-t
-  pt-4 mt-4` entre fileira de autorização e fileira de pagamento (linha divisória sutil,
-  `border-border`).
-- Tiles: `gap-2` em 375px, `gap-3` em `sm:`+; padding `p-3` (fileiras de contagem) e `p-4`
-  (cartão de dinheiro, por ser o destaque).
-- `--radius` (`0.5rem`) em todos os cantos — `rounded-lg` para tiles pequenos, `rounded-xl`
-  para o cartão de dinheiro e o container externo, consistente com o resto da tela.
-- Cabeçalhos de grupo ("Autorização", "Pagamento"): `<p>` estilizado (`text-xs
-  font-semibold uppercase tracking-wide text-muted-foreground`), não um `<h2>`/`<h3>` real —
-  é rótulo visual de agrupamento, não landmark de navegação; a página já tem `h1` (título do
-  evento) e não precisa de mais níveis de heading aqui.
-- Tiles de contagem não são interativos (não têm `onClick`) — a regra de alvo de toque de
-  44px não se aplica a eles. Só passa a valer se algum dia virarem filtro clicável.
-- Nenhuma cor em hex cru — toda cor citada nesta spec é um token de `@theme` já existente
+- Container of the whole block: `<section aria-label="Indicadores do evento" class="rounded-xl
+  border bg-card p-4 shadow-sm md:p-5">`, the same visual treatment as the header and the student
+  list (`border`, `bg-card`, `shadow-sm`, `rounded-xl`), creating the same card rhythm across the
+  screen (header → indicators → list). This is the change that fixes the "floating" tiles: they
+  come to live inside a real card instead of loose on `bg-muted`.
+- Inner spacing: `gap-4` between the money card and the first row; `border-t pt-4 mt-4` between
+  the authorization row and the payment row (a subtle divider, `border-border`).
+- Tiles: `gap-2` at 375px, `gap-3` from `sm:` up; padding `p-3` (count rows) and `p-4` (money
+  card, since it is the highlight).
+- `--radius` (`0.5rem`) on every corner: `rounded-lg` for the small tiles, `rounded-xl` for the
+  money card and the outer container, consistent with the rest of the screen.
+- Group headers ("Autorização", "Pagamento"): a styled `<p>` (`text-xs
+  font-semibold uppercase tracking-wide text-muted-foreground`), not a real `<h2>`/`<h3>`. It is a
+  visual grouping label, not a navigation landmark; the page already has an `h1` (the event title)
+  and needs no more heading levels here.
+- The count tiles are not interactive (they have no `onClick`), so the 44px touch-target rule does
+  not apply to them. It starts applying the day they become a clickable filter.
+- No color in raw hex: every color named in this spec is an existing `@theme` token
   (`--color-brand-*`, `--color-success-*`, `--color-warning-*`, `--color-error-*`,
-  `--color-gray-*`) ou um alias do shadcn (`bg-card`, `text-muted-foreground`, `border`).
+  `--color-gray-*`) or a shadcn alias (`bg-card`, `text-muted-foreground`, `border`).
 
-## Componentes
+## Components
 
-- Reaproveitar o componente `Stat` já existente em `EventDetail.tsx`, estendendo com uma
-  prop `tone?: "neutral" | "success" | "warning" | "danger"` que resolve para as classes da
-  tabela de tom acima. Não criar um componente novo por tile.
-- Cartão de dinheiro é um bloco à parte (não é uma variação do `Stat`) — estrutura própria
-  descrita na seção de composição.
-- Barra de progresso: `<div>` + `<div>` com `style={{ width: `${porcentagem}%` }}`, tokens de
-  `bg-brand-100`/`bg-brand-500`. Não adicionar `progress` do shadcn — é decorativa, estática,
-  sem interação nem `aria-valuenow` a expor.
-- Nenhum ícone novo nos tiles de contagem (decisão 6, acima).
+- Reuse the `Stat` component that already exists in `EventDetail.tsx`, extending it with a
+  `tone?: "neutral" | "success" | "warning" | "danger"` prop that resolves to the classes in the
+  tone table above. Do not create a new component per tile.
+- The money card is a separate block (not a variation of `Stat`): its own structure is described
+  in the composition section.
+- Progress bar: `<div>` + `<div>` with `style={{ width: `${porcentagem}%` }}` and the
+  `bg-brand-100`/`bg-brand-500` tokens. Do not add shadcn's `progress`: it is decorative, static,
+  with no interaction and no `aria-valuenow` to expose.
+- No new icon on the count tiles (decision 6, above).
 
 ---
 
-## Contrato de markup para o E2E (`e2e/events/events.spec.ts`)
+## Markup contract for the E2E (`e2e/events/events.spec.ts`)
 
-O teste faz, para `Autorizados`, `Pagos` e `Arrecadado`:
+For `Autorizados`, `Pagos` and `Arrecadado`, the test does:
 
 ```ts
 page.getByText("<Rótulo>", { exact: true }).locator("..").locator("p.text-2xl")
 ```
 
-Isso exige, para essas três labels: um elemento de texto com exatamente o rótulo, um
-**pai direto comum**, e dentro desse mesmo pai um `<p class="text-2xl">` com o valor.
-Regras que a implementação deve seguir para não quebrar isso:
+For those three labels this requires: a text element holding exactly the label, a **shared direct
+parent**, and inside that same parent a `<p class="text-2xl">` with the value. Rules the
+implementation must follow so it does not break this:
 
-1. **Não envolver o rótulo em um `<div>`/wrapper próprio** (ex.: para colocar um ícone do
-   lado) — isso troca o pai que o `locator("..")` encontra e o `p.text-2xl` deixa de estar
-   dentro dele. Por isso a spec não usa ícone junto do rótulo de nenhum desses três tiles.
-2. **`Autorizados` e `Pagos`**: o `p.text-2xl` deve conter **só o número**, sem sufixo nem
-   espaço extra além do trim automático — o teste faz `Number(await
-   statAutorizados.textContent())` e `Number(...)` em `statPagos`; qualquer texto além do
-   dígito quebra o parse.
-3. **`Arrecadado`**: o `p.text-2xl` deve conter `formatCurrency(collected)` **sozinho**
-   (ex.: `"R$ 25,00"`) — nunca concatenado com "de X esperados". O teste só exige
-   `toContainText("R$")` e que o texto mude quando o valor muda; a frase "de X esperados"
-   fica em um `<p>` irmão fora do `p.text-2xl`, o que a spec já define acima.
-4. Elementos extras dentro do mesmo pai (badge de %, barra de progresso, segunda linha "de X
-   esperados") **não quebram** o contrato — o seletor busca um `p.text-2xl` específico
-   dentro do pai, ignora os demais filhos.
-5. `Aguardando`, `Não autorizados`, `Pendentes de pagamento`, `Isentos`, `Total de alunos`
-   não têm locator fixo no E2E hoje — livres para qualquer marcação, desde que o texto do
-   rótulo continue visível (testes de "evento gratuito" fazem `getByText` simples, sem
-   `exact`, nessas labels).
+1. **Do not wrap the label in a `<div>`/wrapper of its own** (for example, to put an icon beside
+   it). That changes the parent `locator("..")` finds, and the `p.text-2xl` stops being inside it.
+   This is why the spec puts no icon next to the label of any of those three tiles.
+2. **`Autorizados` and `Pagos`**: the `p.text-2xl` must contain **the number alone**, with no
+   suffix and no extra whitespace beyond the automatic trim. The test runs `Number(await
+   statAutorizados.textContent())` and `Number(...)` on `statPagos`; any text besides the digits
+   breaks the parse.
+3. **`Arrecadado`**: the `p.text-2xl` must contain `formatCurrency(collected)` **alone** (for
+   example `"R$ 25,00"`), never concatenated with "de X esperados". The test only requires
+   `toContainText("R$")` and that the text changes when the value changes; the "de X esperados"
+   sentence sits in a sibling `<p>` outside the `p.text-2xl`, which the spec already defines
+   above.
+4. Extra elements inside the same parent (% badge, progress bar, the second line "de X
+   esperados") **do not break** the contract: the selector looks for a specific `p.text-2xl`
+   inside the parent and ignores the other children.
+5. `Aguardando`, `Não autorizados`, `Pendentes de pagamento`, `Isentos` and `Total de alunos` have
+   no fixed locator in the E2E today: any markup is fine, as long as the label text stays visible
+   (the "free event" tests use a plain `getByText`, without `exact`, on those labels).
 
-Nenhuma mudança no arquivo de teste é necessária — a spec foi desenhada para caber dentro do
-contrato existente, não para reescrevê-lo.
+No change to the test file is needed: the spec was designed to fit inside the existing contract,
+not to rewrite it.
