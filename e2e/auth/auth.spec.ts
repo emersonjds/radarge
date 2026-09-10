@@ -15,13 +15,13 @@ let coordinatorContext: BrowserContext;
 // One sign-in per account for the whole file: every test below opens its own tab
 // from these already-authenticated contexts instead of signing in again.
 test.beforeAll(async ({ browser }) => {
-  adminContext = await signInContext(browser, ACCOUNTS.perfisAdmin);
-  teacherContext = await signInContext(browser, ACCOUNTS.perfisProfessor);
-  coordinatorContext = await signInContext(browser, ACCOUNTS.perfisCoordenador);
+  adminContext = await signInContext(browser, ACCOUNTS.profilesAdmin);
+  teacherContext = await signInContext(browser, ACCOUNTS.profilesTeacher);
+  coordinatorContext = await signInContext(browser, ACCOUNTS.profilesCoordinator);
 });
 
-test.describe("visão por papel", () => {
-  test("professor vê apenas Chamada e Alunos, home mostra lista de alunos", async () => {
+test.describe("role-based view", () => {
+  test("teacher sees only roll call and students, home shows the student list", async () => {
     const page = await newPageIn(teacherContext, MOBILE_VIEWPORT);
     await page.goto("/");
 
@@ -36,10 +36,10 @@ test.describe("visão por papel", () => {
     await expect(nav.getByRole("link", { name: "Relatórios" })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "Perfis" })).toHaveCount(0);
 
-    await captureScreen(page, "e2e/auth/evidencias/professor-home.png");
+    await captureScreen(page, "e2e/auth/evidence/teacher-home.png");
   });
 
-  test("admin vê Painel, Alunos, Relatórios e Perfis, e abre /users", async () => {
+  test("admin sees dashboard, students, reports and profiles, and opens /users", async () => {
     const page = await newPageIn(adminContext, MOBILE_VIEWPORT);
     await page.goto("/");
 
@@ -51,19 +51,17 @@ test.describe("visão por papel", () => {
     await expect(nav.getByRole("link", { name: "Eventos", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Perfis" })).toBeVisible();
 
-    await captureScreen(page, "e2e/auth/evidencias/admin-home.png");
+    await captureScreen(page, "e2e/auth/evidence/admin-home.png");
 
     await openMenu(page);
     await nav.getByRole("link", { name: "Perfis" }).click();
     await expect(page).toHaveURL("/users");
     await expect(page.getByRole("heading", { name: "Perfis", exact: true })).toBeVisible();
 
-    // Viewport shot, not fullPage: the claim is the heading and the URL, not the
-    // whole (ever-growing) roster of profiles below the fold.
-    await captureScreen(page, "e2e/auth/evidencias/admin-perfis.png");
+    await captureScreen(page, "e2e/auth/evidence/admin-profiles.png");
   });
 
-  test("coordenador vê Painel, Alunos, Relatórios sem Perfis, e deep link /users volta pra home", async () => {
+  test("coordinator sees dashboard, students and reports but no profiles, and a /users deep link returns home", async () => {
     const page = await newPageIn(coordinatorContext, MOBILE_VIEWPORT);
     await page.goto("/");
 
@@ -75,46 +73,46 @@ test.describe("visão por papel", () => {
     await expect(nav.getByRole("link", { name: "Eventos", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Perfis" })).toHaveCount(0);
 
-    await captureScreen(page, "e2e/auth/evidencias/coordenador-home.png");
+    await captureScreen(page, "e2e/auth/evidence/coordinator-home.png");
 
     await page.goto("/users");
     await expect(page).toHaveURL("/");
   });
 });
 
-test.describe("guard de auth", () => {
-  test("sem sessão, /students redireciona pra /login", async ({ browser }) => {
+test.describe("auth guard", () => {
+  test("without a session, /students redirects to /login", async ({ browser }) => {
     const context = await browser.newContext({ viewport: MOBILE_VIEWPORT });
     const page = await context.newPage();
     await page.goto("/students");
     await expect(page).toHaveURL("/login");
 
-    await captureScreen(page, "e2e/auth/evidencias/guard-sem-sessao.png");
+    await captureScreen(page, "e2e/auth/evidence/guard-without-session.png");
   });
 
-  test("sem sessão, / redireciona pra /login", async ({ browser }) => {
+  test("without a session, / redirects to /login", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await page.goto("/");
     await expect(page).toHaveURL("/login");
   });
 
-  test("professor não acessa /reports (redireciona pra home)", async () => {
+  test("teacher cannot reach /reports (redirects home)", async () => {
     const page = await newPageIn(teacherContext);
     await page.goto("/reports");
     await expect(page).toHaveURL("/");
     await expect(page.getByText("Meus alunos")).toBeVisible();
   });
 
-  test("coordenador não acessa /attendance (redireciona pra home)", async () => {
+  test("coordinator cannot reach /attendance (redirects home)", async () => {
     const page = await newPageIn(coordinatorContext);
     await page.goto("/attendance");
     await expect(page).toHaveURL("/");
   });
 });
 
-test.describe("gestão de perfis (admin)", () => {
-  test("admin cria perfil de professor", async () => {
+test.describe("profile management (admin)", () => {
+  test("admin creates a teacher profile", async () => {
     const page = await newPageIn(adminContext, MOBILE_VIEWPORT);
     await page.goto("/users");
 
@@ -126,9 +124,8 @@ test.describe("gestão de perfis (admin)", () => {
     await page.getByLabel("Senha").fill("teste1234");
     await page.getByRole("button", { name: "Criar perfil" }).click();
 
-    // Scoped by username, not the display name: a rerun that could not clean up an
-    // earlier profile (delete is exercised by another test in this suite) would
-    // otherwise leave two rows named "Perfil de Teste" and break strict mode here.
+    // By username, not display name: delete is exercised elsewhere in this file, so
+    // a rerun can leave two rows sharing a name.
     const item = page.getByRole("listitem").filter({ hasText: username });
     await expect(item).toBeVisible();
     await expect(item.getByText("Ativo", { exact: true })).toBeVisible();
@@ -139,16 +136,15 @@ test.describe("gestão de perfis (admin)", () => {
     expect(alvo?.width).toBeGreaterThanOrEqual(44);
     expect(alvo?.height).toBeGreaterThanOrEqual(44);
 
-    // Frames the new profile's own row, not the whole (ever-growing) roster.
-    await captureEvidence(item, "e2e/auth/evidencias/perfil-criado.png");
+    await captureEvidence(item, "e2e/auth/evidence/profile-created.png");
   });
 
-  test("admin edita o papel de um perfil e o badge muda", async () => {
+  test("admin edits a profile role and the badge changes", async () => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
 
-    // Perfil descartável criado aqui mesmo: editar o teacher fixo do arquivo
-    // mudaria o regente das aulas usadas pelo resto desta suíte.
+    // A throwaway profile: editing the file's fixed teacher would change the
+    // regente of the groups every other test here depends on.
     const username = `perfil.papel.${Date.now()}`;
     await page.getByLabel("Nome").fill("Perfil Papel E2E");
     await page.getByLabel("Login de usuário").fill(username);
@@ -157,9 +153,7 @@ test.describe("gestão de perfis (admin)", () => {
     await page.getByLabel("Senha").fill("teste1234");
     await page.getByRole("button", { name: "Criar perfil" }).click();
 
-    // Scoped by username: delete is exercised by another test in this suite, so a
-    // rerun that could not clean up an earlier "Perfil Papel E2E" would otherwise
-    // leave two rows with the same display name and break strict mode here.
+    // By username, for the same reason as above.
     const item = page.getByRole("listitem").filter({ hasText: username });
     await expect(item.getByText("Professor")).toBeVisible();
     await item.getByRole("button", { name: "Editar Perfil Papel E2E" }).click();
@@ -171,11 +165,10 @@ test.describe("gestão de perfis (admin)", () => {
 
     await expect(item.getByText("Administrador")).toBeVisible();
 
-    // Frames the edited profile's own row, not the whole (ever-growing) roster.
-    await captureEvidence(item, "e2e/auth/evidencias/perfil-editado.png");
+    await captureEvidence(item, "e2e/auth/evidence/profile-edited.png");
   });
 
-  test("admin desativa um perfil e a conta não consegue mais entrar", async ({ browser }) => {
+  test("admin deactivates a profile and the account can no longer sign in", async ({ browser }) => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
 
@@ -194,12 +187,9 @@ test.describe("gestão de perfis (admin)", () => {
     await item.getByRole("button", { name: "Desativar Perfil Inativo E2E" }).click();
     await expect(item.getByText("Inativo", { exact: true })).toBeVisible();
 
-    // Frames the deactivated profile's own row, not the whole (ever-growing) roster.
-    await captureEvidence(item, "e2e/auth/evidencias/perfil-desativado.png");
+    await captureEvidence(item, "e2e/auth/evidence/profile-deactivated.png");
 
-    // A API responde 401 igual à senha errada — não existe mais "cargo sem perfil
-    // ativo", existe só a conta que não entra mais. Sem sessão prévia: não conta
-    // como um segundo sign-in do admin, é a conta desativada tentando entrar.
+    // A deactivated account answers 401, exactly like a wrong password.
     const context = await browser.newContext();
     const loginPage = await context.newPage();
     await loginPage.goto("/login");
@@ -214,7 +204,7 @@ test.describe("gestão de perfis (admin)", () => {
     await expect(loginPage).toHaveURL(/\/login/);
   });
 
-  test("perfil desativado pode ser reativado e excluído", async () => {
+  test("a deactivated profile can be reactivated and deleted", async () => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
 
@@ -240,20 +230,20 @@ test.describe("gestão de perfis (admin)", () => {
     await expect(page.getByText(username)).toHaveCount(0);
   });
 
-  test("o próprio admin não expõe ativar nem excluir, e a linha é marcada", async () => {
+  test("the admin's own row exposes neither activate nor delete, and is marked", async () => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
 
-    const eu = page.getByRole("listitem").filter({ hasText: ACCOUNTS.perfisAdmin.name });
+    const eu = page.getByRole("listitem").filter({ hasText: ACCOUNTS.profilesAdmin.name });
     await expect(eu.getByText("Você")).toBeVisible();
-    await expect(eu.getByRole("button", { name: `Editar ${ACCOUNTS.perfisAdmin.name}` })).toBeVisible();
+    await expect(eu.getByRole("button", { name: `Editar ${ACCOUNTS.profilesAdmin.name}` })).toBeVisible();
     await expect(
-      eu.getByRole("button", { name: new RegExp(`(Des)?[Aa]tivar ${ACCOUNTS.perfisAdmin.name}`) }),
+      eu.getByRole("button", { name: new RegExp(`(Des)?[Aa]tivar ${ACCOUNTS.profilesAdmin.name}`) }),
     ).toHaveCount(0);
-    await expect(eu.getByRole("button", { name: `Excluir ${ACCOUNTS.perfisAdmin.name}` })).toHaveCount(0);
+    await expect(eu.getByRole("button", { name: `Excluir ${ACCOUNTS.profilesAdmin.name}` })).toHaveCount(0);
   });
 
-  test("excluir professor regente avisa que as aulas ficam sem professor", async () => {
+  test("deleting a teacher warns that their groups are left without one", async () => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
 
@@ -262,11 +252,11 @@ test.describe("gestão de perfis (admin)", () => {
       aviso = dialog.message();
       return dialog.dismiss();
     });
-    const regente = page.getByRole("listitem").filter({ hasText: ACCOUNTS.perfisProfessor.name });
-    await regente.getByRole("button", { name: `Excluir ${ACCOUNTS.perfisProfessor.name}` }).click();
+    const regente = page.getByRole("listitem").filter({ hasText: ACCOUNTS.profilesTeacher.name });
+    await regente.getByRole("button", { name: `Excluir ${ACCOUNTS.profilesTeacher.name}` }).click();
 
     expect(aviso).toContain("regente de 2 aulas");
     expect(aviso).toContain("ficarão sem professor");
-    await expect(page.getByText(ACCOUNTS.perfisProfessor.name)).toBeVisible();
+    await expect(page.getByText(ACCOUNTS.profilesTeacher.name)).toBeVisible();
   });
 });

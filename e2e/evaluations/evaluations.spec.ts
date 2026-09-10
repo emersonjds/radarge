@@ -5,7 +5,7 @@ import { ACCOUNTS } from "../seed-api";
 let teacherContext: BrowserContext;
 
 test.beforeAll(async ({ browser }) => {
-  teacherContext = await signInContext(browser, ACCOUNTS.notasProfessor);
+  teacherContext = await signInContext(browser, ACCOUNTS.gradesTeacher);
 });
 
 test.describe("professor grades flow", () => {
@@ -25,7 +25,7 @@ test.describe("professor grades flow", () => {
     await page.getByLabel("Data").fill("2026-07-10");
     await page.getByRole("button", { name: "Salvar" }).click();
     await expect(page.getByText(name)).toBeVisible();
-    await captureScreen(page, "e2e/evaluations/evidencias/avaliacao-criada.png");
+    await captureScreen(page, "e2e/evaluations/evidence/evaluation-created.png");
 
     const card = page.locator("li", { hasText: name });
     await card.getByRole("button", { name: "Lançar notas" }).click();
@@ -33,10 +33,10 @@ test.describe("professor grades flow", () => {
     await firstScore.fill("9.5");
     await firstScore.blur();
     await expect(firstScore).toHaveValue("9.5");
-    await captureScreen(page, "e2e/evaluations/evidencias/nota-lancada.png");
+    await captureScreen(page, "e2e/evaluations/evidence/grade-entered.png");
   });
 
-  test("excluir avaliação pede confirmação e cancelar preserva a avaliação", async () => {
+  test("deleting an evaluation asks for confirmation and cancelling keeps it", async () => {
     const page = await newPageIn(teacherContext);
     await page.goto("/");
     await sidebar(page).getByRole("link", { name: "Notas", exact: true }).click();

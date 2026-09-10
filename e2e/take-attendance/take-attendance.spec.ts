@@ -17,11 +17,11 @@ async function semOverflowHorizontal(page: Page) {
 let teacherContext: BrowserContext;
 
 test.beforeAll(async ({ browser }) => {
-  teacherContext = await signInContext(browser, ACCOUNTS.chamadaProfessor);
+  teacherContext = await signInContext(browser, ACCOUNTS.rollCallTeacher);
 });
 
-test.describe("chamada mobile (cards)", () => {
-  test("título, busca, tiles e marcação de status", async () => {
+test.describe("mobile roll call (cards)", () => {
+  test("title, search, tiles and status marking", async () => {
     const page = await newPageIn(teacherContext, MOBILE_VIEWPORT);
     await page.goto("/attendance");
 
@@ -52,10 +52,10 @@ test.describe("chamada mobile (cards)", () => {
 
     await semOverflowHorizontal(page);
 
-    await captureScreen(page, "e2e/take-attendance/evidencias/chamada-mobile.png");
+    await captureScreen(page, "e2e/take-attendance/evidence/roll-call-mobile.png");
   });
 
-  test("toggle abre o drawer e o backdrop fecha a sidebar", async () => {
+  test("the toggle opens the drawer and the backdrop closes the sidebar", async () => {
     const page = await newPageIn(teacherContext, MOBILE_VIEWPORT);
     await page.goto("/attendance");
 
@@ -72,7 +72,7 @@ test.describe("chamada mobile (cards)", () => {
 });
 
 test.describe("chamada desktop", () => {
-  test("sidebar com Chamada e tela renderiza", async () => {
+  test("the sidebar shows roll call and the screen renders", async () => {
     const page = await newPageIn(teacherContext, DESKTOP_VIEWPORT);
     await page.goto("/attendance");
 
@@ -80,10 +80,10 @@ test.describe("chamada desktop", () => {
     await expect(nav.getByRole("link", { name: "Chamada", exact: true })).toBeVisible();
     await expect(page.getByLabel("Selecionar aula")).toBeVisible();
 
-    await captureScreen(page, "e2e/take-attendance/evidencias/chamada-desktop.png");
+    await captureScreen(page, "e2e/take-attendance/evidence/roll-call-desktop.png");
   });
 
-  test("toggle colapsa a sidebar para os ícones e reexpande", async () => {
+  test("the toggle collapses the sidebar to icons and expands it again", async () => {
     const page = await newPageIn(teacherContext, DESKTOP_VIEWPORT);
     await page.goto("/attendance");
 
@@ -93,7 +93,7 @@ test.describe("chamada desktop", () => {
     await page.getByRole("button", { name: "Alternar menu" }).click();
     await expect.poll(async () => (await aside.boundingBox())?.width).toBe(90);
 
-    await captureScreen(page, "e2e/take-attendance/evidencias/sidebar-colapsada.png");
+    await captureScreen(page, "e2e/take-attendance/evidence/sidebar-collapsed.png");
 
     await page.getByRole("button", { name: "Alternar menu" }).click();
     await expect.poll(async () => (await aside.boundingBox())?.width).toBe(290);

@@ -5,10 +5,10 @@ import { ACCOUNTS, adminToken, findByName } from "../seed-api";
 let adminContext: BrowserContext;
 
 test.beforeAll(async ({ browser }) => {
-  adminContext = await signInContext(browser, ACCOUNTS.relatoriosAdmin);
+  adminContext = await signInContext(browser, ACCOUNTS.reportsAdmin);
 });
 
-test("central de análise: panorama, recorte por turma e export CSV", async () => {
+test("analysis center: overview, per-group slice and CSV export", async () => {
   const page = await newPageIn(adminContext, { width: 1280, height: 800 });
   await page.goto("/reports");
 
@@ -24,7 +24,7 @@ test("central de análise: panorama, recorte por turma e export CSV", async () =
   const enzoRow = page.getByRole("row").filter({ hasText: "Enzo Ferreira" });
   await expect(enzoRow).toContainText("Exatas");
 
-  await captureEvidence(panorama, "e2e/reports/evidencias/central-relatorios.png");
+  await captureEvidence(panorama, "e2e/reports/evidence/reports-overview.png");
 
   await page.getByLabel("Selecionar aula").selectOption({ label: "E2E Relatorios — Aula A" });
   await expect(
@@ -38,7 +38,7 @@ test("central de análise: panorama, recorte por turma e export CSV", async () =
   expect(download.suggestedFilename()).toContain(".csv");
 });
 
-test("ficha do aluno traz frequência e bloco acadêmico com aptidão", async () => {
+test("student record shows the attendance rate and the academic block with aptitude", async () => {
   const token = await adminToken();
   const enzo = await findByName<{ id: string; name: string }>(token, "/students", "Enzo Ferreira");
 
@@ -59,5 +59,5 @@ test("ficha do aluno traz frequência e bloco acadêmico com aptidão", async ()
   await expect(page.getByText("Aptidão: Exatas")).toBeVisible();
   await expect(page.getByText("Notas por matéria")).toBeVisible();
 
-  await captureScreen(page, "e2e/reports/evidencias/ficha-aluno.png");
+  await captureScreen(page, "e2e/reports/evidence/student-record.png");
 });

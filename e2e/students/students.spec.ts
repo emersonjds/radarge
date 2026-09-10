@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 import { newPageIn, signInContext, captureScreen, captureEvidence } from "../helpers";
 import { ACCOUNTS } from "../seed-api";
 
-test("admin adiciona, edita e exclui um aluno", async ({ browser }) => {
-  const context = await signInContext(browser, ACCOUNTS.alunosAdmin);
+test("admin adds, edits and deletes a student", async ({ browser }) => {
+  const context = await signInContext(browser, ACCOUNTS.studentsAdmin);
   const page = await newPageIn(context, { width: 1280, height: 800 });
   page.on("dialog", (dialog) => dialog.accept());
   await page.goto("/students");
@@ -19,7 +19,7 @@ test("admin adiciona, edita e exclui um aluno", async ({ browser }) => {
   await expect(page.getByText(name)).toBeVisible();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   const row = page.getByRole("row").filter({ hasText: name });
-  await captureEvidence(row, "e2e/students/evidencias/aluno-criado.png");
+  await captureEvidence(row, "e2e/students/evidence/student-created.png");
 
   const editedName = `${name} Editado`;
   await row.getByRole("button", { name: "Editar" }).click();
@@ -36,5 +36,5 @@ test("admin adiciona, edita e exclui um aluno", async ({ browser }) => {
   await page.getByRole("table").evaluate((table) => {
     for (let node = table.parentElement; node; node = node.parentElement) node.scrollLeft = 0;
   });
-  await captureScreen(page, "e2e/students/evidencias/aluno-excluido.png");
+  await captureScreen(page, "e2e/students/evidence/student-deleted.png");
 });

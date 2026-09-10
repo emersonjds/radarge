@@ -18,16 +18,16 @@ const signIn = async (page: Page, username: string, password: string): Promise<v
   await page.getByRole("button", { name: "Entrar" }).click();
 };
 
-test("entra com credencial válida e chega ao painel", async ({ page }) => {
+test("signs in with valid credentials and reaches the dashboard", async ({ page }) => {
   const account = ACCOUNTS.signIn;
   await signIn(page, account.username, account.password);
 
   await expect(page).toHaveURL("/");
   await expect(page.getByText(account.name).first()).toBeVisible();
-  await captureScreen(page, "e2e/auth-real/evidencias/login-valido.png");
+  await captureScreen(page, "e2e/auth-real/evidence/valid-sign-in.png");
 });
 
-test("credencial inválida mostra texto nosso, nunca a mensagem do servidor", async ({ page }) => {
+test("invalid credentials show our copy, never the server message", async ({ page }) => {
   const account = ACCOUNTS.wrongPassword;
   await signIn(page, account.username, "nao-e-a-senha-dele");
 
@@ -35,10 +35,10 @@ test("credencial inválida mostra texto nosso, nunca a mensagem do servidor", as
   await expect(alert).toHaveText("Usuário ou senha incorretos.");
   await expect(alert).not.toContainText("credential");
   await expect(page).toHaveURL(/\/login/);
-  await captureScreen(page, "e2e/auth-real/evidencias/credencial-invalida.png");
+  await captureScreen(page, "e2e/auth-real/evidence/invalid-credential.png");
 });
 
-test("sessão sobrevive ao recarregar, mesmo com o token morrendo na memória", async ({ page }) => {
+test("session survives a reload even though the token dies with memory", async ({ page }) => {
   const account = ACCOUNTS.reload;
   await signIn(page, account.username, account.password);
   await expect(page).toHaveURL("/");
@@ -47,19 +47,19 @@ test("sessão sobrevive ao recarregar, mesmo com o token morrendo na memória", 
 
   await expect(page).toHaveURL("/");
   await expect(page.getByText(account.name).first()).toBeVisible();
-  await captureScreen(page, "e2e/auth-real/evidencias/sessao-apos-reload.png");
+  await captureScreen(page, "e2e/auth-real/evidence/session-after-reload.png");
 });
 
-test("senha provisória leva à tela de definição de senha", async ({ page }) => {
+test("a provisional password leads to the set-password screen", async ({ page }) => {
   const account = ACCOUNTS.provisional;
   await signIn(page, account.username, account.provisionalPassword);
 
   await expect(page).toHaveURL(/\/change-password/);
   await expect(page.getByRole("heading", { name: "Defina sua senha" })).toBeVisible();
-  await captureScreen(page, "e2e/auth-real/evidencias/senha-provisoria.png");
+  await captureScreen(page, "e2e/auth-real/evidence/provisional-password.png");
 });
 
-test("sair encerra a sessão de verdade: voltar ao painel não entra", async ({ page }) => {
+test("signing out really ends the session: going back to the dashboard does not enter", async ({ page }) => {
   const account = ACCOUNTS.logout;
   await signIn(page, account.username, account.password);
   await expect(page).toHaveURL("/");
@@ -69,5 +69,5 @@ test("sair encerra a sessão de verdade: voltar ao painel não entra", async ({ 
 
   await page.goto("/");
   await expect(page).toHaveURL(/\/login/);
-  await captureScreen(page, "e2e/auth-real/evidencias/logout-revogado.png");
+  await captureScreen(page, "e2e/auth-real/evidence/sign-out-revoked.png");
 });

@@ -72,21 +72,21 @@ export const ACCOUNTS = {
   },
 
   // auth/auth.spec.ts — nav-by-role and profile CRUD.
-  perfisAdmin: {
+  profilesAdmin: {
     name: "Admin Perfis E2E",
     username: "e2e.perfis",
     role: "admin",
     provisionalPassword: "provisoria-perfis-admin-1",
     password: "definitiva-perfis-admin-1",
   },
-  perfisProfessor: {
+  profilesTeacher: {
     name: "Renata Teixeira",
     username: "e2e.perfis.professor",
     role: "teacher",
     provisionalPassword: "provisoria-perfis-prof-1",
     password: "definitiva-perfis-prof-1",
   },
-  perfisCoordenador: {
+  profilesCoordinator: {
     name: "Coordenador Perfis E2E",
     username: "e2e.perfis.coordenador",
     role: "coordinator",
@@ -95,7 +95,7 @@ export const ACCOUNTS = {
   },
 
   // academic-structure/academic-structure.spec.ts — subject/turma CRUD and roll-call scoping.
-  academicaAdmin: {
+  academicAdmin: {
     name: "Admin Academica E2E",
     username: "e2e.academica",
     role: "admin",
@@ -118,14 +118,14 @@ export const ACCOUNTS = {
   },
 
   // dashboard/dashboard.spec.ts — KPIs and charts, no dedicated dataset needed.
-  painelAdmin: {
+  dashboardAdmin: {
     name: "Admin Painel E2E",
     username: "e2e.painel",
     role: "admin",
     provisionalPassword: "provisoria-painel-admin-1",
     password: "definitiva-painel-admin-1",
   },
-  painelCoordenador: {
+  dashboardCoordinator: {
     name: "Coordenador Painel E2E",
     username: "e2e.painel.coordenador",
     role: "coordinator",
@@ -134,7 +134,7 @@ export const ACCOUNTS = {
   },
 
   // evaluations/evaluations.spec.ts — grade entry flow.
-  notasProfessor: {
+  gradesTeacher: {
     name: "Professor Notas E2E",
     username: "e2e.notas",
     role: "teacher",
@@ -143,21 +143,21 @@ export const ACCOUNTS = {
   },
 
   // events/events.spec.ts — participation, payment and scoping.
-  eventosProfessor1: {
+  eventsTeacher1: {
     name: "Professor Eventos Um E2E",
     username: "e2e.eventos.professor1",
     role: "teacher",
     provisionalPassword: "provisoria-eventos-prof1-1",
     password: "definitiva-eventos-prof1-1",
   },
-  eventosProfessor2: {
+  eventsTeacher2: {
     name: "Professor Eventos Dois E2E",
     username: "e2e.eventos.professor2",
     role: "teacher",
     provisionalPassword: "provisoria-eventos-prof2-1",
     password: "definitiva-eventos-prof2-1",
   },
-  eventosCoordenador: {
+  eventsCoordinator: {
     name: "Coordenador Eventos E2E",
     username: "e2e.eventos.coordenador",
     role: "coordinator",
@@ -173,7 +173,7 @@ export const ACCOUNTS = {
     provisionalPassword: "provisoria-pivot-admin-1",
     password: "definitiva-pivot-admin-1",
   },
-  pivotProfessor: {
+  pivotTeacher: {
     name: "Professor Pivot E2E",
     username: "e2e.pivot.professor",
     role: "teacher",
@@ -182,14 +182,14 @@ export const ACCOUNTS = {
   },
 
   // reports/reports.spec.ts — central de análise and ficha do aluno.
-  relatoriosAdmin: {
+  reportsAdmin: {
     name: "Admin Relatorios E2E",
     username: "e2e.relatorios",
     role: "admin",
     provisionalPassword: "provisoria-relatorios-admin-1",
     password: "definitiva-relatorios-admin-1",
   },
-  relatoriosProfessor: {
+  reportsTeacher: {
     name: "Professor Relatorios E2E",
     username: "e2e.relatorios.professor",
     role: "teacher",
@@ -198,21 +198,21 @@ export const ACCOUNTS = {
   },
 
   // student-detail/student-detail.spec.ts — ficha do aluno per role and scoping.
-  detalheAdmin: {
+  detailAdmin: {
     name: "Admin Detalhe E2E",
     username: "e2e.detalhe",
     role: "admin",
     provisionalPassword: "provisoria-detalhe-admin-1",
     password: "definitiva-detalhe-admin-1",
   },
-  detalheProfessor1: {
+  detailTeacher1: {
     name: "Professor Detalhe Um E2E",
     username: "e2e.detalhe.professor1",
     role: "teacher",
     provisionalPassword: "provisoria-detalhe-prof1-1",
     password: "definitiva-detalhe-prof1-1",
   },
-  detalheProfessor2: {
+  detailTeacher2: {
     name: "Professor Detalhe Dois E2E",
     username: "e2e.detalhe.professor2",
     role: "teacher",
@@ -221,7 +221,7 @@ export const ACCOUNTS = {
   },
 
   // students/students.spec.ts — self-contained CRUD, no fixture data.
-  alunosAdmin: {
+  studentsAdmin: {
     name: "Admin Alunos E2E",
     username: "e2e.alunos",
     role: "admin",
@@ -230,7 +230,7 @@ export const ACCOUNTS = {
   },
 
   // take-attendance/take-attendance.spec.ts — mobile and desktop roll-call UI.
-  chamadaProfessor: {
+  rollCallTeacher: {
     name: "Professor Chamada E2E",
     username: "e2e.chamada",
     role: "teacher",
@@ -571,7 +571,7 @@ const seedAcademicStructure = async (
 
 /** auth.spec.ts's "excluir professor regente" needs exactly one teacher with 2 turmas. */
 const seedPerfis = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
-  const professorId = await profileIdOf(token, ACCOUNTS.perfisProfessor.username);
+  const professorId = await profileIdOf(token, ACCOUNTS.profilesTeacher.username);
 
   await seedGroup(token, subjects, {
     name: "E2E Perfis — Aula A",
@@ -587,7 +587,7 @@ const seedPerfis = async (token: string, subjects: Map<SubjectName, Identified>)
 
 /** evaluations.spec.ts creates its own avaliações against one turma with one aluno. */
 const seedNotas = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
-  const professorId = await profileIdOf(token, ACCOUNTS.notasProfessor.username);
+  const professorId = await profileIdOf(token, ACCOUNTS.gradesTeacher.username);
 
   const group = await seedGroup(token, subjects, {
     name: "E2E Notas — Aula",
@@ -612,8 +612,8 @@ const seedNotas = async (token: string, subjects: Map<SubjectName, Identified>):
  * Benjamin's marks are reset to pending on every run, so "escopo" always starts clean.
  */
 const seedEventos = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
-  const professor1Id = await profileIdOf(token, ACCOUNTS.eventosProfessor1.username);
-  const professor2Id = await profileIdOf(token, ACCOUNTS.eventosProfessor2.username);
+  const professor1Id = await profileIdOf(token, ACCOUNTS.eventsTeacher1.username);
+  const professor2Id = await profileIdOf(token, ACCOUNTS.eventsTeacher2.username);
 
   // The coordinator test creates "Feira de Ciências" live through the UI, on the
   // teacher-2 group the scoping test expects to start empty. Clear it so a rerun's
@@ -685,13 +685,13 @@ const removeStaleFixture = async (token: string, name: string): Promise<void> =>
 const seedPivot = async (token: string): Promise<void> => {
   await removeStaleFixture(token, "João Pedro Silva");
 
-  const professorId = await profileIdOf(token, ACCOUNTS.pivotProfessor.username);
+  const professorId = await profileIdOf(token, ACCOUNTS.pivotTeacher.username);
   await seedGroup(token, new Map(), { name: "E2E Pivot — Aula", shift: "afternoon", teacherId: professorId });
 };
 
 /** "Enzo Ferreira" scores high in Matemática and lower in Português: aptitude reads "Exatas". */
 const seedRelatorios = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
-  const professorId = await profileIdOf(token, ACCOUNTS.relatoriosProfessor.username);
+  const professorId = await profileIdOf(token, ACCOUNTS.reportsTeacher.username);
 
   const groupA = await seedGroup(token, subjects, {
     name: "E2E Relatorios — Aula A",
@@ -747,8 +747,8 @@ const seedRelatorios = async (token: string, subjects: Map<SubjectName, Identifi
  * turma at all, and one inactive.
  */
 const seedDetalhe = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
-  const professor1Id = await profileIdOf(token, ACCOUNTS.detalheProfessor1.username);
-  const professor2Id = await profileIdOf(token, ACCOUNTS.detalheProfessor2.username);
+  const professor1Id = await profileIdOf(token, ACCOUNTS.detailTeacher1.username);
+  const professor2Id = await profileIdOf(token, ACCOUNTS.detailTeacher2.username);
 
   const groupA = await seedGroup(token, subjects, {
     name: "E2E Detalhe — Aula A",
@@ -814,7 +814,7 @@ const seedDetalhe = async (token: string, subjects: Map<SubjectName, Identified>
 };
 
 const seedChamada = async (token: string): Promise<void> => {
-  const professorId = await profileIdOf(token, ACCOUNTS.chamadaProfessor.username);
+  const professorId = await profileIdOf(token, ACCOUNTS.rollCallTeacher.username);
   const group = await seedGroup(token, new Map(), {
     name: "E2E Chamada — Aula",
     shift: "afternoon",

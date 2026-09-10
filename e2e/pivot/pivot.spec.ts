@@ -7,11 +7,11 @@ let teacherContext: BrowserContext;
 
 test.beforeAll(async ({ browser }) => {
   adminContext = await signInContext(browser, ACCOUNTS.pivotAdmin);
-  teacherContext = await signInContext(browser, ACCOUNTS.pivotProfessor);
+  teacherContext = await signInContext(browser, ACCOUNTS.pivotTeacher);
 });
 
-test.describe("ong reforço pivot: ficha cadastral e matrícula N:N", () => {
-  test("admin cria ficha do aluno, matricula em aula, e professor vê na chamada", async () => {
+test.describe("tutoring pivot: student record and N:N enrollment", () => {
+  test("admin creates a student record, enrolls them in a group, and the teacher sees them in the roll call", async () => {
     const admin = await newPageIn(adminContext);
 
     await admin.goto("/");
@@ -27,7 +27,7 @@ test.describe("ong reforço pivot: ficha cadastral e matrícula N:N", () => {
 
     await expect(admin.getByText("João Pedro Silva")).toBeVisible({ timeout: 5000 });
     await expect(admin.getByRole("dialog")).toHaveCount(0);
-    await captureScreen(admin, "e2e/pivot/evidencias/aluno-criado.png");
+    await captureScreen(admin, "e2e/pivot/evidence/student-created.png");
 
     await sidebar(admin).getByRole("link", { name: "Aulas", exact: true }).click();
     await expect(admin.getByRole("heading", { name: "Aulas" })).toBeVisible();
@@ -41,7 +41,7 @@ test.describe("ong reforço pivot: ficha cadastral e matrícula N:N", () => {
     await groupCard.getByRole("button", { name: "Matricular" }).click();
 
     await expect(groupCard.getByText("João Pedro Silva")).toBeVisible({ timeout: 5000 });
-    await captureEvidence(groupCard, "e2e/pivot/evidencias/aluno-matriculado.png");
+    await captureEvidence(groupCard, "e2e/pivot/evidence/student-enrolled.png");
 
     const teacher = await newPageIn(teacherContext);
     await teacher.goto("/");
@@ -50,6 +50,6 @@ test.describe("ong reforço pivot: ficha cadastral e matrícula N:N", () => {
     await teacher.getByLabel("Selecionar aula").selectOption({ label: "E2E Pivot — Aula" });
 
     await expect(teacher.getByText("João Pedro Silva")).toBeVisible({ timeout: 5000 });
-    await captureScreen(teacher, "e2e/pivot/evidencias/aluno-na-chamada.png");
+    await captureScreen(teacher, "e2e/pivot/evidence/student-in-roll-call.png");
   });
 });

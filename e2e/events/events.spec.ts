@@ -9,12 +9,12 @@ let professor2Context: BrowserContext;
 let coordinatorContext: BrowserContext;
 
 test.beforeAll(async ({ browser }) => {
-  professor1Context = await signInContext(browser, ACCOUNTS.eventosProfessor1);
-  professor2Context = await signInContext(browser, ACCOUNTS.eventosProfessor2);
-  coordinatorContext = await signInContext(browser, ACCOUNTS.eventosCoordenador);
+  professor1Context = await signInContext(browser, ACCOUNTS.eventsTeacher1);
+  professor2Context = await signInContext(browser, ACCOUNTS.eventsTeacher2);
+  coordinatorContext = await signInContext(browser, ACCOUNTS.eventsCoordinator);
 });
 
-test("escopo: professor de outra aula não vê os eventos do outro professor", async () => {
+test("scope: a teacher does not see another teacher's events", async () => {
   const page = await newPageIn(professor2Context);
   await page.goto("/events");
 
@@ -23,10 +23,10 @@ test("escopo: professor de outra aula não vê os eventos do outro professor", a
   await expect(page.getByText("Visita ao Planetário")).toHaveCount(0);
   await expect(page.getByText("Nenhum evento cadastrado ainda.")).toBeVisible();
 
-  await captureScreen(page, "e2e/events/evidencias/escopo-professor.png");
+  await captureScreen(page, "e2e/events/evidence/teacher-scope.png");
 });
 
-test("coordenador cria um evento para uma aula", async () => {
+test("coordinator creates an event for a group", async () => {
   const page = await newPageIn(coordinatorContext);
   await page.goto("/events");
 
@@ -48,10 +48,10 @@ test("coordenador cria um evento para uma aula", async () => {
   await expect(card).toContainText("R$ 15,00");
   await expect(card).toContainText("10/09/2026");
 
-  await captureScreen(page, "e2e/events/evidencias/evento-criado.png");
+  await captureScreen(page, "e2e/events/evidence/event-created.png");
 });
 
-test("professor registra autorização e pagamento de um aluno", async () => {
+test("teacher records a student's authorization and payment", async () => {
   const page = await newPageIn(professor1Context);
   await page.goto("/events");
 
@@ -76,7 +76,7 @@ test("professor registra autorização e pagamento de um aluno", async () => {
   await expect(authorization).toHaveValue("authorized");
   await expect(statAutorizados).toHaveText(String(autorizadosAntes + 1));
 
-  await captureScreen(page, "e2e/events/evidencias/autorizacao-registrada.png");
+  await captureScreen(page, "e2e/events/evidence/authorization-recorded.png");
 
   await payment.selectOption("paid");
   await expect(payment).toHaveValue("paid");
@@ -84,10 +84,10 @@ test("professor registra autorização e pagamento de um aluno", async () => {
   await expect(statArrecadado).not.toHaveText(arrecadadoAntes);
   await expect(statArrecadado).toContainText("R$");
 
-  await captureScreen(page, "e2e/events/evidencias/pagamento-registrado.png");
+  await captureScreen(page, "e2e/events/evidence/payment-recorded.png");
 });
 
-test("botão de WhatsApp abre a mensagem de aviso já preenchida, sem abrir o WhatsApp de verdade", async () => {
+test("the WhatsApp button prepares the filled-in notice without opening WhatsApp", async () => {
   const page = await newPageIn(professor1Context);
   await page.goto("/events");
   await page.getByRole("button").filter({ hasText: "Passeio ao Zoológico" }).click();
@@ -103,10 +103,10 @@ test("botão de WhatsApp abre a mensagem de aviso já preenchida, sem abrir o Wh
   expect(text).toContain("Marcus Thorne");
   await expect(link).toHaveAttribute("target", "_blank");
 
-  await captureScreen(page, "e2e/events/evidencias/aviso-whatsapp.png");
+  await captureScreen(page, "e2e/events/evidence/whatsapp-notice.png");
 });
 
-test("evento gratuito não mostra coluna nem contadores de pagamento", async () => {
+test("a free event shows no payment column and no payment counters", async () => {
   const page = await newPageIn(professor1Context);
   await page.goto("/events");
   await page.getByRole("button").filter({ hasText: "Visita ao Planetário" }).click();
@@ -118,11 +118,11 @@ test("evento gratuito não mostra coluna nem contadores de pagamento", async () 
   await expect(page.getByText("Arrecadado")).toHaveCount(0);
   await expect(page.getByText("Total de alunos")).toBeVisible();
 
-  await captureScreen(page, "e2e/events/evidencias/evento-gratuito.png");
+  await captureScreen(page, "e2e/events/evidence/free-event.png");
 });
 
-test.describe("detalhe do evento (mobile 375px)", () => {
-  test("professor consegue marcar autorização e pagamento no celular", async () => {
+test.describe("event detail (mobile 375px)", () => {
+  test("teacher can mark authorization and payment on a phone", async () => {
     const page = await newPageIn(professor1Context, MOBILE_VIEWPORT);
     await page.goto("/events");
 
@@ -153,6 +153,6 @@ test.describe("detalhe do evento (mobile 375px)", () => {
     );
     expect(overflow).toBeLessThanOrEqual(0);
 
-    await captureScreen(page, "e2e/events/evidencias/mobile-evento.png");
+    await captureScreen(page, "e2e/events/evidence/mobile-event.png");
   });
 });
