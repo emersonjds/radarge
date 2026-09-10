@@ -16,12 +16,12 @@ export function AvatarText({ name, className }: AvatarTextProps) {
   const getColorClass = (name: string) => {
     const colors = [
       "bg-brand-100 text-brand-600",
-      "bg-pink-100 text-pink-600",
-      "bg-cyan-100 text-cyan-600",
+      "bg-theme-pink-500/10 text-theme-pink-500",
+      "bg-blue-light-100 text-blue-light-600",
       "bg-orange-100 text-orange-600",
-      "bg-green-100 text-green-600",
-      "bg-purple-100 text-purple-600",
-      "bg-yellow-100 text-yellow-600",
+      "bg-success-100 text-success-700",
+      "bg-theme-purple-500/10 text-theme-purple-500",
+      "bg-warning-100 text-warning-700",
       "bg-error-100 text-error-600",
     ];
 

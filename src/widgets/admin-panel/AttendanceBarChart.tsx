@@ -11,7 +11,7 @@ export interface AttendanceBarChartProps {
 
 export function AttendanceBarChart({ data }: AttendanceBarChartProps) {
   const options: ApexOptions = {
-    chart: { type: "bar", fontFamily: "Outfit, sans-serif", toolbar: { show: false } },
+    chart: { type: "bar", fontFamily: "var(--font-outfit)", toolbar: { show: false } },
     colors: ["#465fff"],
     plotOptions: { bar: { borderRadius: 5, columnWidth: "45%" } },
     dataLabels: { enabled: false },

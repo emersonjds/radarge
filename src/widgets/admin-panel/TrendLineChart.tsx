@@ -12,7 +12,7 @@ export interface TrendLineChartProps {
 
 export function TrendLineChart({ points }: TrendLineChartProps) {
   const options: ApexOptions = {
-    chart: { type: "area", fontFamily: "Outfit, sans-serif", toolbar: { show: false } },
+    chart: { type: "area", fontFamily: "var(--font-outfit)", toolbar: { show: false } },
     colors: ["#465fff"],
     stroke: { curve: "smooth", width: 2 },
     fill: { type: "gradient", gradient: { opacityFrom: 0.35, opacityTo: 0 } },
