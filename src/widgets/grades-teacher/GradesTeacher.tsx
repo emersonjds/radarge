@@ -51,6 +51,7 @@ export function GradesTeacher() {
             <button
               key={assignment.id}
               type="button"
+              aria-label={`Ver notas de ${subjectName(assignment.subjectId)} — ${groupName(assignment.groupId)}`}
               onClick={() => setSelected(assignment.id)}
               className={`rounded-xl border px-4 py-2 text-sm ${
                 selected === assignment.id

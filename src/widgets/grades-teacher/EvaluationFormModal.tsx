@@ -91,7 +91,7 @@ function EvaluationFormBody({
             <FormItem className="mb-5">
               <FormLabel>Nome</FormLabel>
               <FormControl>
-                <Input autoFocus className="h-11" {...field} />
+                <Input autoFocus {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -106,7 +106,7 @@ function EvaluationFormBody({
               <FormLabel>Tipo</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="h-11 w-full">
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                 </FormControl>
@@ -130,7 +130,7 @@ function EvaluationFormBody({
             <FormItem className="mb-5">
               <FormLabel>Data</FormLabel>
               <FormControl>
-                <Input type="date" className="h-11" {...field} />
+                <Input type="date" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -145,7 +145,7 @@ function EvaluationFormBody({
               <FormLabel>Peso</FormLabel>
               <Select value={String(field.value)} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="h-11 w-full">
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                 </FormControl>

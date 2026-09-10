@@ -86,7 +86,7 @@ function GroupFormBody({ group, onClose }: { group: Group | null; onClose: () =>
             <FormItem className="mb-5">
               <FormLabel>Nome</FormLabel>
               <FormControl>
-                <Input autoFocus className="h-11" {...field} />
+                <Input autoFocus {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -101,7 +101,7 @@ function GroupFormBody({ group, onClose }: { group: Group | null; onClose: () =>
               <FormLabel>Turno</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="h-11 w-full">
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                 </FormControl>
@@ -126,7 +126,7 @@ function GroupFormBody({ group, onClose }: { group: Group | null; onClose: () =>
               <FormLabel>Professor regente</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="h-11 w-full">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecione o professor" />
                   </SelectTrigger>
                 </FormControl>

@@ -82,7 +82,7 @@ function SubjectFormBody({ subject, onClose }: { subject: Subject | null; onClos
             <FormItem className="mb-5">
               <FormLabel>Nome</FormLabel>
               <FormControl>
-                <Input autoFocus className="h-11" {...field} />
+                <Input autoFocus {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -97,7 +97,7 @@ function SubjectFormBody({ subject, onClose }: { subject: Subject | null; onClos
               <FormLabel>Área</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="h-11 w-full">
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                 </FormControl>

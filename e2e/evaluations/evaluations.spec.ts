@@ -14,7 +14,10 @@ test.describe("professor grades flow", () => {
     await page.goto("/");
     await sidebar(page).getByRole("link", { name: "Notas", exact: true }).click();
 
-    await page.getByRole("button", { name: /—/ }).first().click();
+    await page
+      .getByRole("button", { name: /^Ver notas de/ })
+      .first()
+      .click();
     await expect(page.getByRole("heading", { name: "Avaliações" })).toBeVisible();
 
     // Unique per run: the API rejects a repeat (group, subject, name, date) as a
@@ -40,7 +43,10 @@ test.describe("professor grades flow", () => {
     const page = await newPageIn(teacherContext);
     await page.goto("/");
     await sidebar(page).getByRole("link", { name: "Notas", exact: true }).click();
-    await page.getByRole("button", { name: /—/ }).first().click();
+    await page
+      .getByRole("button", { name: /^Ver notas de/ })
+      .first()
+      .click();
 
     const name = `P3 ${String(Date.now())}`;
     await page.getByRole("button", { name: "Nova avaliação" }).click();

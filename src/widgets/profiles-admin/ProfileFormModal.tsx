@@ -8,7 +8,7 @@ import {
   roleSchema,
   type ProfileFormValues,
 } from "@/entities/profile/model";
-import { useUpdateProfile } from "@/entities/profile/queries";
+import { useCreateProfile, useUpdateProfile } from "@/entities/profile/queries";
 import type { PublicProfile } from "@/entities/profile/api";
 import { messageForError } from "@/shared/lib/api/error-message";
 import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
@@ -20,53 +20,63 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const ROLES = roleSchema.options;
 
 export interface ProfileFormModalProps {
-  profile: PublicProfile | null;
+  profile: PublicProfile | null | undefined;
   onClose: () => void;
 }
 
 export function ProfileFormModal({ profile, onClose }: ProfileFormModalProps) {
   return (
     <Dialog
-      open={profile !== null}
+      open={profile !== undefined}
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
     >
       <DialogContent className="max-w-lg">
-        {profile && <ProfileFormBody key={profile.id} profile={profile} onClose={onClose} />}
+        {profile !== undefined && (
+          <ProfileFormBody key={profile?.id ?? "new"} profile={profile} onClose={onClose} />
+        )}
       </DialogContent>
     </Dialog>
   );
 }
 
 interface ProfileFormBodyProps {
-  profile: PublicProfile;
+  profile: PublicProfile | null;
   onClose: () => void;
 }
 
 function ProfileFormBody({ profile, onClose }: ProfileFormBodyProps) {
+  const createProfile = useCreateProfile();
   const updateProfile = useUpdateProfile();
 
   const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileFormSchema("edit")),
+    resolver: zodResolver(profileFormSchema(profile ? "edit" : "create")),
     defaultValues: {
-      name: profile.name,
-      username: profile.username,
-      role: profile.role,
+      name: profile?.name ?? "",
+      username: profile?.username ?? "",
+      role: profile?.role ?? "teacher",
       password: "",
     },
   });
 
   const submit = async (values: ProfileFormValues) => {
     try {
-      await updateProfile.mutateAsync({
-        id: profile.id,
-        patch: { ...values, password: values.password || undefined },
-      });
+      if (profile) {
+        await updateProfile.mutateAsync({
+          id: profile.id,
+          patch: { ...values, password: values.password || undefined },
+        });
+      } else {
+        await createProfile.mutateAsync(values);
+      }
       onClose();
     } catch (error) {
       form.setError("root", {
-        message: messageForError(error, "Não foi possível salvar o perfil."),
+        message: messageForError(
+          error,
+          profile ? "Não foi possível salvar o perfil." : "Não foi possível criar o perfil.",
+        ),
       });
     }
   };
@@ -76,7 +86,9 @@ function ProfileFormBody({ profile, onClose }: ProfileFormBodyProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(submit)} noValidate>
-        <DialogTitle className="mb-6 text-foreground">Editar perfil</DialogTitle>
+        <DialogTitle className="mb-6 text-foreground">
+          {profile ? "Editar perfil" : "Adicionar perfil"}
+        </DialogTitle>
 
         <FormField
           control={form.control}
@@ -85,7 +97,7 @@ function ProfileFormBody({ profile, onClose }: ProfileFormBodyProps) {
             <FormItem className="mb-5">
               <FormLabel>Nome</FormLabel>
               <FormControl>
-                <Input autoFocus className="h-11" {...field} />
+                <Input autoFocus {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -99,7 +111,7 @@ function ProfileFormBody({ profile, onClose }: ProfileFormBodyProps) {
             <FormItem className="mb-5">
               <FormLabel>Login de usuário</FormLabel>
               <FormControl>
-                <Input autoCapitalize="none" className="h-11" {...field} />
+                <Input autoCapitalize="none" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -114,7 +126,7 @@ function ProfileFormBody({ profile, onClose }: ProfileFormBodyProps) {
               <FormLabel>Papel</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="h-11 w-full">
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                 </FormControl>
@@ -136,13 +148,12 @@ function ProfileFormBody({ profile, onClose }: ProfileFormBodyProps) {
           name="password"
           render={({ field }) => (
             <FormItem className="mb-5">
-              <FormLabel>Nova senha</FormLabel>
+              <FormLabel>{profile ? "Nova senha" : "Senha"}</FormLabel>
               <FormControl>
                 <Input
                   type="password"
                   autoComplete="new-password"
-                  placeholder="Deixe em branco para manter"
-                  className="h-11"
+                  placeholder={profile ? "Deixe em branco para manter" : undefined}
                   {...field}
                 />
               </FormControl>
@@ -162,7 +173,13 @@ function ProfileFormBody({ profile, onClose }: ProfileFormBodyProps) {
             Cancelar
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Salvando…" : "Salvar"}
+            {profile
+              ? isSubmitting
+                ? "Salvando…"
+                : "Salvar"
+              : isSubmitting
+                ? "Criando…"
+                : "Criar perfil"}
           </Button>
         </div>
       </form>

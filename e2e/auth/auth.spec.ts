@@ -115,6 +115,7 @@ test.describe("profile management (admin)", () => {
   test("admin creates a teacher profile", async () => {
     const page = await newPageIn(adminContext, MOBILE_VIEWPORT);
     await page.goto("/users");
+    await page.getByRole("button", { name: "Adicionar perfil" }).click();
 
     const username = `perfil.teste.${Date.now()}`;
     await page.getByLabel("Nome").fill("Perfil de Teste");
@@ -131,10 +132,10 @@ test.describe("profile management (admin)", () => {
     await expect(item.getByText("Ativo", { exact: true })).toBeVisible();
 
     // Mobile touch target: this button must be reachable with a thumb, not a cursor.
-    const editar = item.getByRole("button", { name: "Editar Perfil de Teste" });
-    const alvo = await editar.boundingBox();
-    expect(alvo?.width).toBeGreaterThanOrEqual(44);
-    expect(alvo?.height).toBeGreaterThanOrEqual(44);
+    const editButton = item.getByRole("button", { name: "Editar Perfil de Teste" });
+    const editBox = await editButton.boundingBox();
+    expect(editBox?.width).toBeGreaterThanOrEqual(44);
+    expect(editBox?.height).toBeGreaterThanOrEqual(44);
 
     await captureEvidence(item, "e2e/auth/evidence/profile-created.png");
   });
@@ -142,9 +143,10 @@ test.describe("profile management (admin)", () => {
   test("admin edits a profile role and the badge changes", async () => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
+    await page.getByRole("button", { name: "Adicionar perfil" }).click();
 
     // A throwaway profile: editing the file's fixed teacher would change the
-    // regente of the groups every other test here depends on.
+    // teacherRow of the groups every other test here depends on.
     const username = `perfil.papel.${Date.now()}`;
     await page.getByLabel("Nome").fill("Perfil Papel E2E");
     await page.getByLabel("Login de usuário").fill(username);
@@ -171,6 +173,7 @@ test.describe("profile management (admin)", () => {
   test("admin deactivates a profile and the account can no longer sign in", async ({ browser }) => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
+    await page.getByRole("button", { name: "Adicionar perfil" }).click();
 
     const username = `perfil.inativo.${Date.now()}`;
     const password = "teste1234";
@@ -207,6 +210,7 @@ test.describe("profile management (admin)", () => {
   test("a deactivated profile can be reactivated and deleted", async () => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
+    await page.getByRole("button", { name: "Adicionar perfil" }).click();
 
     const username = `perfil.ciclo.${Date.now()}`;
     await page.getByLabel("Nome").fill("Perfil Ciclo E2E");
@@ -234,29 +238,29 @@ test.describe("profile management (admin)", () => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
 
-    const eu = page.getByRole("listitem").filter({ hasText: ACCOUNTS.profilesAdmin.name });
-    await expect(eu.getByText("Você")).toBeVisible();
-    await expect(eu.getByRole("button", { name: `Editar ${ACCOUNTS.profilesAdmin.name}` })).toBeVisible();
+    const ownRow = page.getByRole("listitem").filter({ hasText: ACCOUNTS.profilesAdmin.name });
+    await expect(ownRow.getByText("Você")).toBeVisible();
+    await expect(ownRow.getByRole("button", { name: `Editar ${ACCOUNTS.profilesAdmin.name}` })).toBeVisible();
     await expect(
-      eu.getByRole("button", { name: new RegExp(`(Des)?[Aa]tivar ${ACCOUNTS.profilesAdmin.name}`) }),
+      ownRow.getByRole("button", { name: new RegExp(`(Des)?[Aa]tivar ${ACCOUNTS.profilesAdmin.name}`) }),
     ).toHaveCount(0);
-    await expect(eu.getByRole("button", { name: `Excluir ${ACCOUNTS.profilesAdmin.name}` })).toHaveCount(0);
+    await expect(ownRow.getByRole("button", { name: `Excluir ${ACCOUNTS.profilesAdmin.name}` })).toHaveCount(0);
   });
 
   test("deleting a teacher warns that their groups are left without one", async () => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
 
-    let aviso = "";
+    let dialogText = "";
     page.once("dialog", (dialog) => {
-      aviso = dialog.message();
+      dialogText = dialog.message();
       return dialog.dismiss();
     });
-    const regente = page.getByRole("listitem").filter({ hasText: ACCOUNTS.profilesTeacher.name });
-    await regente.getByRole("button", { name: `Excluir ${ACCOUNTS.profilesTeacher.name}` }).click();
+    const teacherRow = page.getByRole("listitem").filter({ hasText: ACCOUNTS.profilesTeacher.name });
+    await teacherRow.getByRole("button", { name: `Excluir ${ACCOUNTS.profilesTeacher.name}` }).click();
 
-    expect(aviso).toContain("regente de 2 aulas");
-    expect(aviso).toContain("ficarão sem professor");
+    expect(dialogText).toContain("regente de 2 aulas");
+    expect(dialogText).toContain("ficarão sem professor");
     await expect(page.getByText(ACCOUNTS.profilesTeacher.name)).toBeVisible();
   });
 });
