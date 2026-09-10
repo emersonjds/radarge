@@ -130,9 +130,7 @@ describe("profiles against the API", () => {
   });
 
   it("treats the 204 on delete as success, not as an empty body failure", async () => {
-    server.use(
-      http.delete("*/profiles/profile-1", () => new HttpResponse(null, { status: 204 })),
-    );
+    server.use(http.delete("*/profiles/profile-1", () => new HttpResponse(null, { status: 204 })));
 
     await expect(deleteProfile("profile-1")).resolves.toBeUndefined();
   });

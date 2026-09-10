@@ -1,7 +1,6 @@
 import type { components } from "@/shared/api/schema";
 import { apiClient } from "@/shared/lib/api/instance";
 import { ApiError } from "@/shared/lib/api/errors";
-import type { Profile } from "./model";
 
 /**
  * The contract is the source of truth for the shape. A field the API renames
@@ -38,14 +37,3 @@ export const setProfileActive = async (id: string, active: boolean): Promise<voi
 export const deleteProfile = async (id: string): Promise<void> => {
   await apiClient().request(`/profiles/${id}`, { method: "DELETE" });
 };
-
-/** Kept for the seed, which still writes local rows until SPA-301 removes it. */
-export const toPublicProfile = (profile: Profile): PublicProfile => ({
-  id: profile.id,
-  name: profile.name,
-  username: profile.username,
-  role: profile.role,
-  email: profile.email ?? null,
-  jobTitle: profile.jobTitle ?? null,
-  active: profile.active,
-});
