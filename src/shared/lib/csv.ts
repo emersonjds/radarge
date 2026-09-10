@@ -1,4 +1,4 @@
-/** CSV com separador ";" (padrão pt-BR/Excel). Escapa aspas, ";" e quebras. */
+/** Separator is ";", not ",": that is what pt-BR Excel expects. */
 export function toCsv(headers: string[], rows: (string | number)[][]): string {
   const escape = (value: string | number): string => {
     const text = String(value);
@@ -7,7 +7,7 @@ export function toCsv(headers: string[], rows: (string | number)[][]): string {
   return [headers, ...rows].map((row) => row.map(escape).join(";")).join("\r\n");
 }
 
-/** Baixa um CSV no cliente. BOM UTF-8 para o Excel ler acentos corretamente. */
+/** The UTF-8 BOM is what makes Excel read the accents correctly. */
 export function downloadCsv(filename: string, content: string): void {
   const blob = new Blob(["﻿" + content], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);

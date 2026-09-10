@@ -19,15 +19,15 @@ import {
 } from "@tailadmin/icons";
 
 const navIcons: Record<NavIcon, ReactNode> = {
-  painel: <GridIcon />,
+  dashboard: <GridIcon />,
   session: <CalenderIcon />,
   user: <GroupIcon />,
-  relatorios: <PieChartIcon />,
+  reports: <PieChartIcon />,
   admin: <UserCircleIcon />,
-  materia: <DocsIcon />,
-  turma: <TableIcon />,
+  subject: <DocsIcon />,
+  group: <TableIcon />,
   grades: <TaskIcon />,
-  eventos: <CalendarIcon />,
+  events: <CalendarIcon />,
 };
 
 export interface AppSidebarProps {

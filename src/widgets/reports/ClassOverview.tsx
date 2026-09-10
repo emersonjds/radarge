@@ -7,8 +7,8 @@ import { formatPercent, formatScore } from "@/shared/lib/format";
 import { Badge } from "@/shared/ui/badge";
 
 export interface ClassOverviewProps {
-  escopo: string;
-  totalAlunos: number;
+  scopeLabel: string;
+  totalStudents: number;
   avgAttendance: number;
   summary: AcademicSummary;
   subjects: Subject[];
@@ -24,21 +24,21 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 export function ClassOverview({
-  escopo,
-  totalAlunos,
+  scopeLabel,
+  totalStudents,
   avgAttendance,
   summary,
   subjects,
 }: ClassOverviewProps) {
-  const maiorMedia = summary.areaAffinity[0]?.average ?? 0;
+  const topAverage = summary.areaAffinity[0]?.average ?? 0;
   const subjectById = new Map(subjects.map((subject) => [subject.id, subject]));
 
   return (
     <section className="rounded-xl border bg-card p-4 shadow-sm md:p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-foreground">Panorama — {escopo}</h2>
+        <h2 className="text-lg font-semibold text-foreground">Panorama — {scopeLabel}</h2>
         <span className="text-sm text-muted-foreground">
-          {totalAlunos} aluno{totalAlunos === 1 ? "" : "s"}
+          {totalStudents} aluno{totalStudents === 1 ? "" : "s"}
         </span>
       </div>
 
@@ -84,7 +84,7 @@ export function ClassOverview({
                 <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
                   <div
                     className={`h-full rounded-full ${
-                      item.average === maiorMedia ? "bg-primary" : "bg-primary/50"
+                      item.average === topAverage ? "bg-primary" : "bg-primary/50"
                     }`}
                     style={{ width: `${item.average * 10}%` }}
                   />

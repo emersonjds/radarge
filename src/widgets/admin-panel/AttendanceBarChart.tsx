@@ -6,10 +6,10 @@ import type { ApexOptions } from "apexcharts";
 const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 export interface AttendanceBarChartProps {
-  dados: { groupId: string; label: string; attendance: number }[];
+  data: { groupId: string; label: string; attendance: number }[];
 }
 
-export function AttendanceBarChart({ dados }: AttendanceBarChartProps) {
+export function AttendanceBarChart({ data }: AttendanceBarChartProps) {
   const options: ApexOptions = {
     chart: { type: "bar", fontFamily: "Outfit, sans-serif", toolbar: { show: false } },
     colors: ["#465fff"],
@@ -17,16 +17,16 @@ export function AttendanceBarChart({ dados }: AttendanceBarChartProps) {
     dataLabels: { enabled: false },
     legend: { show: false },
     xaxis: {
-      categories: dados.map((ponto) => ponto.label),
+      categories: data.map((point) => point.label),
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
-    yaxis: { max: 100, labels: { formatter: (valor) => `${Math.round(valor)}%` } },
+    yaxis: { max: 100, labels: { formatter: (value) => `${Math.round(value)}%` } },
     grid: { borderColor: "#f2f4f7", yaxis: { lines: { show: true } } },
-    tooltip: { y: { formatter: (valor) => `${Math.round(valor)}%` } },
+    tooltip: { y: { formatter: (value) => `${Math.round(value)}%` } },
   };
 
-  const series = [{ name: "Frequência", data: dados.map((ponto) => Math.round(ponto.attendance)) }];
+  const series = [{ name: "Frequência", data: data.map((point) => Math.round(point.attendance)) }];
 
   return <ReactApexChart options={options} series={series} type="bar" height={230} />;
 }

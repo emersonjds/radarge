@@ -19,19 +19,19 @@ interface Crumb {
 
 export function AppBreadcrumb() {
   const pathname = usePathname();
-  const { data: alunos } = useStudents();
+  const { data: students } = useStudents();
 
   const segments = pathname.split("/").filter(Boolean);
   if (segments.length === 0) return null;
 
-  const nomePorId = new Map((alunos ?? []).map((aluno) => [aluno.id, aluno.name]));
+  const nameById = new Map((students ?? []).map((student) => [student.id, student.name]));
 
   const crumbs: Crumb[] = [{ label: "Início", href: "/" }];
   let acc = "";
   segments.forEach((segment, index) => {
     acc += "/" + segment;
     const isLast = index === segments.length - 1;
-    const label = SEGMENT_LABELS[segment] ?? nomePorId.get(segment) ?? segment;
+    const label = SEGMENT_LABELS[segment] ?? nameById.get(segment) ?? segment;
     crumbs.push({ label, href: isLast ? undefined : acc });
   });
 

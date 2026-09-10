@@ -28,14 +28,14 @@ import { AttendanceCalendar, type DayEvent } from "./AttendanceCalendar";
 import { AcademicPanel } from "./AcademicPanel";
 import { studentGradesInScope, studentGroupsInScope } from "./scope";
 
-function mesComMaisRegistros(datas: string[]): string | null {
-  if (datas.length === 0) return null;
-  const contagem = new Map<string, number>();
-  for (const data of datas) {
-    const mes = data.slice(0, 7);
-    contagem.set(mes, (contagem.get(mes) ?? 0) + 1);
+function monthWithMostRecords(dates: string[]): string | null {
+  if (dates.length === 0) return null;
+  const counts = new Map<string, number>();
+  for (const date of dates) {
+    const month = date.slice(0, 7);
+    counts.set(month, (counts.get(month) ?? 0) + 1);
   }
-  return [...contagem.entries()].sort((mesA, mesB) => mesB[1] - mesA[1])[0][0];
+  return [...counts.entries()].sort((first, second) => second[1] - first[1])[0][0];
 }
 
 /**
@@ -80,32 +80,33 @@ export interface StudentDetailProps {
 
 export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailProps) {
   const { role, profileId } = useSession();
-  const ehProfessor = role === "teacher";
-  const { data: aluno, isLoading: carregandoAluno } = useStudent(studentId);
-  const { data: turmas, isLoading: carregandoTurmas } = useGroups();
-  const { data: enrollments, isLoading: carregandoMatriculas } = useEnrollmentsByStudent(studentId);
-  const { data: chamadas } = useAttendanceSessions();
-  const { data: presencas, isLoading: carregandoPresencas } =
+  const isTeacher = role === "teacher";
+  const { data: student, isLoading: isLoadingStudent } = useStudent(studentId);
+  const { data: groups, isLoading: isLoadingGroups } = useGroups();
+  const { data: enrollments, isLoading: isLoadingEnrollments } =
+    useEnrollmentsByStudent(studentId);
+  const { data: attendanceSessions } = useAttendanceSessions();
+  const { data: attendanceRecords, isLoading: isLoadingAttendance } =
     useAttendanceRecordsByStudent(studentId);
-  const { data: eventosEscolares } = useSchoolEvents();
-  const { data: notas } = useGradesByStudent(studentId);
-  const { data: materias } = useSubjects();
-  const { data: assignmentsDoProfessor } = useAssignmentsByTeacher(
-    ehProfessor ? (profileId ?? "") : "",
+  const { data: schoolEvents } = useSchoolEvents();
+  const { data: grades } = useGradesByStudent(studentId);
+  const { data: subjects } = useSubjects();
+  const { data: teacherAssignments } = useAssignmentsByTeacher(isTeacher ? (profileId ?? "") : "");
+
+  const visibleGroupIds = new Set(
+    visibleGroups(groups ?? [], role, profileId).map((group) => group.id),
   );
+  const studentGroups = studentGroupsInScope(enrollments ?? [], groups ?? [], role, profileId);
 
-  const idsVisiveis = new Set(visibleGroups(turmas ?? [], role, profileId).map((aula) => aula.id));
-  const aulasDoAluno = studentGroupsInScope(enrollments ?? [], turmas ?? [], role, profileId);
-
-  if (carregandoAluno || carregandoTurmas || carregandoMatriculas) {
+  if (isLoadingStudent || isLoadingGroups || isLoadingEnrollments) {
     return <p className="text-sm text-muted-foreground">Carregando aluno…</p>;
   }
 
-  // A ficha inteira é PII de menor: o professor só a alcança pelos alunos que
-  // estudam com ele. Fora disso o aluno não existe — nem por link direto.
-  const foraDoEscopo = ehProfessor && aulasDoAluno.length === 0;
+  // The whole record is PII of a minor: a teacher reaches it only through the
+  // students they teach. Outside that, the student does not exist — not even by direct link.
+  const outOfScope = isTeacher && studentGroups.length === 0;
 
-  if (!aluno || foraDoEscopo) {
+  if (!student || outOfScope) {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-center">
         <p className="text-sm text-muted-foreground">Aluno não encontrado.</p>
@@ -116,23 +117,23 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
     );
   }
 
-  const chamadaPorId = new Map(
-    (chamadas ?? [])
-      .filter((chamada) => idsVisiveis.has(chamada.groupId))
-      .map((chamada) => [chamada.id, chamada]),
+  const sessionById = new Map(
+    (attendanceSessions ?? [])
+      .filter((session) => visibleGroupIds.has(session.groupId))
+      .map((session) => [session.id, session]),
   );
-  const presencasVisiveis = (presencas ?? []).filter((presenca) =>
-    chamadaPorId.has(presenca.sessionId),
+  const visibleRecords = (attendanceRecords ?? []).filter((record) =>
+    sessionById.has(record.sessionId),
   );
 
-  const notasVisiveis = studentGradesInScope(
-    notas ?? [],
-    assignmentsDoProfessor ?? [],
-    aulasDoAluno,
+  const visibleGrades = studentGradesInScope(
+    grades ?? [],
+    teacherAssignments ?? [],
+    studentGroups,
     role,
   );
 
-  const voltar = (
+  const goBack = (
     <BackLink
       href={backHref}
       label={backLabel}
@@ -142,45 +143,47 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
     </BackLink>
   );
 
-  const statusPorData = new Map<string, AttendanceStatus>();
-  for (const presenca of presencasVisiveis) {
-    const chamada = chamadaPorId.get(presenca.sessionId);
-    if (chamada) statusPorData.set(chamada.date, presenca.status);
+  const statusByDate = new Map<string, AttendanceStatus>();
+  for (const record of visibleRecords) {
+    const session = sessionById.get(record.sessionId);
+    if (session) statusByDate.set(session.date, record.status);
   }
-  const mes = mesComMaisRegistros([...statusPorData.keys()]);
+  const month = monthWithMostRecords([...statusByDate.keys()]);
 
-  const eventosPorData = new Map<string, DayEvent[]>();
-  function adicionarEvento(data: string, evento: DayEvent) {
-    eventosPorData.set(data, [...(eventosPorData.get(data) ?? []), evento]);
+  const eventsByDate = new Map<string, DayEvent[]>();
+  function addEvent(date: string, event: DayEvent) {
+    eventsByDate.set(date, [...(eventsByDate.get(date) ?? []), event]);
   }
-  for (const eventoEscolar of eventosEscolares ?? []) {
-    for (const data of datesInRange(eventoEscolar.startDate, eventoEscolar.endDate)) {
-      adicionarEvento(data, { type: eventoEscolar.type, title: eventoEscolar.title });
+  for (const schoolEvent of schoolEvents ?? []) {
+    for (const date of datesInRange(schoolEvent.startDate, schoolEvent.endDate)) {
+      addEvent(date, { type: schoolEvent.type, title: schoolEvent.title });
     }
   }
 
-  // Sem registro nenhum, "0%" leria como presença perfeita — melhor não afirmar nada.
-  const semRegistros = presencasVisiveis.length === 0;
-  const frequencia = semRegistros ? "—" : formatPercent(attendanceRate(presencasVisiveis));
-  const faltas = semRegistros ? "—" : String(countAbsences(presencasVisiveis));
+  // With no records at all, "0%" would read as perfect attendance — better to claim nothing.
+  const hasNoRecords = visibleRecords.length === 0;
+  const attendancePercent = hasNoRecords
+    ? "—"
+    : formatPercent(attendanceRate(visibleRecords));
+  const absences = hasNoRecords ? "—" : String(countAbsences(visibleRecords));
 
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-2">
-        {voltar}
+        {goBack}
         <div className="flex items-center gap-4">
-          <AvatarText name={aluno.name} />
+          <AvatarText name={student.name} />
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{aluno.name}</h1>
+            <h1 className="text-2xl font-bold text-foreground">{student.name}</h1>
             <p className="text-sm text-muted-foreground">Desempenho e presença</p>
           </div>
-          <Badge variant={aluno.active ? "success" : "danger"}>
-            {aluno.active ? "ATIVO" : "INATIVO"}
+          <Badge variant={student.active ? "success" : "danger"}>
+            {student.active ? "ATIVO" : "INATIVO"}
           </Badge>
         </div>
       </header>
 
-      {!aluno.active && (
+      {!student.active && (
         <p className="rounded-lg border border-warning-500/40 bg-warning-50 px-4 py-3 text-sm text-warning-700">
           Aluno inativo — os dados abaixo estão congelados e não recebem novas chamadas.
         </p>
@@ -192,18 +195,18 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
             <div>
               <dt className="text-muted-foreground">Idade</dt>
               <dd className="font-medium text-foreground">
-                {computeAgeAt(aluno.birthDate, todayIso())} anos
+                {computeAgeAt(student.birthDate, todayIso())} anos
               </dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Responsável</dt>
-              <dd className="font-medium text-foreground">{aluno.guardianName}</dd>
+              <dd className="font-medium text-foreground">{student.guardianName}</dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Telefone</dt>
               <dd className="font-medium text-foreground">
-                <a className="hover:underline" href={`tel:${aluno.guardianPhone}`}>
-                  {aluno.guardianPhone}
+                <a className="hover:underline" href={`tel:${student.guardianPhone}`}>
+                  {student.guardianPhone}
                 </a>
               </dd>
             </div>
@@ -211,11 +214,11 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-muted p-4 text-center">
-              <p className="text-2xl font-bold text-foreground">{frequencia}</p>
+              <p className="text-2xl font-bold text-foreground">{attendancePercent}</p>
               <p className="text-xs text-muted-foreground">Frequência</p>
             </div>
             <div className="rounded-xl bg-muted p-4 text-center">
-              <p className="text-2xl font-bold text-foreground">{faltas}</p>
+              <p className="text-2xl font-bold text-foreground">{absences}</p>
               <p className="text-xs text-muted-foreground">Faltas</p>
             </div>
           </div>
@@ -224,16 +227,16 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
             <p className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
               Aulas
             </p>
-            {aulasDoAluno.length === 0 ? (
+            {studentGroups.length === 0 ? (
               <p className="text-sm text-muted-foreground">Sem aulas matriculadas.</p>
             ) : (
               <ul className="flex flex-wrap gap-2">
-                {aulasDoAluno.map((aula) => (
+                {studentGroups.map((group) => (
                   <li
-                    key={aula.id}
+                    key={group.id}
                     className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-foreground"
                   >
-                    {aula.name}
+                    {group.name}
                   </li>
                 ))}
               </ul>
@@ -249,25 +252,25 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
 
           <TabsContent value="presenca">
             <section className="rounded-xl border bg-card p-4 shadow-sm">
-              {carregandoPresencas && (
+              {isLoadingAttendance && (
                 <p className="text-sm text-muted-foreground">Carregando registros…</p>
               )}
-              {!carregandoPresencas && mes && (
+              {!isLoadingAttendance && month && (
                 <AttendanceCalendar
-                  key={aluno.id}
-                  mes={mes}
-                  statusPorData={statusPorData}
-                  eventosPorData={eventosPorData}
+                  key={student.id}
+                  month={month}
+                  statusByDate={statusByDate}
+                  eventsByDate={eventsByDate}
                 />
               )}
-              {!carregandoPresencas && !mes && (
+              {!isLoadingAttendance && !month && (
                 <p className="text-sm text-muted-foreground">Sem registros de presença.</p>
               )}
             </section>
           </TabsContent>
 
           <TabsContent value="notas">
-            <AcademicPanel grades={notasVisiveis} subjects={materias ?? []} />
+            <AcademicPanel grades={visibleGrades} subjects={subjects ?? []} />
           </TabsContent>
         </Tabs>
       </div>

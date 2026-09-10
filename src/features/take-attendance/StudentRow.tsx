@@ -21,12 +21,12 @@ export const STATUS_OPTIONS: Array<{
 ];
 
 export interface StudentRowProps {
-  aluno: Student;
+  student: Student;
   status: AttendanceStatus | undefined;
   onSelectStatus: (status: AttendanceStatus) => void;
 }
 
-export function StudentRow({ aluno, status, onSelectStatus }: StudentRowProps) {
+export function StudentRow({ student, status, onSelectStatus }: StudentRowProps) {
   return (
     <div
       className={`flex items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm ${
@@ -34,30 +34,30 @@ export function StudentRow({ aluno, status, onSelectStatus }: StudentRowProps) {
       }`}
     >
       <div className="flex min-w-0 items-center gap-3">
-        <AvatarText name={aluno.name} />
-        <span className="truncate font-medium text-foreground">{aluno.name}</span>
+        <AvatarText name={student.name} />
+        <span className="truncate font-medium text-foreground">{student.name}</span>
       </div>
 
       <div
         className="flex shrink-0 gap-1.5"
         role="group"
-        aria-label={`Status de presença de ${aluno.name}`}
+        aria-label={`Status de presença de ${student.name}`}
       >
-        {STATUS_OPTIONS.map((opcao) => {
-          const ativo = status === opcao.value;
+        {STATUS_OPTIONS.map((option) => {
+          const isActive = status === option.value;
           return (
             <button
-              key={opcao.value}
+              key={option.value}
               type="button"
-              aria-pressed={ativo}
-              aria-label={opcao.label}
-              title={opcao.label}
+              aria-pressed={isActive}
+              aria-label={option.label}
+              title={option.label}
               className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold transition ${
-                ativo ? opcao.active : "border border-input text-muted-foreground hover:bg-muted"
+                isActive ? option.active : "border border-input text-muted-foreground hover:bg-muted"
               }`}
-              onClick={() => onSelectStatus(opcao.value)}
+              onClick={() => onSelectStatus(option.value)}
             >
-              {opcao.short}
+              {option.short}
             </button>
           );
         })}

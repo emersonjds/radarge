@@ -23,14 +23,14 @@ const enrollment = (groupId: string, active = true): Enrollment => ({
 });
 
 describe("studentGroupsInScope", () => {
-  it("gives a teacher only the aulas they run with this student", () => {
-    const aulas = studentGroupsInScope(
+  it("gives a teacher only the groups they run with this student", () => {
+    const scoped = studentGroupsInScope(
       [enrollment("mat-b"), enrollment("cie-c")],
       groups,
       "teacher",
       RICARDO,
     );
-    expect(aulas.map((aula) => aula.id)).toEqual(["mat-b"]);
+    expect(scoped.map((group) => group.id)).toEqual(["mat-b"]);
   });
 
   it("returns nothing when the student studies with another teacher only", () => {
@@ -43,14 +43,14 @@ describe("studentGroupsInScope", () => {
     );
   });
 
-  it("gives an admin every aula of the student", () => {
-    const aulas = studentGroupsInScope(
+  it("gives an admin every group of the student", () => {
+    const scoped = studentGroupsInScope(
       [enrollment("mat-b"), enrollment("cie-c")],
       groups,
       "admin",
       "perfil-ana",
     );
-    expect(aulas.map((aula) => aula.id)).toEqual(["mat-b", "cie-c"]);
+    expect(scoped.map((group) => group.id)).toEqual(["mat-b", "cie-c"]);
   });
 });
 
@@ -64,15 +64,15 @@ describe("studentGradesInScope", () => {
     { id: "a2", groupId: "fis-a", subjectId: "biologia", teacherId: RICARDO },
   ];
 
-  it("keeps only the subjects the teacher teaches in this student's aulas", () => {
-    const aulasDoAluno = [groups[0]];
-    const visiveis = studentGradesInScope(grades, assignments, aulasDoAluno, "teacher");
-    expect(visiveis.map((grade) => grade.subjectId)).toEqual(["matematica"]);
+  it("keeps only the subjects the teacher teaches in this student's groups", () => {
+    const studentGroups = [groups[0]];
+    const visible = studentGradesInScope(grades, assignments, studentGroups, "teacher");
+    expect(visible.map((grade) => grade.subjectId)).toEqual(["matematica"]);
   });
 
-  it("does not leak a subject the teacher teaches in an aula the student is not in", () => {
-    const visiveis = studentGradesInScope(grades, assignments, [], "teacher");
-    expect(visiveis).toEqual([]);
+  it("does not leak a subject the teacher teaches in a group the student is not in", () => {
+    const visible = studentGradesInScope(grades, assignments, [], "teacher");
+    expect(visible).toEqual([]);
   });
 
   it("gives coordinators every grade", () => {

@@ -17,12 +17,12 @@ interface Props {
 }
 
 export function EnrollmentPanel({ groupId }: Props) {
-  const { data: enrollments, isLoading: carregandoMatriculas } = useEnrollmentsByGroup(groupId);
-  const { data: allStudents, isLoading: carregandoAlunos } = useStudents();
+  const { data: enrollments, isLoading: isLoadingEnrollments } = useEnrollmentsByGroup(groupId);
+  const { data: allStudents, isLoading: isLoadingStudents } = useStudents();
   const enrollStudent = useEnrollStudent();
   const unenrollStudent = useUnenrollStudent();
   const [selectedStudentId, setSelectedStudentId] = useState("");
-  const [erro, setErro] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const activeEnrollments = (enrollments ?? []).filter((enrollment) => enrollment.active);
   const enrolledIds = new Set(activeEnrollments.map((enrollment) => enrollment.studentId));
@@ -32,27 +32,27 @@ export function EnrollmentPanel({ groupId }: Props) {
 
   const studentMap = new Map((allStudents ?? []).map((student) => [student.id, student]));
 
-  async function adicionar() {
+  async function enroll() {
     if (!selectedStudentId) return;
-    setErro(null);
+    setError(null);
     try {
       await enrollStudent.mutateAsync({ groupId, studentId: selectedStudentId });
       setSelectedStudentId("");
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível matricular.");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Não foi possível matricular.");
     }
   }
 
-  async function remover(studentId: string) {
-    setErro(null);
+  async function unenroll(studentId: string) {
+    setError(null);
     try {
       await unenrollStudent.mutateAsync({ groupId, studentId });
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível remover.");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Não foi possível remover.");
     }
   }
 
-  if (carregandoMatriculas || carregandoAlunos) {
+  if (isLoadingEnrollments || isLoadingStudents) {
     return <div className="mt-3 h-16 animate-pulse rounded-lg bg-muted" />;
   }
 
@@ -60,9 +60,9 @@ export function EnrollmentPanel({ groupId }: Props) {
     <section className="mt-3 rounded-lg border border-border bg-muted p-4">
       <h3 className="mb-3 text-sm font-semibold text-foreground">Alunos matriculados</h3>
 
-      {erro && (
+      {error && (
         <p role="alert" className="mb-3 text-sm text-destructive">
-          {erro}
+          {error}
         </p>
       )}
 
@@ -82,7 +82,7 @@ export function EnrollmentPanel({ groupId }: Props) {
                   icon={UserMinus}
                   label={`Remover ${student?.name ?? "aluno"} da aula`}
                   tone="destructive"
-                  onClick={() => remover(enrollment.studentId)}
+                  onClick={() => unenroll(enrollment.studentId)}
                 />
               </li>
             );
@@ -99,7 +99,7 @@ export function EnrollmentPanel({ groupId }: Props) {
             <select
               id={`select-${groupId}`}
               value={selectedStudentId}
-              onChange={(e) => setSelectedStudentId(e.target.value)}
+              onChange={(event) => setSelectedStudentId(event.target.value)}
               className="h-11 w-full rounded-lg border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-hidden"
             >
               <option value="">Selecione um aluno</option>
@@ -112,7 +112,7 @@ export function EnrollmentPanel({ groupId }: Props) {
           </div>
           <Button
             size="sm"
-            onClick={adicionar}
+            onClick={enroll}
             disabled={!selectedStudentId || enrollStudent.isPending}
           >
             Matricular

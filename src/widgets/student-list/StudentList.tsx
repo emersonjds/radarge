@@ -20,119 +20,121 @@ import { PlusIcon } from "@tailadmin/icons";
 import { IconButton } from "@/shared/ui/icon-button";
 import { StudentFormModal } from "./StudentFormModal";
 
-const LIMITE_FALTAS_RISCO = 3;
+const RISK_ABSENCE_THRESHOLD = 3;
 
 const th = "px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground";
 const td = "px-5 py-4 text-sm text-foreground";
 export function StudentList() {
   const { role, profile, status: sessionStatus } = useSession();
-  const { data: alunos, isLoading: carregandoAlunos } = useStudents();
-  const { data: turmas, isLoading: carregandoTurmas } = useGroups();
-  const { data: enrollments, isLoading: carregandoMatriculas } = useEnrollments();
+  const { data: students, isLoading: isLoadingStudents } = useStudents();
+  const { data: groups, isLoading: isLoadingGroups } = useGroups();
+  const { data: enrollments, isLoading: isLoadingEnrollments } = useEnrollments();
   const {
-    data: riscoAbsenteismo,
-    isLoading: carregandoRisco,
-    isError: erroAoCarregarRisco,
-    error: erroRisco,
-    // Zero traz todo aluno já chamado alguma vez. Quem não aparece nunca teve
-    // chamada, e isso não é o mesmo que frequência perfeita.
+    data: studentsAtRisk,
+    isLoading: isLoadingRisk,
+    isError: hasRiskError,
+    error: riskError,
+    // Threshold zero returns every student ever called. A student missing from the
+    // list has no roll-call, which is not the same as a perfect attendance rate.
   } = useStudentsAtRisk({ threshold: 0 });
   const searchParams = useSearchParams();
-  const [busca, setBusca] = useState(() => searchParams.get("q") ?? "");
-  const filtroRisco = searchParams.get("filtro") === "risco";
+  const [search, setSearch] = useState(() => searchParams.get("q") ?? "");
+  const riskFilter = searchParams.get("filtro") === "risco";
 
-  const [formAluno, setFormAluno] = useState<Student | null | undefined>(undefined);
+  const [formStudent, setFormStudent] = useState<Student | null | undefined>(undefined);
   const deleteStudent = useDeleteStudent();
 
-  const carregando =
+  const isLoading =
     sessionStatus === "loading" ||
-    carregandoAlunos ||
-    carregandoTurmas ||
-    carregandoMatriculas ||
-    carregandoRisco;
-  const isProfessor = role === "teacher";
+    isLoadingStudents ||
+    isLoadingGroups ||
+    isLoadingEnrollments ||
+    isLoadingRisk;
+  const isTeacher = role === "teacher";
 
-  const turmaPorId = new Map((turmas ?? []).map((turma) => [turma.id, turma]));
+  const groupById = new Map((groups ?? []).map((group) => [group.id, group]));
 
-  // Fora da lista de risco, a única leitura possível é "sem faltas registradas".
-  const frequenciaPorAluno = new Map(
-    (riscoAbsenteismo ?? []).map((risco) => [risco.studentId, risco.attendance]),
+  // Off the risk list, the only reading available is "no absences recorded".
+  const attendanceRateByStudent = new Map(
+    (studentsAtRisk ?? []).map((risk) => [risk.studentId, risk.attendance]),
   );
-  const faltasPorAluno = new Map(
-    (riscoAbsenteismo ?? []).map((risco) => [risco.studentId, risco.absences]),
+  const absencesByStudent = new Map(
+    (studentsAtRisk ?? []).map((risk) => [risk.studentId, risk.absences]),
   );
 
-  const aulasDoAluno = new Map<string, string[]>();
+  const groupIdsByStudent = new Map<string, string[]>();
   for (const enrollment of enrollments ?? []) {
     if (!enrollment.active) continue;
-    aulasDoAluno.set(enrollment.studentId, [
-      ...(aulasDoAluno.get(enrollment.studentId) ?? []),
+    groupIdsByStudent.set(enrollment.studentId, [
+      ...(groupIdsByStudent.get(enrollment.studentId) ?? []),
       enrollment.groupId,
     ]);
   }
 
-  const turmasDoProfessor = isProfessor
-    ? (turmas ?? []).filter((turma) => turma.teacherId === profile?.id)
+  const teacherGroups = isTeacher
+    ? (groups ?? []).filter((group) => group.teacherId === profile?.id)
     : [];
-  const turmaIdsDoProfessor = new Set(turmasDoProfessor.map((turma) => turma.id));
+  const teacherGroupIds = new Set(teacherGroups.map((group) => group.id));
 
-  const alunosDoEscopo = isProfessor
-    ? (alunos ?? []).filter((aluno) =>
-        (aulasDoAluno.get(aluno.id) ?? []).some((groupId) => turmaIdsDoProfessor.has(groupId)),
+  const scopedStudents = isTeacher
+    ? (students ?? []).filter((student) =>
+        (groupIdsByStudent.get(student.id) ?? []).some((groupId) => teacherGroupIds.has(groupId)),
       )
-    : (alunos ?? []);
+    : (students ?? []);
 
-  const alunosEscopo = filtroRisco
-    ? alunosDoEscopo.filter((aluno) => (faltasPorAluno.get(aluno.id) ?? 0) >= LIMITE_FALTAS_RISCO)
-    : alunosDoEscopo;
+  const visibleStudents = riskFilter
+    ? scopedStudents.filter(
+        (student) => (absencesByStudent.get(student.id) ?? 0) >= RISK_ABSENCE_THRESHOLD,
+      )
+    : scopedStudents;
 
-  const termo = busca.trim().toLowerCase();
-  const alunosFiltrados = termo
-    ? alunosEscopo.filter((aluno) => aluno.name.toLowerCase().includes(termo))
-    : alunosEscopo;
+  const searchTerm = search.trim().toLowerCase();
+  const filteredStudents = searchTerm
+    ? visibleStudents.filter((student) => student.name.toLowerCase().includes(searchTerm))
+    : visibleStudents;
 
-  const hoje = todayIso();
-  const linhas = alunosFiltrados.map((aluno) => {
-    const nomesAulas = (aulasDoAluno.get(aluno.id) ?? [])
-      .map((groupId) => turmaPorId.get(groupId)?.name)
+  const today = todayIso();
+  const rows = filteredStudents.map((student) => {
+    const groupNames = (groupIdsByStudent.get(student.id) ?? [])
+      .map((groupId) => groupById.get(groupId)?.name)
       .filter((name): name is string => Boolean(name));
     return {
-      aluno,
-      idade: computeAgeAt(aluno.birthDate, hoje),
-      aulas: nomesAulas.join(", ") || "—",
-      attendance: frequenciaPorAluno.get(aluno.id) ?? null,
-      absences: faltasPorAluno.get(aluno.id) ?? 0,
+      student,
+      age: computeAgeAt(student.birthDate, today),
+      groupNames: groupNames.join(", ") || "—",
+      attendance: attendanceRateByStudent.get(student.id) ?? null,
+      absences: absencesByStudent.get(student.id) ?? 0,
     };
   });
 
-  const semTurmas = isProfessor && turmasDoProfessor.length === 0;
-  const colunas = isProfessor ? 7 : 8;
-  const detalheHref = (alunoId: string) =>
-    isProfessor ? `/students?aluno=${alunoId}` : `/reports?studentId=${alunoId}`;
-  const titulo = filtroRisco ? "Alunos em risco" : isProfessor ? "Meus alunos" : "Alunos";
-  const subtitulo = filtroRisco
-    ? `${alunosEscopo.length} aluno${alunosEscopo.length === 1 ? "" : "s"} com ${LIMITE_FALTAS_RISCO} ou mais faltas`
-    : isProfessor
+  const hasNoGroups = isTeacher && teacherGroups.length === 0;
+  const columnCount = isTeacher ? 7 : 8;
+  const detailHref = (studentId: string) =>
+    isTeacher ? `/students?aluno=${studentId}` : `/reports?studentId=${studentId}`;
+  const title = riskFilter ? "Alunos em risco" : isTeacher ? "Meus alunos" : "Alunos";
+  const subtitle = riskFilter
+    ? `${visibleStudents.length} aluno${visibleStudents.length === 1 ? "" : "s"} com ${RISK_ABSENCE_THRESHOLD} ou mais faltas`
+    : isTeacher
       ? "Alunos das suas aulas"
-      : `${alunosEscopo.length} aluno${alunosEscopo.length === 1 ? "" : "s"} cadastrados`;
+      : `${visibleStudents.length} aluno${visibleStudents.length === 1 ? "" : "s"} cadastrados`;
 
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{titulo}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{subtitulo}</p>
+          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-3">
           <input
             type="search"
-            value={busca}
-            onChange={(event) => setBusca(event.target.value)}
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Buscar por nome"
             className="h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-hidden sm:w-80"
           />
-          {!isProfessor && (
-            <Button className="h-11" onClick={() => setFormAluno(null)}>
+          {!isTeacher && (
+            <Button className="h-11" onClick={() => setFormStudent(null)}>
               <PlusIcon />
               Adicionar aluno
             </Button>
@@ -146,8 +148,8 @@ export function StudentList() {
             <TableHeader className="border-b border-border bg-muted">
               <TableRow>
                 <TableHead className={th}>Aluno</TableHead>
-                {!isProfessor && <TableHead className={th}>Idade</TableHead>}
-                {!isProfessor && <TableHead className={th}>Responsável</TableHead>}
+                {!isTeacher && <TableHead className={th}>Idade</TableHead>}
+                {!isTeacher && <TableHead className={th}>Responsável</TableHead>}
                 <TableHead className={th}>Aulas</TableHead>
                 <TableHead className={th}>Frequência</TableHead>
                 <TableHead className={th}>Faltas</TableHead>
@@ -156,98 +158,98 @@ export function StudentList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {carregando && (
+              {isLoading && (
                 <TableRow>
                   <TableCell
                     className={`${td} text-center text-muted-foreground`}
-                    colSpan={colunas}
+                    colSpan={columnCount}
                   >
                     Carregando alunos…
                   </TableCell>
                 </TableRow>
               )}
-              {!carregando && erroAoCarregarRisco && (
+              {!isLoading && hasRiskError && (
                 <TableRow>
-                  <TableCell className={`${td} text-center text-destructive`} colSpan={colunas}>
-                    {messageForError(erroRisco, "Não foi possível carregar a frequência.")}
+                  <TableCell className={`${td} text-center text-destructive`} colSpan={columnCount}>
+                    {messageForError(riskError, "Não foi possível carregar a frequência.")}
                   </TableCell>
                 </TableRow>
               )}
-              {!carregando && !erroAoCarregarRisco && semTurmas && (
+              {!isLoading && !hasRiskError && hasNoGroups && (
                 <TableRow>
                   <TableCell
                     className={`${td} text-center text-muted-foreground`}
-                    colSpan={colunas}
+                    colSpan={columnCount}
                   >
                     Você não tem aulas atribuídas
                   </TableCell>
                 </TableRow>
               )}
-              {!carregando && !erroAoCarregarRisco && !semTurmas && linhas.length === 0 && (
+              {!isLoading && !hasRiskError && !hasNoGroups && rows.length === 0 && (
                 <TableRow>
                   <TableCell
                     className={`${td} text-center text-muted-foreground`}
-                    colSpan={colunas}
+                    colSpan={columnCount}
                   >
                     Nenhum aluno encontrado
                   </TableCell>
                 </TableRow>
               )}
-              {!carregando &&
-                !erroAoCarregarRisco &&
-                linhas.map(({ aluno, idade, aulas, attendance, absences }) => {
-                  const emRisco = absences >= LIMITE_FALTAS_RISCO;
+              {!isLoading &&
+                !hasRiskError &&
+                rows.map(({ student, age, groupNames, attendance, absences }) => {
+                  const atRisk = absences >= RISK_ABSENCE_THRESHOLD;
                   return (
-                    <TableRow key={aluno.id} className="border-t border-border">
+                    <TableRow key={student.id} className="border-t border-border">
                       <TableCell className={td}>
                         <div className="flex items-center gap-3">
-                          <AvatarText name={aluno.name} />
-                          <span className="font-medium text-foreground">{aluno.name}</span>
+                          <AvatarText name={student.name} />
+                          <span className="font-medium text-foreground">{student.name}</span>
                         </div>
                       </TableCell>
-                      {!isProfessor && <TableCell className={td}>{idade} anos</TableCell>}
-                      {!isProfessor && (
+                      {!isTeacher && <TableCell className={td}>{age} anos</TableCell>}
+                      {!isTeacher && (
                         <TableCell className={td}>
                           <div className="flex flex-col">
-                            <span className="text-foreground">{aluno.guardianName}</span>
+                            <span className="text-foreground">{student.guardianName}</span>
                             <span className="text-xs text-muted-foreground">
-                              {aluno.guardianPhone}
+                              {student.guardianPhone}
                             </span>
                           </div>
                         </TableCell>
                       )}
-                      <TableCell className={td}>{aulas}</TableCell>
+                      <TableCell className={td}>{groupNames}</TableCell>
                       <TableCell className={td}>
                         {attendance === null ? "—" : formatPercent(attendance)}
                       </TableCell>
                       <TableCell className={td}>{absences}</TableCell>
                       <TableCell className={td}>
-                        <Badge variant={emRisco ? "danger" : "success"}>
-                          {emRisco ? "Em risco" : "Regular"}
+                        <Badge variant={atRisk ? "danger" : "success"}>
+                          {atRisk ? "Em risco" : "Regular"}
                         </Badge>
                       </TableCell>
                       <TableCell className={td}>
                         <div className="flex items-center gap-1">
                           <IconButton
                             icon={Eye}
-                            label={`Ver detalhes de ${aluno.name}`}
-                            href={detalheHref(aluno.id)}
+                            label={`Ver detalhes de ${student.name}`}
+                            href={detailHref(student.id)}
                           />
-                          {!isProfessor && (
+                          {!isTeacher && (
                             <>
                               <IconButton
                                 icon={Pencil}
-                                label={`Editar ${aluno.name}`}
-                                onClick={() => setFormAluno(aluno)}
+                                label={`Editar ${student.name}`}
+                                onClick={() => setFormStudent(student)}
                               />
                               <IconButton
                                 icon={Trash2}
-                                label={`Excluir ${aluno.name}`}
+                                label={`Excluir ${student.name}`}
                                 tone="destructive"
                                 disabled={deleteStudent.isPending}
                                 onClick={() => {
-                                  if (window.confirm(`Excluir o aluno ${aluno.name}?`)) {
-                                    deleteStudent.mutate(aluno.id);
+                                  if (window.confirm(`Excluir o aluno ${student.name}?`)) {
+                                    deleteStudent.mutate(student.id);
                                   }
                                 }}
                               />
@@ -263,7 +265,7 @@ export function StudentList() {
         </div>
       </div>
 
-      <StudentFormModal student={formAluno} onClose={() => setFormAluno(undefined)} />
+      <StudentFormModal student={formStudent} onClose={() => setFormStudent(undefined)} />
     </div>
   );
 }

@@ -16,9 +16,9 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { CalenderIcon } from "@tailadmin/icons";
 import { StudentRow, STATUS_OPTIONS } from "./StudentRow";
-import { groupsForRegente } from "@/entities/group/scope";
+import { groupsForTeacher } from "@/entities/group/scope";
 
-const HOJE = new Date().toISOString().slice(0, 10);
+const TODAY = new Date().toISOString().slice(0, 10);
 
 const tileLabelColor: Record<AttendanceStatus, string> = {
   present: "text-success-600",
@@ -27,85 +27,84 @@ const tileLabelColor: Record<AttendanceStatus, string> = {
   excused: "text-primary",
 };
 
-function contarPorStatus(alunos: Student[], statusPorAluno: Record<string, AttendanceStatus>) {
-  const contagem: Record<AttendanceStatus, number> = { present: 0, absent: 0, late: 0, excused: 0 };
-  for (const aluno of alunos) {
-    const status = statusPorAluno[aluno.id];
-    if (status) contagem[status] += 1;
+function countByStatus(students: Student[], statusByStudent: Record<string, AttendanceStatus>) {
+  const counts: Record<AttendanceStatus, number> = { present: 0, absent: 0, late: 0, excused: 0 };
+  for (const student of students) {
+    const status = statusByStudent[student.id];
+    if (status) counts[status] += 1;
   }
-  return contagem;
+  return counts;
 }
 
 export function AttendanceForm() {
   const { profileId } = useSession();
-  const { data: allGroups, isLoading: carregandoTurmas } = useGroups();
-  const turmas = groupsForRegente(allGroups ?? [], profileId);
-  const [turmaSelecionada, setTurmaSelecionada] = useState<string | null>(null);
-  const groupId = turmaSelecionada ?? turmas?.[0]?.id ?? "";
-  const sessionId = groupId ? `chamada-${groupId}-${HOJE}` : "";
+  const { data: allGroups, isLoading: isLoadingGroups } = useGroups();
+  const groups = groupsForTeacher(allGroups ?? [], profileId);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const groupId = selectedGroupId ?? groups?.[0]?.id ?? "";
+  const sessionId = groupId ? `chamada-${groupId}-${TODAY}` : "";
 
-  const { data: alunos, isLoading: carregandoAlunos } = useStudentsByGroup(groupId);
-  const { data: presencas } = useAttendanceRecordsBySession(sessionId);
+  const { data: students, isLoading: isLoadingStudents } = useStudentsByGroup(groupId);
+  const { data: attendanceRecords } = useAttendanceRecordsBySession(sessionId);
 
-  const [statusPorAluno, setStatusPorAluno] = useState<Record<string, AttendanceStatus>>({});
-  const [chamadaSincronizada, setChamadaSincronizada] = useState<string | null>(null);
-  const [busca, setBusca] = useState("");
+  const [statusByStudent, setStatusByStudent] = useState<Record<string, AttendanceStatus>>({});
+  const [syncedSessionId, setSyncedSessionId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
-  // Prefill local edits from the persisted presenças whenever the roll-call
-  // session (turma + data) changes — adjust state during render (React's documented
-  // pattern for this) instead of an effect, guarded by sessionId so it runs once per session.
-  if (sessionId && presencas && chamadaSincronizada !== sessionId) {
+  // Adjusting state during render is React's documented pattern for deriving
+  // state from props; the sessionId guard keeps it to one pass per session.
+  if (sessionId && attendanceRecords && syncedSessionId !== sessionId) {
     const prefill: Record<string, AttendanceStatus> = {};
-    for (const presenca of presencas) prefill[presenca.studentId] = presenca.status;
-    setStatusPorAluno(prefill);
-    setChamadaSincronizada(sessionId);
+    for (const record of attendanceRecords) prefill[record.studentId] = record.status;
+    setStatusByStudent(prefill);
+    setSyncedSessionId(sessionId);
   }
 
   const createAttendanceSession = useCreateAttendanceSession();
   const saveRollCall = useSaveRollCall();
-  const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
-  const [salvo, setSalvo] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
 
-  const contagem = contarPorStatus(alunos ?? [], statusPorAluno);
+  const counts = countByStatus(students ?? [], statusByStudent);
 
-  const termoBusca = busca.trim().toLowerCase();
-  const alunosFiltrados = (alunos ?? []).filter(
-    (aluno) => !termoBusca || aluno.name.toLowerCase().includes(termoBusca),
+  const searchTerm = search.trim().toLowerCase();
+  const filteredStudents = (students ?? []).filter(
+    (student) => !searchTerm || student.name.toLowerCase().includes(searchTerm),
   );
 
-  function selecionarStatus(studentId: string, status: AttendanceStatus) {
-    setSalvo(false);
-    setStatusPorAluno((prev) => ({ ...prev, [studentId]: status }));
+  function selectStatus(studentId: string, status: AttendanceStatus) {
+    setIsSaved(false);
+    setStatusByStudent((prev) => ({ ...prev, [studentId]: status }));
   }
 
-  function marcarTodosPresentes() {
-    setSalvo(false);
-    setStatusPorAluno((prev) => {
+  function markAllPresent() {
+    setIsSaved(false);
+    setStatusByStudent((prev) => {
       const next = { ...prev };
-      for (const aluno of alunos ?? []) next[aluno.id] = "present";
+      for (const student of students ?? []) next[student.id] = "present";
       return next;
     });
   }
 
-  async function salvarChamada() {
-    setErro(null);
-    setSalvo(false);
-    setSalvando(true);
+  async function saveAttendance() {
+    setError(null);
+    setIsSaved(false);
+    setIsSaving(true);
     try {
-      const chamada = await createAttendanceSession.mutateAsync({ groupId, date: HOJE });
-      const entries = (alunos ?? [])
-        .filter((aluno) => statusPorAluno[aluno.id])
-        .map((aluno) => ({ studentId: aluno.id, status: statusPorAluno[aluno.id] }));
+      const session = await createAttendanceSession.mutateAsync({ groupId, date: TODAY });
+      const entries = (students ?? [])
+        .filter((student) => statusByStudent[student.id])
+        .map((student) => ({ studentId: student.id, status: statusByStudent[student.id] }));
 
       if (entries.length > 0) {
-        await saveRollCall.mutateAsync({ sessionId: chamada.id, entries });
+        await saveRollCall.mutateAsync({ sessionId: session.id, entries });
       }
-      setSalvo(true);
+      setIsSaved(true);
     } catch {
-      setErro("Não foi possível salvar a chamada. Tente novamente.");
+      setError("Não foi possível salvar a chamada. Tente novamente.");
     } finally {
-      setSalvando(false);
+      setIsSaving(false);
     }
   }
 
@@ -116,37 +115,37 @@ export function AttendanceForm() {
           <select
             className="w-full rounded-lg border border-input bg-transparent px-3 py-2.5 text-lg font-semibold text-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-hidden"
             value={groupId}
-            disabled={carregandoTurmas}
-            onChange={(event) => setTurmaSelecionada(event.target.value)}
+            disabled={isLoadingGroups}
+            onChange={(event) => setSelectedGroupId(event.target.value)}
             aria-label="Selecionar aula"
           >
-            {(turmas ?? []).map((turma) => (
-              <option key={turma.id} value={turma.id}>
-                {turma.name}
+            {(groups ?? []).map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name}
               </option>
             ))}
           </select>
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <CalenderIcon />
-            {formatDateLong(HOJE)}
+            {formatDateLong(TODAY)}
           </p>
         </div>
 
         <input
           type="search"
-          value={busca}
-          onChange={(event) => setBusca(event.target.value)}
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
           placeholder="Buscar aluno por nome ou matrícula..."
           className="h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-hidden"
         />
 
         <div className="grid grid-cols-4 gap-2">
-          {STATUS_OPTIONS.map((opcao) => (
-            <div key={opcao.value} className="flex flex-col items-center rounded-lg bg-muted py-2">
-              <span className={`text-xs font-medium ${tileLabelColor[opcao.value]}`}>
-                {opcao.label}
+          {STATUS_OPTIONS.map((option) => (
+            <div key={option.value} className="flex flex-col items-center rounded-lg bg-muted py-2">
+              <span className={`text-xs font-medium ${tileLabelColor[option.value]}`}>
+                {option.label}
               </span>
-              <span className="text-lg font-semibold text-foreground">{contagem[opcao.value]}</span>
+              <span className="text-lg font-semibold text-foreground">{counts[option.value]}</span>
             </div>
           ))}
         </div>
@@ -157,8 +156,8 @@ export function AttendanceForm() {
           type="button"
           variant="outline"
           size="sm"
-          onClick={marcarTodosPresentes}
-          disabled={!groupId || (alunos?.length ?? 0) === 0}
+          onClick={markAllPresent}
+          disabled={!groupId || (students?.length ?? 0) === 0}
         >
           Marcar todos como presente
         </Button>
@@ -168,11 +167,11 @@ export function AttendanceForm() {
         <p className="text-sm text-muted-foreground">Selecione uma aula para iniciar a chamada.</p>
       )}
 
-      {turmas.length === 0 && !carregandoTurmas && (
+      {groups.length === 0 && !isLoadingGroups && (
         <p className="text-sm text-muted-foreground">Você não é regente de nenhuma aula.</p>
       )}
 
-      {groupId && carregandoAlunos && (
+      {groupId && isLoadingStudents && (
         <div className="flex flex-col gap-2">
           <div className="h-16 animate-pulse rounded-xl bg-muted" />
           <div className="h-16 animate-pulse rounded-xl bg-muted" />
@@ -180,41 +179,41 @@ export function AttendanceForm() {
         </div>
       )}
 
-      {groupId && !carregandoAlunos && (alunos?.length ?? 0) === 0 && (
+      {groupId && !isLoadingStudents && (students?.length ?? 0) === 0 && (
         <p className="text-sm text-muted-foreground">Aula sem alunos cadastrados.</p>
       )}
 
       {groupId &&
-        !carregandoAlunos &&
-        (alunos?.length ?? 0) > 0 &&
-        alunosFiltrados.length === 0 && (
+        !isLoadingStudents &&
+        (students?.length ?? 0) > 0 &&
+        filteredStudents.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            Nenhum aluno encontrado para “{busca.trim()}”.
+            Nenhum aluno encontrado para “{search.trim()}”.
           </p>
         )}
 
-      {groupId && !carregandoAlunos && alunosFiltrados.length > 0 && (
+      {groupId && !isLoadingStudents && filteredStudents.length > 0 && (
         <div className="flex flex-col gap-2">
-          {alunosFiltrados.map((aluno) => (
+          {filteredStudents.map((student) => (
             <StudentRow
-              key={aluno.id}
-              aluno={aluno}
-              status={statusPorAluno[aluno.id]}
-              onSelectStatus={(status) => selecionarStatus(aluno.id, status)}
+              key={student.id}
+              student={student}
+              status={statusByStudent[student.id]}
+              onSelectStatus={(status) => selectStatus(student.id, status)}
             />
           ))}
         </div>
       )}
 
-      {erro && (
+      {error && (
         <div className="flex items-center justify-between gap-3 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          <span>{erro}</span>
+          <span>{error}</span>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={salvarChamada}
-            disabled={salvando}
+            onClick={saveAttendance}
+            disabled={isSaving}
           >
             Tentar novamente
           </Button>
@@ -222,14 +221,14 @@ export function AttendanceForm() {
       )}
 
       <div className="flex flex-col items-center gap-3">
-        {salvo && <Badge variant="success">Chamada salva</Badge>}
+        {isSaved && <Badge variant="success">Chamada salva</Badge>}
         <Button
           type="button"
           className="w-full"
-          onClick={salvarChamada}
-          disabled={salvando || !groupId || (alunos?.length ?? 0) === 0}
+          onClick={saveAttendance}
+          disabled={isSaving || !groupId || (students?.length ?? 0) === 0}
         >
-          {salvando ? "Salvando…" : "Salvar chamada"}
+          {isSaving ? "Salvando…" : "Salvar chamada"}
         </Button>
       </div>
     </div>

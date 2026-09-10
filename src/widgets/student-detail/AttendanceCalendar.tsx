@@ -10,21 +10,21 @@ export interface DayEvent {
 }
 
 export interface AttendanceCalendarProps {
-  mes: string;
-  statusPorData: Map<string, AttendanceStatus>;
-  eventosPorData?: Map<string, DayEvent[]>;
+  month: string;
+  statusByDate: Map<string, AttendanceStatus>;
+  eventsByDate?: Map<string, DayEvent[]>;
 }
 
-const DIAS_SEMANA = ["D", "S", "T", "Q", "Q", "S", "S"];
+const WEEKDAY_INITIALS = ["D", "S", "T", "Q", "Q", "S", "S"];
 
-const LABEL_STATUS: Record<AttendanceStatus, string> = {
+const STATUS_LABELS: Record<AttendanceStatus, string> = {
   present: "Presente",
   late: "Atrasado",
   absent: "Ausente",
   excused: "Justificado",
 };
 
-const LABEL_EVENTO: Record<DayEvent["type"], string> = {
+const EVENT_LABELS: Record<DayEvent["type"], string> = {
   vacation: "Férias",
   makeup: "Recuperação",
   event: "Evento",
@@ -37,39 +37,39 @@ const STATUS_BG: Record<AttendanceStatus, string> = {
   excused: "bg-primary text-primary-foreground",
 };
 
-const EVENTO_DOT: Record<DayEvent["type"], string> = {
+const EVENT_DOT: Record<DayEvent["type"], string> = {
   vacation: "bg-primary",
   makeup: "bg-warning-500",
   event: "bg-muted-foreground",
 };
 
-function deslocarMes(mes: string, delta: number): string {
-  const [ano, mesNumero] = mes.split("-").map(Number);
-  const data = new Date(Date.UTC(ano, mesNumero - 1 + delta, 1));
-  return `${data.getUTCFullYear()}-${String(data.getUTCMonth() + 1).padStart(2, "0")}`;
+function shiftMonth(month: string, delta: number): string {
+  const [year, monthNumber] = month.split("-").map(Number);
+  const date = new Date(Date.UTC(year, monthNumber - 1 + delta, 1));
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 const navBtn =
   "flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted";
 
 export function AttendanceCalendar({
-  mes,
-  statusPorData,
-  eventosPorData,
+  month,
+  statusByDate,
+  eventsByDate,
 }: AttendanceCalendarProps) {
-  const [mesVisivel, setMesVisivel] = useState(mes);
-  const [ano, mesNumero] = mesVisivel.split("-").map(Number);
-  const mesIndex = mesNumero - 1;
-  const diasNoMes = new Date(Date.UTC(ano, mesIndex + 1, 0)).getUTCDate();
-  const primeiraColuna = new Date(Date.UTC(ano, mesIndex, 1)).getUTCDay();
-  const tituloMes = new Intl.DateTimeFormat("pt-BR", {
+  const [visibleMonth, setVisibleMonth] = useState(month);
+  const [year, monthNumber] = visibleMonth.split("-").map(Number);
+  const monthIndex = monthNumber - 1;
+  const daysInMonth = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+  const firstColumn = new Date(Date.UTC(year, monthIndex, 1)).getUTCDay();
+  const monthTitle = new Intl.DateTimeFormat("pt-BR", {
     month: "long",
     year: "numeric",
     timeZone: "UTC",
-  }).format(new Date(Date.UTC(ano, mesIndex, 1)));
+  }).format(new Date(Date.UTC(year, monthIndex, 1)));
 
-  const celulasVazias = Array.from({ length: primeiraColuna });
-  const dias = Array.from({ length: diasNoMes }, (_, indice) => indice + 1);
+  const emptyCells = Array.from({ length: firstColumn });
+  const days = Array.from({ length: daysInMonth }, (_, index) => index + 1);
 
   return (
     <div className="flex flex-col gap-4">
@@ -80,18 +80,18 @@ export function AttendanceCalendar({
             type="button"
             className={navBtn}
             aria-label="Mês anterior"
-            onClick={() => setMesVisivel((atual) => deslocarMes(atual, -1))}
+            onClick={() => setVisibleMonth((current) => shiftMonth(current, -1))}
           >
             <ChevronLeftIcon />
           </button>
           <span className="min-w-32 text-center text-sm font-medium text-foreground">
-            {tituloMes.charAt(0).toUpperCase() + tituloMes.slice(1)}
+            {monthTitle.charAt(0).toUpperCase() + monthTitle.slice(1)}
           </span>
           <button
             type="button"
             className={navBtn}
             aria-label="Próximo mês"
-            onClick={() => setMesVisivel((atual) => deslocarMes(atual, 1))}
+            onClick={() => setVisibleMonth((current) => shiftMonth(current, 1))}
           >
             <span className="rotate-180">
               <ChevronLeftIcon />
@@ -101,48 +101,48 @@ export function AttendanceCalendar({
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-center">
-        {DIAS_SEMANA.map((inicialDia, indice) => (
+        {WEEKDAY_INITIALS.map((initial, index) => (
           <span
-            key={`${inicialDia}-${indice}`}
+            key={`${initial}-${index}`}
             className="text-xs font-medium text-muted-foreground"
             aria-hidden="true"
           >
-            {inicialDia}
+            {initial}
           </span>
         ))}
-        {celulasVazias.map((_, indice) => (
-          <span key={`vazio-${indice}`} aria-hidden="true" />
+        {emptyCells.map((_, index) => (
+          <span key={`empty-${index}`} aria-hidden="true" />
         ))}
-        {dias.map((dia) => {
-          const dataIso = `${ano}-${String(mesNumero).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
-          const status = statusPorData.get(dataIso);
-          const eventos = eventosPorData?.get(dataIso) ?? [];
-          const partesRotulo = [
-            formatDateLong(dataIso),
-            status ? LABEL_STATUS[status] : "Sem aula",
-            ...eventos.map((evento) => `${LABEL_EVENTO[evento.type]}: ${evento.title}`),
+        {days.map((day) => {
+          const isoDate = `${year}-${String(monthNumber).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+          const status = statusByDate.get(isoDate);
+          const events = eventsByDate?.get(isoDate) ?? [];
+          const labelParts = [
+            formatDateLong(isoDate),
+            status ? STATUS_LABELS[status] : "Sem aula",
+            ...events.map((event) => `${EVENT_LABELS[event.type]}: ${event.title}`),
           ];
-          const rotulo = partesRotulo.join(" — ");
+          const label = labelParts.join(" — ");
           return (
             <span
-              key={dataIso}
+              key={isoDate}
               className="flex flex-col items-center gap-0.5 py-0.5"
-              title={rotulo}
-              aria-label={rotulo}
+              title={label}
+              aria-label={label}
             >
               <span
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-sm ${
                   status ? STATUS_BG[status] : "text-foreground"
                 }`}
               >
-                {dia}
+                {day}
               </span>
-              {eventos.length > 0 && (
+              {events.length > 0 && (
                 <span className="flex gap-0.5" aria-hidden="true">
-                  {eventos.slice(0, 3).map((evento, indice) => (
+                  {events.slice(0, 3).map((event, index) => (
                     <span
-                      key={`${evento.type}-${indice}`}
-                      className={`h-1 w-1 rounded-full ${EVENTO_DOT[evento.type]}`}
+                      key={`${event.type}-${index}`}
+                      className={`h-1 w-1 rounded-full ${EVENT_DOT[event.type]}`}
                     />
                   ))}
                 </span>

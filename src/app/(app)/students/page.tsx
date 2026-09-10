@@ -5,22 +5,22 @@ import { useSearchParams } from "next/navigation";
 import { StudentList } from "@/widgets/student-list/StudentList";
 import { StudentDetail } from "@/widgets/student-detail/StudentDetail";
 
-function AlunosView() {
-  const alunoId = useSearchParams().get("aluno");
+function StudentsView() {
+  const studentId = useSearchParams().get("aluno");
 
-  if (alunoId) {
-    return <StudentDetail studentId={alunoId} backHref="/students" backLabel="Alunos" />;
+  if (studentId) {
+    return <StudentDetail studentId={studentId} backHref="/students" backLabel="Alunos" />;
   }
 
   return <StudentList />;
 }
 
-// A view lê useSearchParams (?aluno= / ?q= / ?filtro=); o Suspense permite o
-// prerender estático da casca enquanto os params resolvem no cliente.
-export default function AlunosPage() {
+// useSearchParams opts the view out of static prerendering; the Suspense
+// boundary keeps the shell prerenderable while params resolve on the client.
+export default function StudentsPage() {
   return (
     <Suspense>
-      <AlunosView />
+      <StudentsView />
     </Suspense>
   );
 }

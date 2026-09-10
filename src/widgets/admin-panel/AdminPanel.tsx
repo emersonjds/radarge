@@ -20,24 +20,24 @@ import { AttendanceBarChart } from "./AttendanceBarChart";
 import { TrendLineChart } from "./TrendLineChart";
 
 /** Below this, a lone teacher account (dev seed) would tank the stat — show a plausible mock instead. */
-const LIMIAR_MOCK_PROFESSORES = 2;
-const MOCK_TOTAL_PROFESSORES = 148;
-const LIMITE_FALTAS_RISCO = 3;
-const MAX_ALERTAS = 3;
+const MOCK_TEACHERS_THRESHOLD = 2;
+const MOCK_TOTAL_TEACHERS = 148;
+const RISK_ABSENCE_THRESHOLD = 3;
+const MAX_ALERTS = 3;
 
-interface TarefaAdmin {
+interface AdminTask {
   title: string;
   status: "Pendente" | "Concluída" | "Urgente";
 }
 
-const TAREFAS_ADMIN: TarefaAdmin[] = [
+const ADMIN_TASKS: AdminTask[] = [
   { title: "Reunião de diretoria: orçamento do 3º trimestre", status: "Pendente" },
   { title: "Renovação de credenciamento docente", status: "Concluída" },
   { title: "Auditoria de instalações sanitárias", status: "Urgente" },
   { title: "Recepção de novos alunos", status: "Pendente" },
 ];
 
-const TAREFA_VARIANT: Record<TarefaAdmin["status"], "secondary" | "success" | "danger"> = {
+const TASK_VARIANT: Record<AdminTask["status"], "secondary" | "success" | "danger"> = {
   Pendente: "secondary",
   Concluída: "success",
   Urgente: "danger",
@@ -56,81 +56,80 @@ function StatCard({ label, value, icon }: { label: string; value: string; icon: 
 }
 
 export function AdminPanel() {
-  const alunos = useStudents();
-  const turmas = useGroups();
+  const students = useStudents();
+  const groups = useGroups();
   const enrollments = useEnrollments();
-  const perfis = useProfiles();
-  const taxaFrequencia = useAttendanceRate();
-  const tendenciaFrequencia = useAbsenteeismTrend();
-  // Zero traz todo aluno que já foi chamado alguma vez, com a frequência dele. Quem
-  // não aparece nunca teve chamada, e isso é diferente de ter frequência perfeita.
-  const riscoAbsenteismo = useStudentsAtRisk({ threshold: 0 });
+  const profiles = useProfiles();
+  const attendanceRate = useAttendanceRate();
+  const absenteeismTrend = useAbsenteeismTrend();
+  // Threshold zero returns every student who has ever been called, with their rate.
+  // A student missing from the list has no roll-call at all, which is not the same
+  // as a perfect attendance rate.
+  const studentsAtRisk = useStudentsAtRisk({ threshold: 0 });
 
-  const totalAlunos = alunos.data?.length ?? 0;
-  const totalProfessores = perfis.data?.filter((perfil) => perfil.role === "teacher").length ?? 0;
-  const analyticsError =
-    taxaFrequencia.error ?? tendenciaFrequencia.error ?? riscoAbsenteismo.error;
+  const totalStudents = students.data?.length ?? 0;
+  const totalTeachers = profiles.data?.filter((profile) => profile.role === "teacher").length ?? 0;
+  const analyticsError = attendanceRate.error ?? absenteeismTrend.error ?? studentsAtRisk.error;
 
-  const alunoPorId = new Map((alunos.data ?? []).map((aluno) => [aluno.id, aluno]));
-  const turmaPorId = new Map((turmas.data ?? []).map((turma) => [turma.id, turma]));
+  const studentById = new Map((students.data ?? []).map((student) => [student.id, student]));
+  const groupById = new Map((groups.data ?? []).map((group) => [group.id, group]));
 
-  const turmasDoAluno = new Map<string, string[]>();
+  const groupIdsByStudent = new Map<string, string[]>();
   for (const enrollment of enrollments.data ?? []) {
     if (!enrollment.active) continue;
-    turmasDoAluno.set(enrollment.studentId, [
-      ...(turmasDoAluno.get(enrollment.studentId) ?? []),
+    groupIdsByStudent.set(enrollment.studentId, [
+      ...(groupIdsByStudent.get(enrollment.studentId) ?? []),
       enrollment.groupId,
     ]);
   }
 
-  const frequenciaPorAluno = new Map(
-    (riscoAbsenteismo.data ?? []).map((risco) => [risco.studentId, risco.attendance]),
+  const attendanceRateByStudent = new Map(
+    (studentsAtRisk.data ?? []).map((risk) => [risk.studentId, risk.attendance]),
   );
 
-  // Uma aula sem nenhuma chamada não vira barra: zero por cento seria tão falso
-  // quanto cem, e o gráfico compara aulas que já foram chamadas.
-  const frequenciaPorTurma = (turmas.data ?? [])
-    .map((turma) => {
-      const frequenciasConhecidas = (alunos.data ?? [])
-        .filter((aluno) => (turmasDoAluno.get(aluno.id) ?? []).includes(turma.id))
-        .map((aluno) => frequenciaPorAluno.get(aluno.id))
-        .filter((frequencia): frequencia is number => frequencia !== undefined);
+  // A group with no roll-call yet gets no bar: zero percent would be as false as a
+  // hundred, and the chart compares groups that have actually been called.
+  const attendanceRateByGroup = (groups.data ?? [])
+    .map((group) => {
+      const knownRates = (students.data ?? [])
+        .filter((student) => (groupIdsByStudent.get(student.id) ?? []).includes(group.id))
+        .map((student) => attendanceRateByStudent.get(student.id))
+        .filter((rate): rate is number => rate !== undefined);
 
       return {
-        groupId: turma.id,
-        label: turma.name.split("—")[0].trim(),
-        frequenciasConhecidas,
+        groupId: group.id,
+        label: group.name.split("—")[0].trim(),
+        knownRates,
       };
     })
-    .filter((turma) => turma.frequenciasConhecidas.length > 0)
-    .map(({ groupId, label, frequenciasConhecidas }) => ({
+    .filter((group) => group.knownRates.length > 0)
+    .map(({ groupId, label, knownRates }) => ({
       groupId,
       label,
       attendance: Math.round(
-        frequenciasConhecidas.reduce((total, frequencia) => total + frequencia, 0) /
-          frequenciasConhecidas.length,
+        knownRates.reduce((total, rate) => total + rate, 0) / knownRates.length,
       ),
     }));
 
-  const alertas = (riscoAbsenteismo.data ?? [])
-    .filter((risco) => risco.absences >= LIMITE_FALTAS_RISCO)
-    .slice(0, MAX_ALERTAS)
-    .map((risco) => {
-      const aluno = alunoPorId.get(risco.studentId);
-      const groupIds = turmasDoAluno.get(risco.studentId) ?? [];
-      const nomesTurmas = groupIds
-        .map((groupId) => turmaPorId.get(groupId)?.name)
+  const alerts = (studentsAtRisk.data ?? [])
+    .filter((risk) => risk.absences >= RISK_ABSENCE_THRESHOLD)
+    .slice(0, MAX_ALERTS)
+    .map((risk) => {
+      const student = studentById.get(risk.studentId);
+      const groupIds = groupIdsByStudent.get(risk.studentId) ?? [];
+      const groupNames = groupIds
+        .map((groupId) => groupById.get(groupId)?.name)
         .filter((name): name is string => Boolean(name));
       return {
-        ...risco,
-        name: aluno?.name ?? "Aluno",
-        turma: nomesTurmas.join(", ") || "—",
+        ...risk,
+        name: student?.name ?? "Aluno",
+        groupNames: groupNames.join(", ") || "—",
       };
     });
 
-  const tendencia = (tendenciaFrequencia.data ?? []).map((ponto) => ({
-    data: ponto.date,
-    attendance: 100 - ponto.absenceRate,
+  const trend = (absenteeismTrend.data ?? []).map((point) => ({
+    date: point.date,
+    attendance: 100 - point.absenceRate,
   }));
 
   return (
@@ -147,30 +146,26 @@ export function AdminPanel() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
           label="Total de alunos"
-          value={alunos.isLoading ? "…" : String(totalAlunos)}
+          value={students.isLoading ? "…" : String(totalStudents)}
           icon={<GroupIcon />}
         />
         <StatCard
           label="Total de professores"
           value={
-            perfis.isLoading
+            profiles.isLoading
               ? "…"
-              : String(
-                  totalProfessores < LIMIAR_MOCK_PROFESSORES
-                    ? MOCK_TOTAL_PROFESSORES
-                    : totalProfessores,
-                )
+              : String(totalTeachers < MOCK_TEACHERS_THRESHOLD ? MOCK_TOTAL_TEACHERS : totalTeachers)
           }
           icon={<UserCircleIcon />}
         />
         <StatCard
           label="Frequência geral"
           value={
-            taxaFrequencia.isLoading
+            attendanceRate.isLoading
               ? "…"
-              : taxaFrequencia.isError
+              : attendanceRate.isError
                 ? "—"
-                : formatPercent(taxaFrequencia.data?.rate ?? 0)
+                : formatPercent(attendanceRate.data?.rate ?? 0)
           }
           icon={<CheckCircleIcon />}
         />
@@ -180,29 +175,29 @@ export function AdminPanel() {
         <div className="rounded-xl border bg-card p-4 shadow-sm lg:col-span-2">
           <h2 className="text-lg font-semibold text-foreground">Frequência por aula</h2>
           <p className="mb-2 text-sm text-muted-foreground">Comparativo de presença por aula</p>
-          <AttendanceBarChart dados={frequenciaPorTurma} />
+          <AttendanceBarChart data={attendanceRateByGroup} />
         </div>
 
         <div className="rounded-xl border bg-card p-4 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold text-foreground">
             Alertas de baixa frequência
           </h2>
-          {riscoAbsenteismo.isLoading ? (
+          {studentsAtRisk.isLoading ? (
             <p className="text-sm text-muted-foreground">Carregando…</p>
-          ) : alertas.length === 0 ? (
+          ) : alerts.length === 0 ? (
             <p className="text-sm text-muted-foreground">Sem dados ainda.</p>
           ) : (
             <ul className="flex flex-col gap-3">
-              {alertas.map((alerta) => (
-                <li key={alerta.studentId} className="flex items-center gap-3">
-                  <AvatarText name={alerta.name} />
+              {alerts.map((alert) => (
+                <li key={alert.studentId} className="flex items-center gap-3">
+                  <AvatarText name={alert.name} />
                   <div className="mr-auto min-w-0">
-                    <p className="truncate font-medium text-foreground">{alerta.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">{alerta.turma}</p>
+                    <p className="truncate font-medium text-foreground">{alert.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{alert.groupNames}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <Badge variant="danger">{formatPercent(alerta.attendance)}</Badge>
-                    <span className="text-xs text-muted-foreground">{alerta.absences} faltas</span>
+                    <Badge variant="danger">{formatPercent(alert.attendance)}</Badge>
+                    <span className="text-xs text-muted-foreground">{alert.absences} faltas</span>
                   </div>
                 </li>
               ))}
@@ -220,16 +215,16 @@ export function AdminPanel() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="rounded-xl border bg-card p-4 shadow-sm lg:col-span-2">
           <h2 className="mb-2 text-lg font-semibold text-foreground">Tendência de frequência</h2>
-          <TrendLineChart pontos={tendencia} />
+          <TrendLineChart points={trend} />
         </div>
 
         <div className="rounded-xl border bg-card p-4 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold text-foreground">Tarefas administrativas</h2>
           <ul className="flex flex-col gap-3">
-            {TAREFAS_ADMIN.map((tarefa) => (
-              <li key={tarefa.title} className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-foreground">{tarefa.title}</span>
-                <Badge variant={TAREFA_VARIANT[tarefa.status]}>{tarefa.status}</Badge>
+            {ADMIN_TASKS.map((task) => (
+              <li key={task.title} className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-foreground">{task.title}</span>
+                <Badge variant={TASK_VARIANT[task.status]}>{task.status}</Badge>
               </li>
             ))}
           </ul>

@@ -22,112 +22,117 @@ import { DownloadIcon } from "@tailadmin/icons";
 import { ClassOverview } from "./ClassOverview";
 import { StudentsReportTable, type ReportRow } from "./StudentsReportTable";
 
-const LIMITE_FALTAS_RISCO = 3;
-const TODAS = "todas";
+const RISK_ABSENCE_THRESHOLD = 3;
+const ALL_GROUPS = "todas";
 
 const control =
   "h-11 rounded-lg border border-input bg-transparent px-3 text-base text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20 sm:text-sm";
 
 export function ReportsCenter() {
-  const { data: alunos, isLoading: carregandoAlunos } = useStudents();
-  const { data: turmas } = useGroups();
+  const { data: students, isLoading: isLoadingStudents } = useStudents();
+  const { data: groups } = useGroups();
   const { data: enrollments } = useEnrollments();
-  const { data: notas, isLoading: carregandoNotas } = useGrades();
-  const { data: materias } = useSubjects();
+  const { data: grades, isLoading: isLoadingGrades } = useGrades();
+  const { data: subjects } = useSubjects();
 
-  const [turmaId, setTurmaId] = useState(TODAS);
-  const [periodo, setPeriodo] = useState("2026-1");
+  const [groupId, setGroupId] = useState(ALL_GROUPS);
+  const [term, setTerm] = useState("2026-1");
 
-  const groupFilter = turmaId === TODAS ? {} : { groupId: turmaId };
+  const groupFilter = groupId === ALL_GROUPS ? {} : { groupId };
   const {
-    data: riscoAbsenteismo,
-    isLoading: carregandoRisco,
-    isError: erroAoCarregarAnalytics,
-    error: erroAnalytics,
-    // Zero traz todo aluno já chamado alguma vez. Quem não aparece nunca teve
-    // chamada, e o relatório diz isso em vez de fingir cem por cento.
+    data: studentsAtRisk,
+    isLoading: isLoadingRisk,
+    isError: hasAnalyticsError,
+    error: analyticsError,
+    // Threshold zero returns every student ever called. A student missing from the
+    // list has no roll-call, and the report says so instead of faking a hundred percent.
   } = useStudentsAtRisk({ ...groupFilter, threshold: 0 });
-  const { data: taxaFrequencia, isLoading: carregandoTaxa } = useAttendanceRate(groupFilter);
-  const { data: resumoAcademico, isLoading: carregandoResumo } = useAcademicSummary(groupFilter);
+  const { data: attendanceRate, isLoading: isLoadingRate } = useAttendanceRate(groupFilter);
+  const { data: academicSummary, isLoading: isLoadingSummary } = useAcademicSummary(groupFilter);
 
-  const carregando =
-    carregandoAlunos || carregandoNotas || carregandoRisco || carregandoTaxa || carregandoResumo;
+  const isLoading =
+    isLoadingStudents || isLoadingGrades || isLoadingRisk || isLoadingRate || isLoadingSummary;
 
-  const dados = useMemo(() => {
-    const listaAlunos = alunos ?? [];
-    const listaMaterias = materias ?? [];
-    const turmaPorId = new Map((turmas ?? []).map((turma) => [turma.id, turma]));
+  const report = useMemo(() => {
+    const studentList = students ?? [];
+    const subjectList = subjects ?? [];
+    const groupById = new Map((groups ?? []).map((group) => [group.id, group]));
 
-    const notasPorAluno = new Map<string, Grade[]>();
-    for (const nota of notas ?? []) {
-      notasPorAluno.set(nota.studentId, [...(notasPorAluno.get(nota.studentId) ?? []), nota]);
+    const gradesByStudent = new Map<string, Grade[]>();
+    for (const grade of grades ?? []) {
+      gradesByStudent.set(grade.studentId, [
+        ...(gradesByStudent.get(grade.studentId) ?? []),
+        grade,
+      ]);
     }
 
-    // Fora da lista de risco, a única leitura possível é "sem faltas registradas".
-    const frequenciaPorAluno = new Map(
-      (riscoAbsenteismo ?? []).map((risco) => [risco.studentId, risco.attendance]),
+    // Off the risk list, the only reading available is "no absences recorded".
+    const attendanceRateByStudent = new Map(
+      (studentsAtRisk ?? []).map((risk) => [risk.studentId, risk.attendance]),
     );
-    const faltasPorAluno = new Map(
-      (riscoAbsenteismo ?? []).map((risco) => [risco.studentId, risco.absences]),
+    const absencesByStudent = new Map(
+      (studentsAtRisk ?? []).map((risk) => [risk.studentId, risk.absences]),
     );
 
-    const turmasPorAluno = new Map<string, string[]>();
+    const groupIdsByStudent = new Map<string, string[]>();
     for (const enrollment of enrollments ?? []) {
       if (!enrollment.active) continue;
-      turmasPorAluno.set(enrollment.studentId, [
-        ...(turmasPorAluno.get(enrollment.studentId) ?? []),
+      groupIdsByStudent.set(enrollment.studentId, [
+        ...(groupIdsByStudent.get(enrollment.studentId) ?? []),
         enrollment.groupId,
       ]);
     }
 
-    const escopoAlunos =
-      turmaId === TODAS
-        ? listaAlunos
-        : listaAlunos.filter((aluno) => (turmasPorAluno.get(aluno.id) ?? []).includes(turmaId));
+    const scopedStudents =
+      groupId === ALL_GROUPS
+        ? studentList
+        : studentList.filter((student) =>
+            (groupIdsByStudent.get(student.id) ?? []).includes(groupId),
+          );
 
-    const linhas: ReportRow[] = escopoAlunos.map((aluno) => {
-      const notasDoAluno = notasPorAluno.get(aluno.id) ?? [];
-      const nomesTurmas = (turmasPorAluno.get(aluno.id) ?? [])
-        .map((groupId) => turmaPorId.get(groupId)?.name)
+    const rows: ReportRow[] = scopedStudents.map((student) => {
+      const studentGrades = gradesByStudent.get(student.id) ?? [];
+      const groupNames = (groupIdsByStudent.get(student.id) ?? [])
+        .map((enrolledGroupId) => groupById.get(enrolledGroupId)?.name)
         .filter((name): name is string => Boolean(name));
-      const faltas = faltasPorAluno.get(aluno.id) ?? 0;
+      const absences = absencesByStudent.get(student.id) ?? 0;
       return {
-        id: aluno.id,
-        name: aluno.name,
-        turmaNome: nomesTurmas.join(", ") || "—",
-        nota: overallAverage(notasDoAluno),
-        freq: frequenciaPorAluno.get(aluno.id) ?? null,
-        faltas,
-        aptidao: studentAptitude(notasDoAluno, listaMaterias),
-        emRisco: faltas >= LIMITE_FALTAS_RISCO,
+        id: student.id,
+        name: student.name,
+        groupNames: groupNames.join(", ") || "—",
+        average: overallAverage(studentGrades),
+        attendanceRate: attendanceRateByStudent.get(student.id) ?? null,
+        absences,
+        aptitude: studentAptitude(studentGrades, subjectList),
+        atRisk: absences >= RISK_ABSENCE_THRESHOLD,
       };
     });
 
-    return { linhas, totalAlunos: escopoAlunos.length };
-  }, [alunos, materias, turmas, notas, enrollments, turmaId, riscoAbsenteismo]);
+    return { rows, totalStudents: scopedStudents.length };
+  }, [students, subjects, groups, grades, enrollments, groupId, studentsAtRisk]);
 
-  const escopoLabel =
-    turmaId === TODAS
+  const scopeLabel =
+    groupId === ALL_GROUPS
       ? "Todas as aulas"
-      : ((turmas ?? []).find((turma) => turma.id === turmaId)?.name ?? "Aula");
+      : ((groups ?? []).find((group) => group.id === groupId)?.name ?? "Aula");
 
-  function exportar() {
+  function exportCsv() {
     const headers = ["Aluno", "Turma", "Nota média", "Frequência", "Faltas", "Aptidão", "Situação"];
-    const linhasCsv = dados.linhas.map((linha) => [
-      linha.name,
-      linha.turmaNome,
-      formatScore(linha.nota),
+    const csvRows = report.rows.map((row) => [
+      row.name,
+      row.groupNames,
+      formatScore(row.average),
       // Empty, not a dash: an em-dash in a spreadsheet cell poisons SUM and AVERAGE.
-      linha.freq === null ? "" : formatPercent(linha.freq),
-      linha.faltas,
-      linha.aptidao ? areaLabels[linha.aptidao] : "—",
-      linha.emRisco ? "Em risco" : "Regular",
+      row.attendanceRate === null ? "" : formatPercent(row.attendanceRate),
+      row.absences,
+      row.aptitude ? areaLabels[row.aptitude] : "—",
+      row.atRisk ? "Em risco" : "Regular",
     ]);
-    const slug = escopoLabel
+    const slug = scopeLabel
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
-    downloadCsv(`relatorio-${slug}.csv`, toCsv(headers, linhasCsv));
+    downloadCsv(`relatorio-${slug}.csv`, toCsv(headers, csvRows));
   }
 
   return (
@@ -145,13 +150,13 @@ export function ReportsCenter() {
             <select
               aria-label="Selecionar aula"
               className={control}
-              value={turmaId}
-              onChange={(event) => setTurmaId(event.target.value)}
+              value={groupId}
+              onChange={(event) => setGroupId(event.target.value)}
             >
-              <option value={TODAS}>Todas as aulas</option>
-              {(turmas ?? []).map((turma) => (
-                <option key={turma.id} value={turma.id}>
-                  {turma.name}
+              <option value={ALL_GROUPS}>Todas as aulas</option>
+              {(groups ?? []).map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
                 </option>
               ))}
             </select>
@@ -161,8 +166,8 @@ export function ReportsCenter() {
             <select
               aria-label="Selecionar período"
               className={control}
-              value={periodo}
-              onChange={(event) => setPeriodo(event.target.value)}
+              value={term}
+              onChange={(event) => setTerm(event.target.value)}
             >
               <option value="2026-1">Semestre 1 (2026)</option>
               <option value="2026-2">Semestre 2 (2026)</option>
@@ -172,8 +177,8 @@ export function ReportsCenter() {
             type="button"
             variant="outline"
             className="h-11"
-            disabled={dados.linhas.length === 0}
-            onClick={exportar}
+            disabled={report.rows.length === 0}
+            onClick={exportCsv}
           >
             <DownloadIcon />
             Exportar CSV
@@ -181,27 +186,27 @@ export function ReportsCenter() {
         </div>
       </header>
 
-      {erroAoCarregarAnalytics && (
+      {hasAnalyticsError && (
         <p role="alert" className="text-sm text-destructive">
-          {messageForError(erroAnalytics, "Não foi possível carregar os indicadores da aula.")}
+          {messageForError(analyticsError, "Não foi possível carregar os indicadores da aula.")}
         </p>
       )}
 
-      {carregando || !resumoAcademico ? (
+      {isLoading || !academicSummary ? (
         <div className="rounded-xl border bg-card p-4 text-sm text-muted-foreground shadow-sm md:p-5">
           Carregando panorama…
         </div>
       ) : (
         <ClassOverview
-          escopo={escopoLabel}
-          totalAlunos={dados.totalAlunos}
-          avgAttendance={taxaFrequencia?.rate ?? 0}
-          summary={resumoAcademico}
-          subjects={materias ?? []}
+          scopeLabel={scopeLabel}
+          totalStudents={report.totalStudents}
+          avgAttendance={attendanceRate?.rate ?? 0}
+          summary={academicSummary}
+          subjects={subjects ?? []}
         />
       )}
 
-      <StudentsReportTable linhas={dados.linhas} carregando={carregando} />
+      <StudentsReportTable rows={report.rows} isLoading={isLoading} />
     </div>
   );
 }

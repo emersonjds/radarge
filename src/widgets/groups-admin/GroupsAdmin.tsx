@@ -17,19 +17,19 @@ export function GroupsAdmin() {
   const deleteGroup = useDeleteGroup();
   const [editing, setEditing] = useState<Group | null | undefined>(undefined);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  function regenteName(teacherId: string) {
-    return (profiles ?? []).find((p) => p.id === teacherId)?.name ?? "—";
+  function teacherName(teacherId: string) {
+    return (profiles ?? []).find((profile) => profile.id === teacherId)?.name ?? "—";
   }
 
-  async function remover(group: Group) {
+  async function remove(group: Group) {
     if (!window.confirm(`Excluir a aula ${group.name}?`)) return;
-    setErro(null);
+    setError(null);
     try {
       await deleteGroup.mutateAsync(group.id);
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível remover.");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Não foi possível remover.");
     }
   }
 
@@ -42,9 +42,9 @@ export function GroupsAdmin() {
         </Button>
       </header>
 
-      {erro && (
+      {error && (
         <p role="alert" className="text-sm text-destructive">
-          {erro}
+          {error}
         </p>
       )}
 
@@ -58,7 +58,7 @@ export function GroupsAdmin() {
                 <div>
                   <p className="font-medium text-foreground">{group.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {shiftLabels[group.shift]} · Regente: {regenteName(group.teacherId)}
+                    {shiftLabels[group.shift]} · Regente: {teacherName(group.teacherId)}
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
@@ -82,7 +82,7 @@ export function GroupsAdmin() {
                     icon={Trash2}
                     label={`Excluir ${group.name}`}
                     tone="destructive"
-                    onClick={() => remover(group)}
+                    onClick={() => remove(group)}
                   />
                 </div>
               </div>

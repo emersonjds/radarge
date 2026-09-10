@@ -25,19 +25,19 @@ export function GroupAssignmentsPanel({ groupId }: { groupId: string }) {
   const deleteAssignment = useDeleteAssignment();
 
   const teachers = (profiles ?? []).filter((profile) => profile.role === "teacher");
-  const usedSubjectIds = new Set((assignments ?? []).map((a) => a.subjectId));
-  const availableSubjects = (subjects ?? []).filter((s) => !usedSubjectIds.has(s.id));
+  const usedSubjectIds = new Set((assignments ?? []).map((assignment) => assignment.subjectId));
+  const availableSubjects = (subjects ?? []).filter((subject) => !usedSubjectIds.has(subject.id));
 
   const [newSubjectId, setNewSubjectId] = useState("");
   const [newTeacherId, setNewTeacherId] = useState("");
-  const [erro, setErro] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   function subjectName(id: string) {
-    return (subjects ?? []).find((s) => s.id === id)?.name ?? id;
+    return (subjects ?? []).find((subject) => subject.id === id)?.name ?? id;
   }
 
-  async function adicionar() {
-    setErro(null);
+  async function addAssignment() {
+    setError(null);
     const subjectId = newSubjectId || availableSubjects[0]?.id;
     const teacherId = newTeacherId || teachers[0]?.id;
     if (!subjectId || !teacherId) return;
@@ -45,8 +45,8 @@ export function GroupAssignmentsPanel({ groupId }: { groupId: string }) {
       await createAssignment.mutateAsync({ groupId, subjectId, teacherId });
       setNewSubjectId("");
       setNewTeacherId("");
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível adicionar.");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Não foi possível adicionar.");
     }
   }
 
@@ -63,8 +63,8 @@ export function GroupAssignmentsPanel({ groupId }: { groupId: string }) {
             <select
               aria-label={`Professor de ${subjectName(assignment.subjectId)}`}
               value={assignment.teacherId}
-              onChange={(e) =>
-                updateTeacher.mutate({ id: assignment.id, teacherId: e.target.value })
+              onChange={(event) =>
+                updateTeacher.mutate({ id: assignment.id, teacherId: event.target.value })
               }
               className={controlClasses}
             >
@@ -87,9 +87,9 @@ export function GroupAssignmentsPanel({ groupId }: { groupId: string }) {
         )}
       </ul>
 
-      {erro && (
+      {error && (
         <p role="alert" className="mb-2 text-sm text-destructive">
-          {erro}
+          {error}
         </p>
       )}
 
@@ -98,7 +98,7 @@ export function GroupAssignmentsPanel({ groupId }: { groupId: string }) {
           <select
             aria-label="Matéria a adicionar"
             value={newSubjectId}
-            onChange={(e) => setNewSubjectId(e.target.value)}
+            onChange={(event) => setNewSubjectId(event.target.value)}
             className={controlClasses}
           >
             {availableSubjects.map((subject) => (
@@ -110,7 +110,7 @@ export function GroupAssignmentsPanel({ groupId }: { groupId: string }) {
           <select
             aria-label="Professor da matéria"
             value={newTeacherId}
-            onChange={(e) => setNewTeacherId(e.target.value)}
+            onChange={(event) => setNewTeacherId(event.target.value)}
             className={controlClasses}
           >
             {teachers.map((teacher) => (
@@ -119,7 +119,7 @@ export function GroupAssignmentsPanel({ groupId }: { groupId: string }) {
               </option>
             ))}
           </select>
-          <Button size="sm" onClick={adicionar}>
+          <Button size="sm" onClick={addAssignment}>
             Adicionar matéria à aula
           </Button>
         </div>

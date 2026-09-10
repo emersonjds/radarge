@@ -12,23 +12,23 @@ import { EyeIcon } from "@tailadmin/icons";
 export interface ReportRow {
   id: string;
   name: string;
-  turmaNome: string;
-  nota: number;
-  freq: number | null;
-  faltas: number;
-  aptidao: Area | null;
-  emRisco: boolean;
+  groupNames: string;
+  average: number;
+  attendanceRate: number | null;
+  absences: number;
+  aptitude: Area | null;
+  atRisk: boolean;
 }
 
 const th = "px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground";
 const td = "px-5 py-4 text-sm text-foreground";
 
 export interface StudentsReportTableProps {
-  linhas: ReportRow[];
-  carregando: boolean;
+  rows: ReportRow[];
+  isLoading: boolean;
 }
 
-export function StudentsReportTable({ linhas, carregando }: StudentsReportTableProps) {
+export function StudentsReportTable({ rows, isLoading }: StudentsReportTableProps) {
   return (
     <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
       <div className="overflow-x-auto">
@@ -45,51 +45,51 @@ export function StudentsReportTable({ linhas, carregando }: StudentsReportTableP
             </TableRow>
           </TableHeader>
           <TableBody>
-            {carregando && (
+            {isLoading && (
               <TableRow>
                 <TableCell className={`${td} text-center text-muted-foreground`} colSpan={7}>
                   Carregando alunos…
                 </TableCell>
               </TableRow>
             )}
-            {!carregando && linhas.length === 0 && (
+            {!isLoading && rows.length === 0 && (
               <TableRow>
                 <TableCell className={`${td} text-center text-muted-foreground`} colSpan={7}>
                   Nenhum aluno encontrado
                 </TableCell>
               </TableRow>
             )}
-            {!carregando &&
-              linhas.map((linha) => (
-                <TableRow key={linha.id} className="border-t border-border hover:bg-muted">
+            {!isLoading &&
+              rows.map((row) => (
+                <TableRow key={row.id} className="border-t border-border hover:bg-muted">
                   <TableCell className={td}>
                     <Link
-                      href={"/reports?studentId=" + linha.id}
+                      href={"/reports?studentId=" + row.id}
                       className="flex items-center gap-3"
-                      aria-label={`Abrir relatório de ${linha.name}`}
+                      aria-label={`Abrir relatório de ${row.name}`}
                     >
-                      <AvatarText name={linha.name} />
-                      <span className="font-medium text-foreground">{linha.name}</span>
+                      <AvatarText name={row.name} />
+                      <span className="font-medium text-foreground">{row.name}</span>
                     </Link>
                   </TableCell>
-                  <TableCell className={td}>{linha.turmaNome}</TableCell>
-                  <TableCell className={td}>{formatScore(linha.nota)}</TableCell>
+                  <TableCell className={td}>{row.groupNames}</TableCell>
+                  <TableCell className={td}>{formatScore(row.average)}</TableCell>
                   <TableCell className={td}>
-                    {linha.freq === null ? "—" : formatPercent(linha.freq)}
+                    {row.attendanceRate === null ? "—" : formatPercent(row.attendanceRate)}
                   </TableCell>
                   <TableCell className={td}>
-                    {linha.aptidao ? areaLabels[linha.aptidao] : "—"}
+                    {row.aptitude ? areaLabels[row.aptitude] : "—"}
                   </TableCell>
                   <TableCell className={td}>
-                    <Badge variant={linha.emRisco ? "danger" : "success"}>
-                      {linha.emRisco ? "Em risco" : "Regular"}
+                    <Badge variant={row.atRisk ? "danger" : "success"}>
+                      {row.atRisk ? "Em risco" : "Regular"}
                     </Badge>
                   </TableCell>
                   <TableCell className={td}>
                     <Link
-                      href={"/reports?studentId=" + linha.id}
+                      href={"/reports?studentId=" + row.id}
                       className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted"
-                      aria-label={`Ver relatório de ${linha.name}`}
+                      aria-label={`Ver relatório de ${row.name}`}
                       title="Ver relatório"
                     >
                       <EyeIcon />

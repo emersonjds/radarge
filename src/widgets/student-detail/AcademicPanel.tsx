@@ -17,13 +17,13 @@ export interface AcademicPanelProps {
   subjects: Subject[];
 }
 
-function Bar({ label, value, forte }: { label: string; value: number; forte: boolean }) {
+function Bar({ label, value, isTop }: { label: string; value: number; isTop: boolean }) {
   return (
     <li className="flex items-center gap-3">
       <span className="w-24 shrink-0 truncate text-sm text-muted-foreground">{label}</span>
       <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
         <div
-          className={`h-full rounded-full ${forte ? "bg-primary" : "bg-primary/50"}`}
+          className={`h-full rounded-full ${isTop ? "bg-primary" : "bg-primary/50"}`}
           style={{ width: `${value * 10}%` }}
         />
       </div>
@@ -44,12 +44,12 @@ export function AcademicPanel({ grades, subjects }: AcademicPanelProps) {
     );
   }
 
-  const nota = overallAverage(grades);
-  const aptidao = studentAptitude(grades, subjects);
+  const average = overallAverage(grades);
+  const aptitude = studentAptitude(grades, subjects);
   const areas = areaAffinity(grades, subjects);
-  const materias = averageBySubject(grades, subjects);
-  const maiorArea = areas[0]?.average ?? 0;
-  const maiorMateria = materias[0]?.score ?? 0;
+  const subjectAverages = averageBySubject(grades, subjects);
+  const topAreaAverage = areas[0]?.average ?? 0;
+  const topSubjectScore = subjectAverages[0]?.score ?? 0;
 
   return (
     <section className="rounded-xl border bg-card p-4 shadow-sm">
@@ -58,9 +58,9 @@ export function AcademicPanel({ grades, subjects }: AcademicPanelProps) {
         <div className="flex items-center gap-3">
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Nota geral</p>
-            <p className="text-xl font-bold text-foreground">{formatScore(nota)}</p>
+            <p className="text-xl font-bold text-foreground">{formatScore(average)}</p>
           </div>
-          {aptidao && <Badge variant="success">Aptidão: {areaLabels[aptidao]}</Badge>}
+          {aptitude && <Badge variant="success">Aptidão: {areaLabels[aptitude]}</Badge>}
         </div>
       </div>
 
@@ -68,12 +68,12 @@ export function AcademicPanel({ grades, subjects }: AcademicPanelProps) {
         <div>
           <p className="mb-3 text-sm font-medium text-foreground">Notas por matéria</p>
           <ul className="flex flex-col gap-2">
-            {materias.map((item) => (
+            {subjectAverages.map((item) => (
               <Bar
                 key={item.subject.id}
                 label={item.subject.name}
                 value={item.score}
-                forte={item.score === maiorMateria}
+                isTop={item.score === topSubjectScore}
               />
             ))}
           </ul>
@@ -86,7 +86,7 @@ export function AcademicPanel({ grades, subjects }: AcademicPanelProps) {
                 key={item.area}
                 label={areaLabels[item.area]}
                 value={item.average}
-                forte={item.average === maiorArea}
+                isTop={item.average === topAreaAverage}
               />
             ))}
           </ul>
