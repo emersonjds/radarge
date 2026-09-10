@@ -30,7 +30,7 @@ const selectClasses =
 
 type StatTone = "neutral" | "success" | "warning" | "danger";
 
-const statTileVariants = cva("flex flex-col-reverse justify-end rounded-lg border p-3", {
+const statTileVariants = cva("flex min-h-20 flex-col-reverse justify-end rounded-lg border p-3", {
   variants: {
     tone: {
       neutral: "border-border bg-gray-50",
@@ -256,11 +256,7 @@ export function EventDetail({
                 </p>
                 <div className="mt-2 grid grid-cols-3 gap-2 sm:gap-3">
                   <Stat tone="neutral" label="Pagos" value={String(summary.paid)} />
-                  <Stat
-                    tone="neutral"
-                    label="Pendentes de pagamento"
-                    value={String(summary.pendingPayment)}
-                  />
+                  <Stat tone="neutral" label="Pendentes" value={String(summary.pendingPayment)} />
                   <Stat tone="neutral" label="Isentos" value={String(summary.waived)} />
                 </div>
               </div>
@@ -269,7 +265,7 @@ export function EventDetail({
         )}
       </section>
 
-      {/* Cartão por aluno no celular: o professor marca autorização e pagamento em sala, sem rolagem lateral. */}
+      {/* Cards instead of a table: the teacher fills this in class on a phone, and a table forces sideways scrolling. */}
       <ul className="divide-y rounded-xl border bg-card shadow-sm">
         {(students ?? []).map((student) => {
           const participation = participationOf(student.id);
