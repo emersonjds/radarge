@@ -5,11 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { useStudents, useDeleteStudent } from "@/entities/student/queries";
 import { useEnrollments } from "@/entities/enrollment/queries";
 import type { Student } from "@/entities/student/model";
-import type { AttendanceRecord } from "@/entities/attendance-record/model";
-import { useAttendanceRecords } from "@/entities/attendance-record/queries";
+import { useStudentsAtRisk } from "@/features/analytics/queries";
 import { useGroups } from "@/entities/group/queries";
 import { useSession } from "@/features/session/use-session";
-import { countAbsences, attendanceRate } from "@/features/analytics/model";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { computeAgeAt, todayIso } from "@/entities/student/age";
 import { formatPercent } from "@/shared/lib/format";
 import { AvatarText } from "@/shared/ui/avatar-text";
@@ -30,7 +29,14 @@ export function StudentList() {
   const { data: alunos, isLoading: carregandoAlunos } = useStudents();
   const { data: turmas, isLoading: carregandoTurmas } = useGroups();
   const { data: enrollments, isLoading: carregandoMatriculas } = useEnrollments();
-  const { data: presencas, isLoading: carregandoPresencas } = useAttendanceRecords();
+  const {
+    data: riscoAbsenteismo,
+    isLoading: carregandoRisco,
+    isError: erroAoCarregarRisco,
+    error: erroRisco,
+    // Zero traz todo aluno já chamado alguma vez. Quem não aparece nunca teve
+    // chamada, e isso não é o mesmo que frequência perfeita.
+  } = useStudentsAtRisk({ threshold: 0 });
   const searchParams = useSearchParams();
   const [busca, setBusca] = useState(() => searchParams.get("q") ?? "");
   const filtroRisco = searchParams.get("filtro") === "risco";
@@ -43,18 +49,18 @@ export function StudentList() {
     carregandoAlunos ||
     carregandoTurmas ||
     carregandoMatriculas ||
-    carregandoPresencas;
+    carregandoRisco;
   const isProfessor = role === "teacher";
 
   const turmaPorId = new Map((turmas ?? []).map((turma) => [turma.id, turma]));
 
-  const recordsByStudent = new Map<string, AttendanceRecord[]>();
-  for (const presenca of presencas ?? []) {
-    recordsByStudent.set(presenca.studentId, [
-      ...(recordsByStudent.get(presenca.studentId) ?? []),
-      presenca,
-    ]);
-  }
+  // Fora da lista de risco, a única leitura possível é "sem faltas registradas".
+  const frequenciaPorAluno = new Map(
+    (riscoAbsenteismo ?? []).map((risco) => [risco.studentId, risco.attendance]),
+  );
+  const faltasPorAluno = new Map(
+    (riscoAbsenteismo ?? []).map((risco) => [risco.studentId, risco.absences]),
+  );
 
   const aulasDoAluno = new Map<string, string[]>();
   for (const enrollment of enrollments ?? []) {
@@ -77,9 +83,7 @@ export function StudentList() {
     : (alunos ?? []);
 
   const alunosEscopo = filtroRisco
-    ? alunosDoEscopo.filter(
-        (aluno) => countAbsences(recordsByStudent.get(aluno.id) ?? []) >= LIMITE_FALTAS_RISCO,
-      )
+    ? alunosDoEscopo.filter((aluno) => (faltasPorAluno.get(aluno.id) ?? 0) >= LIMITE_FALTAS_RISCO)
     : alunosDoEscopo;
 
   const termo = busca.trim().toLowerCase();
@@ -89,7 +93,6 @@ export function StudentList() {
 
   const hoje = todayIso();
   const linhas = alunosFiltrados.map((aluno) => {
-    const presencasDoAluno = recordsByStudent.get(aluno.id) ?? [];
     const nomesAulas = (aulasDoAluno.get(aluno.id) ?? [])
       .map((groupId) => turmaPorId.get(groupId)?.name)
       .filter((name): name is string => Boolean(name));
@@ -97,8 +100,8 @@ export function StudentList() {
       aluno,
       idade: computeAgeAt(aluno.birthDate, hoje),
       aulas: nomesAulas.join(", ") || "—",
-      attendance: attendanceRate(presencasDoAluno),
-      absences: countAbsences(presencasDoAluno),
+      attendance: frequenciaPorAluno.get(aluno.id) ?? null,
+      absences: faltasPorAluno.get(aluno.id) ?? 0,
     };
   });
 
@@ -163,7 +166,14 @@ export function StudentList() {
                   </TableCell>
                 </TableRow>
               )}
-              {!carregando && semTurmas && (
+              {!carregando && erroAoCarregarRisco && (
+                <TableRow>
+                  <TableCell className={`${td} text-center text-destructive`} colSpan={colunas}>
+                    {messageForError(erroRisco, "Não foi possível carregar a frequência.")}
+                  </TableCell>
+                </TableRow>
+              )}
+              {!carregando && !erroAoCarregarRisco && semTurmas && (
                 <TableRow>
                   <TableCell
                     className={`${td} text-center text-muted-foreground`}
@@ -173,7 +183,7 @@ export function StudentList() {
                   </TableCell>
                 </TableRow>
               )}
-              {!carregando && !semTurmas && linhas.length === 0 && (
+              {!carregando && !erroAoCarregarRisco && !semTurmas && linhas.length === 0 && (
                 <TableRow>
                   <TableCell
                     className={`${td} text-center text-muted-foreground`}
@@ -184,6 +194,7 @@ export function StudentList() {
                 </TableRow>
               )}
               {!carregando &&
+                !erroAoCarregarRisco &&
                 linhas.map(({ aluno, idade, aulas, attendance, absences }) => {
                   const emRisco = absences >= LIMITE_FALTAS_RISCO;
                   return (
@@ -206,7 +217,9 @@ export function StudentList() {
                         </TableCell>
                       )}
                       <TableCell className={td}>{aulas}</TableCell>
-                      <TableCell className={td}>{formatPercent(attendance)}</TableCell>
+                      <TableCell className={td}>
+                        {attendance === null ? "—" : formatPercent(attendance)}
+                      </TableCell>
                       <TableCell className={td}>{absences}</TableCell>
                       <TableCell className={td}>
                         <Badge variant={emRisco ? "danger" : "success"}>

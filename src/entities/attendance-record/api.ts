@@ -8,23 +8,19 @@ export const fetchAttendanceRecordsBySession = (sessionId: string): Promise<Atte
   apiClient().request<AttendanceRecord[]>(`/attendance-sessions/${sessionId}/records`);
 
 /**
- * Reading every record means reading every session's sheet, since the API scopes
- * records to a roll call. Screens that only need one class should ask by session.
+ * The API has no per-student roll-call route, so a student's history still means
+ * reading every session's sheet and filtering client-side. Screens that only need
+ * an aggregate (rate, absences) should ask `/analytics` instead of this fetcher.
  */
-export const fetchAttendanceRecords = async (): Promise<AttendanceRecord[]> => {
+export const fetchAttendanceRecordsByStudent = async (
+  studentId: string,
+): Promise<AttendanceRecord[]> => {
   const sessions =
     await apiClient().request<components["schemas"]["AttendanceSession"][]>("/attendance-sessions");
   const sheets = await Promise.all(
     sessions.map((session) => fetchAttendanceRecordsBySession(session.id)),
   );
-  return sheets.flat();
-};
-
-export const fetchAttendanceRecordsByStudent = async (
-  studentId: string,
-): Promise<AttendanceRecord[]> => {
-  const records = await fetchAttendanceRecords();
-  return records.filter((record) => record.studentId === studentId);
+  return sheets.flat().filter((record) => record.studentId === studentId);
 };
 
 export interface SaveRollCallInput {

@@ -55,29 +55,3 @@ export function areaAffinity(grades: Grade[], subjects: Subject[]): AreaScore[] 
 export function studentAptitude(grades: Grade[], subjects: Subject[]): Area | null {
   return areaAffinity(grades, subjects)[0]?.area ?? null;
 }
-
-export function topSubjects(grades: Grade[], subjects: Subject[], count = 2): SubjectScore[] {
-  return averageBySubject(grades, subjects).slice(0, count);
-}
-
-export function attentionSubjects(grades: Grade[], subjects: Subject[], count = 2): SubjectScore[] {
-  const all = averageBySubject(grades, subjects);
-  return all.slice(Math.max(0, all.length - count)).reverse();
-}
-
-export interface ClassAcademicSummary {
-  averageScore: number;
-  topArea: Area | null;
-  areaAffinity: AreaScore[];
-  topSubjects: SubjectScore[];
-}
-
-export function classAcademicSummary(grades: Grade[], subjects: Subject[]): ClassAcademicSummary {
-  const affinity = areaAffinity(grades, subjects);
-  return {
-    averageScore: overallAverage(grades),
-    topArea: affinity[0]?.area ?? null,
-    areaAffinity: affinity,
-    topSubjects: topSubjects(grades, subjects, 2),
-  };
-}

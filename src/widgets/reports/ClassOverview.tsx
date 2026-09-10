@@ -1,7 +1,8 @@
 "use client";
 
 import { areaLabels } from "@/entities/subject/model";
-import type { ClassAcademicSummary } from "@/features/analytics/academic";
+import type { Subject } from "@/entities/subject/model";
+import type { AcademicSummary } from "@/features/analytics/api";
 import { formatPercent, formatScore } from "@/shared/lib/format";
 import { Badge } from "@/shared/ui/badge";
 
@@ -9,7 +10,8 @@ export interface ClassOverviewProps {
   escopo: string;
   totalAlunos: number;
   avgAttendance: number;
-  summary: ClassAcademicSummary;
+  summary: AcademicSummary;
+  subjects: Subject[];
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -21,8 +23,15 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function ClassOverview({ escopo, totalAlunos, avgAttendance, summary }: ClassOverviewProps) {
+export function ClassOverview({
+  escopo,
+  totalAlunos,
+  avgAttendance,
+  summary,
+  subjects,
+}: ClassOverviewProps) {
   const maiorMedia = summary.areaAffinity[0]?.average ?? 0;
+  const subjectById = new Map(subjects.map((subject) => [subject.id, subject]));
 
   return (
     <section className="rounded-xl border bg-card p-4 shadow-sm md:p-5">
@@ -48,11 +57,16 @@ export function ClassOverview({ escopo, totalAlunos, avgAttendance, summary }: C
             {summary.topSubjects.length === 0 ? (
               <span className="text-sm text-muted-foreground">—</span>
             ) : (
-              summary.topSubjects.map((item) => (
-                <Badge key={item.subject.id} variant="success">
-                  {item.subject.name}
-                </Badge>
-              ))
+              summary.topSubjects.map((item) => {
+                const subject = subjectById.get(item.subjectId);
+                return (
+                  subject && (
+                    <Badge key={item.subjectId} variant="success">
+                      {subject.name}
+                    </Badge>
+                  )
+                );
+              })
             )}
           </p>
         </div>

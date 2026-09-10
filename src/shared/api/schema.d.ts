@@ -4,4257 +4,4257 @@
  */
 
 export interface paths {
-  "/health": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Whether the service is up and serving */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Health"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Whether the service is up and serving */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Health"];
-          };
+    "/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
+        get?: never;
+        put?: never;
+        /** Exchange a username and password for a session */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CredentialsInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Session"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/auth/login": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rotate the refresh cookie and renew the access token */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Session"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Exchange a username and password for a session */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CredentialsInput"];
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Session"];
-          };
+        get?: never;
+        put?: never;
+        /** End the session on every device sharing its sign-in */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Signed out */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        429: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/auth/refresh": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replace your own password, ending every session */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PasswordChangeInput"];
+                };
+            };
+            responses: {
+                /** @description Password changed */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Rotate the refresh cookie and renew the access token */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Session"];
-          };
+    "/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        /** The caller's own profile */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Profile"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/auth/logout": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every profile, by name */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ManagedProfile"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a profile */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewProfileInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ManagedProfile"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** End the session on every device sharing its sign-in */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Signed out */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": null;
-          };
+    "/profiles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        /** One profile */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ManagedProfile"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-      };
+        put?: never;
+        post?: never;
+        /**
+         * Remove a profile that leads no group and teaches no subject
+         * @description Deactivating with PATCH is the reversible option, and usually the right one.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Removed */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Change a profile
+         * @description A caller can never change their own role or deactivate themselves: an administrator who demotes themselves by accident locks the organisation out of its own system.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ProfileChangesInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ManagedProfile"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/auth/change-password": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The students the caller may see
+         * @description A teacher sees only students actively enrolled in a group they lead or teach in.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Student"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a student record */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewStudentInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Student"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Replace your own password, ending every session */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["PasswordChangeInput"];
+    "/students/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-      responses: {
-        /** @description Password changed */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": null;
-          };
+        /** One student the caller may see */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Student"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        put?: never;
+        post?: never;
+        /**
+         * Remove a student record and everything attached to it
+         * @description Deactivating with PATCH is almost always the right move: deleting takes the enrollments, attendance and grades with it.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Removed */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        options?: never;
+        head?: never;
+        /** Change a student record */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["StudentChangesInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Student"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        429: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        trace?: never;
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/auth/me": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The groups the caller may see */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Group"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a group */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewGroupInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Group"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** The caller's own profile */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Profile"];
-          };
+    "/groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        /** One group the caller may see */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Group"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-      };
+        put?: never;
+        post?: never;
+        /** Remove a group that holds no enrollment and no session */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Removed */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Change a group */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["GroupChangesInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Group"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/profiles": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/subjects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every subject, by name */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Subject"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a subject */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSubjectInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Subject"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Every profile, by name */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["ManagedProfile"][];
-          };
+    "/subjects/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        /** One subject */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Subject"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        put?: never;
+        post?: never;
+        /** Remove a subject that nothing references */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Removed */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-      };
+        options?: never;
+        head?: never;
+        /** Change a subject */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SubjectChangesInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Subject"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
     };
-    put?: never;
-    /** Create a profile */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["NewProfileInput"];
+    "/enrollments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-      responses: {
-        /** @description Default Response */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["ManagedProfile"];
-          };
+        /** Enrollments in the groups the caller may see */
+        get: {
+            parameters: {
+                query?: {
+                    groupId?: string;
+                    studentId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Enrollment"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        put?: never;
+        /**
+         * Enrol a student in a group
+         * @description Idempotent. A student who left and came back reuses the original row, so the join date keeps saying when they first arrived.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        studentId: string;
+                        /** Format: uuid */
+                        groupId: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Enrollment"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        /**
+         * Withdraw a student from a group
+         * @description A withdrawal is reversible and keeps the attendance already recorded: the link is deactivated, never deleted.
+         */
+        delete: {
+            parameters: {
+                query: {
+                    studentId: string;
+                    groupId: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Enrollment"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/profiles/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Which subject a group studies, and who teaches it */
+        get: {
+            parameters: {
+                query?: {
+                    groupId?: string;
+                    subjectId?: string;
+                    teacherId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Assignment"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Give a group a subject and a teacher for it */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewAssignmentInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Assignment"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** One profile */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
+    "/assignments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["ManagedProfile"];
-          };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Stop teaching a subject in a group */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Removed */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        options?: never;
+        head?: never;
+        /** Hand a subject to a different teacher */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AssignmentChangesInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Assignment"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        trace?: never;
     };
-    put?: never;
-    post?: never;
-    /**
-     * Remove a profile that leads no group and teaches no subject
-     * @description Deactivating with PATCH is the reversible option, and usually the right one.
-     */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
+    "/attendance-sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Removed */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": null;
-          };
+        /** Roll calls in the groups the caller may see, newest first */
+        get: {
+            parameters: {
+                query?: {
+                    groupId?: string;
+                    from?: string;
+                    to?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AttendanceSession"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        put?: never;
+        /**
+         * Open the roll call for a group on a day
+         * @description Idempotent. Opening one that already exists returns it, so two teachers opening the same class at the same moment end up with one session rather than two.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["OpenAttendanceSessionInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AttendanceSession"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    options?: never;
-    head?: never;
-    /**
-     * Change a profile
-     * @description A caller can never change their own role or deactivate themselves: an administrator who demotes themselves by accident locks the organisation out of its own system.
-     */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
+    "/attendance-sessions/{id}/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["ProfileChangesInput"];
+        /** How each student was marked in one roll call */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AttendanceRecord"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["ManagedProfile"];
-          };
+        /**
+         * Save the whole roll call at once
+         * @description The screen saves the class in one call, inside one transaction. Only students actively enrolled in the group may be marked.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RollCallInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AttendanceRecord"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    trace?: never;
-  };
-  "/students": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/evaluations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Evaluations in the groups the caller may see, newest first */
+        get: {
+            parameters: {
+                query?: {
+                    groupId?: string;
+                    subjectId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Evaluation"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create an exam or a homework */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewEvaluationInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Evaluation"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * The students the caller may see
-     * @description A teacher sees only students actively enrolled in a group they lead or teach in.
-     */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Student"][];
-          };
+    "/evaluations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove an evaluation and the grades that belong to it */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Removed */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        options?: never;
+        head?: never;
+        /**
+         * Change an evaluation
+         * @description Its group and subject are fixed. Moving it elsewhere is a different evaluation, and the unique constraint already says so.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EvaluationChangesInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Evaluation"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-      };
+        trace?: never;
     };
-    put?: never;
-    /** Create a student record */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["NewStudentInput"];
+    "/evaluations/{id}/grades": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-      responses: {
-        /** @description Default Response */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Student"];
-          };
+        /** Every grade on one evaluation */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EvaluationGrade"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        /**
+         * Save the whole grade sheet at once
+         * @description A null score means the grade is still pending, which is not a zero. Only students actively enrolled in the group may be graded.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["GradeSheetInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EvaluationGrade"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/students/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/grades": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Weighted average per student and subject
+         * @description Averages are weighted by each evaluation. A pending grade takes no part in the average: counting it as a zero would tell a family their child is failing a subject nobody has marked yet.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    studentId?: string;
+                    groupId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SubjectAverage"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** One student the caller may see */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
+    "/school-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Student"];
-          };
+        /**
+         * Holidays, make-up days and events
+         * @description A range returns every event overlapping it, not only those starting inside it.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    from?: string;
+                    to?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SchoolEvent"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        put?: never;
+        /** Add an event to the calendar */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSchoolEventInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SchoolEvent"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    put?: never;
-    post?: never;
-    /**
-     * Remove a student record and everything attached to it
-     * @description Deactivating with PATCH is almost always the right move: deleting takes the enrollments, attendance and grades with it.
-     */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
+    "/school-events/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Removed */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": null;
-          };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove an event */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Removed */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        options?: never;
+        head?: never;
+        /** Change an event */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SchoolEventChangesInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SchoolEvent"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        trace?: never;
     };
-    options?: never;
-    head?: never;
-    /** Change a student record */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
+    "/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["StudentChangesInput"];
+        /** Outings in the groups the caller may see, newest first */
+        get: {
+            parameters: {
+                query?: {
+                    groupId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Event"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Student"];
-          };
+        put?: never;
+        /**
+         * Create an outing for a group
+         * @description The title is unique within a group on a day.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewEventInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Event"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    trace?: never;
-  };
-  "/groups": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/events/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove an outing and the marks that belong to it */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Removed */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Change an outing */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EventChangesInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Event"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
     };
-    /** The groups the caller may see */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Group"][];
-          };
+    "/events/{id}/participations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        /**
+         * How each student was marked for one outing
+         * @description A student with no row is pending on both marks. The roster comes from the enrolments, not from here.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EventParticipation"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    put?: never;
-    /** Create a group */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["NewGroupInput"];
+    "/events/{id}/participations/{studentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-      responses: {
-        /** @description Default Response */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Group"];
-          };
+        get?: never;
+        /** Set a student's authorization, payment, or both */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    studentId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ParticipationChangesInput"];
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EventParticipation"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/groups/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/analytics/attendance-rate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Percentage of attendance over the records the caller may see
+         * @description Late counts as attendance; absent and excused do not. With no records at all the rate is 0 and `total` says why.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    groupId?: string;
+                    studentId?: string;
+                    from?: string;
+                    to?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AttendanceRate"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** One group the caller may see */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
+    "/analytics/absenteeism-trend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Group"];
-          };
+        /** Absence rate per day, oldest first */
+        get: {
+            parameters: {
+                query?: {
+                    groupId?: string;
+                    from?: string;
+                    to?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AbsenteeismPoint"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    put?: never;
-    post?: never;
-    /** Remove a group that holds no enrollment and no session */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
+    "/analytics/students-at-risk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Removed */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": null;
-          };
+        /** Students whose absences reach the threshold, most absences first */
+        get: {
+            parameters: {
+                query?: {
+                    groupId?: string;
+                    threshold?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StudentAtRisk"][];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    options?: never;
-    head?: never;
-    /** Change a group */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
+    "/analytics/academic-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["GroupChangesInput"];
+        /**
+         * Average, area affinity, and the subjects that stand out either way
+         * @description Weighting happens inside a subject. Averaging across subjects and areas is unweighted: a subject is not worth more for having been examined more often.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    groupId?: string;
+                    studentId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AcademicSummary"];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Group"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    trace?: never;
-  };
-  "/subjects": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Every subject, by name */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Subject"][];
-          };
+}
+export type webhooks = Record<string, never>;
+export interface components {
+    schemas: {
+        /** @enum {string} */
+        RoleInput: "teacher" | "coordinator" | "admin";
+        ErrorInput: {
+            /** @example not_found */
+            code: string;
+            /** @example student not found */
+            message: string;
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        CredentialsInput: {
+            /** @example ana */
+            username: string;
+            password: string;
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        ProfileInput: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            username: string;
+            /** @enum {string} */
+            role: "teacher" | "coordinator" | "admin";
+            email: string | null;
+            jobTitle: string | null;
+            mustChangePassword: boolean;
         };
-      };
-    };
-    put?: never;
-    /** Create a subject */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["NewSubjectInput"];
+        SessionInput: {
+            accessToken: string;
+            /** @enum {number} */
+            expiresInSeconds: 900;
+            profile: components["schemas"]["ProfileInput"];
         };
-      };
-      responses: {
-        /** @description Default Response */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Subject"];
-          };
+        PasswordChangeInput: {
+            currentPassword: string;
+            newPassword: string;
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        AttendanceRateInput: {
+            rate: number;
+            present: number;
+            total: number;
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        AbsenteeismPointInput: {
+            /** Format: date */
+            date: string;
+            absenceRate: number;
         };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        StudentAtRiskInput: {
+            /** Format: uuid */
+            studentId: string;
+            absences: number;
+            attendance: number;
         };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/subjects/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** One subject */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
+        AreaScoreInput: {
+            /** @enum {string} */
+            area: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
+            average: number;
         };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Subject"];
-          };
+        SubjectScoreInput: {
+            /** Format: uuid */
+            subjectId: string;
+            score: number;
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        AcademicSummaryInput: {
+            averageScore: number;
+            /** @enum {string|null} */
+            topArea: "exact_sciences" | "biological_sciences" | "languages" | "humanities" | null;
+            areaAffinity: components["schemas"]["AreaScoreInput"][];
+            topSubjects: components["schemas"]["SubjectScoreInput"][];
+            attentionSubjects: components["schemas"]["SubjectScoreInput"][];
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        AssignmentInput: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            groupId: string;
+            /** Format: uuid */
+            subjectId: string;
+            /** Format: uuid */
+            teacherId: string;
         };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        NewAssignmentInput: {
+            /** Format: uuid */
+            groupId: string;
+            /** Format: uuid */
+            subjectId: string;
+            /** Format: uuid */
+            teacherId: string;
         };
-      };
-    };
-    put?: never;
-    post?: never;
-    /** Remove a subject that nothing references */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
+        AssignmentChangesInput: {
+            /** Format: uuid */
+            teacherId: string;
         };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Removed */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": null;
-          };
+        AttendanceSessionInput: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            groupId: string;
+            date: string;
+            /** Format: uuid */
+            teacherId: string;
         };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        AttendanceRecordInput: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            sessionId: string;
+            /** Format: uuid */
+            studentId: string;
+            /** @enum {string} */
+            status: "present" | "absent" | "late" | "excused";
         };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        OpenAttendanceSessionInput: {
+            /** Format: uuid */
+            groupId: string;
+            /** Format: date */
+            date: string;
         };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
+        RollCallInput: {
+            entries: {
+                /** Format: uuid */
+                studentId: string;
+                /** @enum {string} */
+                status: "present" | "absent" | "late" | "excused";
+            }[];
         };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    /** Change a subject */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["SubjectChangesInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Subject"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/enrollments": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Enrollments in the groups the caller may see */
-    get: {
-      parameters: {
-        query?: {
-          groupId?: string;
-          studentId?: string;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Enrollment"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    put?: never;
-    /**
-     * Enrol a student in a group
-     * @description Idempotent. A student who left and came back reuses the original row, so the join date keeps saying when they first arrived.
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": {
+        EnrollmentInput: {
+            /** Format: uuid */
+            id: string;
             /** Format: uuid */
             studentId: string;
             /** Format: uuid */
             groupId: string;
-          };
+            joinedAt: string;
+            active: boolean;
+        };
+        EvaluationInput: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            groupId: string;
+            /** Format: uuid */
+            subjectId: string;
+            name: string;
+            /** @enum {string} */
+            type: "exam" | "homework";
+            date: string;
+            weight: number;
+        };
+        EvaluationGradeInput: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            evaluationId: string;
+            /** Format: uuid */
+            studentId: string;
+            score: number | null;
+        };
+        SubjectAverageInput: {
+            /** Format: uuid */
+            studentId: string;
+            /** Format: uuid */
+            subjectId: string;
+            score: number;
+        };
+        NewEvaluationInput: {
+            /** Format: uuid */
+            groupId: string;
+            /** Format: uuid */
+            subjectId: string;
+            name: string;
+            /** @enum {string} */
+            type: "exam" | "homework";
+            /** Format: date */
+            date: string;
+            weight: number;
+        };
+        EvaluationChangesInput: {
+            name?: string;
+            /** @enum {string} */
+            type?: "exam" | "homework";
+            /** Format: date */
+            date?: string;
+            weight?: number;
+        };
+        GradeSheetInput: {
+            entries: {
+                /** Format: uuid */
+                studentId: string;
+                score: number | null;
+            }[];
+        };
+        GroupInput: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            shift: "morning" | "afternoon" | "evening";
+            /** Format: uuid */
+            teacherId: string;
+        };
+        NewGroupInput: {
+            name: string;
+            /** @enum {string} */
+            shift: "morning" | "afternoon" | "evening";
+            /** Format: uuid */
+            teacherId: string;
+        };
+        GroupChangesInput: {
+            name?: string;
+            /** @enum {string} */
+            shift?: "morning" | "afternoon" | "evening";
+            /** Format: uuid */
+            teacherId?: string;
+        };
+        HealthInput: {
+            /** @enum {string} */
+            status: "ok";
+        };
+        ManagedProfileInput: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            username: string;
+            /** @enum {string} */
+            role: "teacher" | "coordinator" | "admin";
+            email: string | null;
+            jobTitle: string | null;
+            active: boolean;
+        };
+        NewProfileInput: {
+            name: string;
+            username: string;
+            /** @enum {string} */
+            role: "teacher" | "coordinator" | "admin";
+            password: string;
+            /** Format: email */
+            email?: string;
+            jobTitle?: string;
+        };
+        ProfileChangesInput: {
+            name?: string;
+            username?: string;
+            /** @enum {string} */
+            role?: "teacher" | "coordinator" | "admin";
+            password?: string;
+            /** Format: email */
+            email?: string;
+            jobTitle?: string;
+            active?: boolean;
+        };
+        EventInput: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            groupId: string;
+            title: string;
+            date: string;
+            location: string;
+            cost: number;
+        };
+        EventParticipationInput: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            eventId: string;
+            /** Format: uuid */
+            studentId: string;
+            /** @enum {string} */
+            authorization: "pending" | "authorized" | "denied";
+            /** @enum {string} */
+            payment: "pending" | "paid" | "waived";
+        };
+        NewEventInput: {
+            /** Format: uuid */
+            groupId: string;
+            title: string;
+            /** Format: date */
+            date: string;
+            location: string;
+            /** @default 0 */
+            cost: number;
+        };
+        EventChangesInput: {
+            title?: string;
+            /** Format: date */
+            date?: string;
+            location?: string;
+            cost?: number;
+        };
+        ParticipationChangesInput: {
+            /** @enum {string} */
+            authorization?: "pending" | "authorized" | "denied";
+            /** @enum {string} */
+            payment?: "pending" | "paid" | "waived";
+        };
+        SchoolEventInput: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            type: "vacation" | "makeup" | "event";
+            title: string;
+            startDate: string;
+            endDate: string;
+        };
+        NewSchoolEventInput: {
+            /** @enum {string} */
+            type: "vacation" | "makeup" | "event";
+            title: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate: string;
+        };
+        SchoolEventChangesInput: {
+            /** @enum {string} */
+            type?: "vacation" | "makeup" | "event";
+            title?: string;
+            /** Format: date */
+            startDate?: string;
+            /** Format: date */
+            endDate?: string;
+        };
+        StudentInput: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            birthDate: string;
+            guardianName: string;
+            guardianPhone: string;
+            active: boolean;
+        };
+        NewStudentInput: {
+            name: string;
+            /** Format: date */
+            birthDate: string;
+            guardianName: string;
+            guardianPhone: string;
+        };
+        StudentChangesInput: {
+            name?: string;
+            /** Format: date */
+            birthDate?: string;
+            guardianName?: string;
+            guardianPhone?: string;
+            active?: boolean;
+        };
+        SubjectInput: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            area: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
+        };
+        NewSubjectInput: {
+            name: string;
+            /** @enum {string} */
+            area: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
+        };
+        SubjectChangesInput: {
+            name?: string;
+            /** @enum {string} */
+            area?: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
         };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Enrollment"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    /**
-     * Withdraw a student from a group
-     * @description A withdrawal is reversible and keeps the attendance already recorded: the link is deactivated, never deleted.
-     */
-    delete: {
-      parameters: {
-        query: {
-          studentId: string;
-          groupId: string;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Enrollment"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/assignments": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Which subject a group studies, and who teaches it */
-    get: {
-      parameters: {
-        query?: {
-          groupId?: string;
-          subjectId?: string;
-          teacherId?: string;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Assignment"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    put?: never;
-    /** Give a group a subject and a teacher for it */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["NewAssignmentInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Assignment"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/assignments/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Stop teaching a subject in a group */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Removed */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": null;
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    /** Hand a subject to a different teacher */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["AssignmentChangesInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Assignment"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/attendance-sessions": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Roll calls in the groups the caller may see, newest first */
-    get: {
-      parameters: {
-        query?: {
-          groupId?: string;
-          from?: string;
-          to?: string;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["AttendanceSession"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    put?: never;
-    /**
-     * Open the roll call for a group on a day
-     * @description Idempotent. Opening one that already exists returns it, so two teachers opening the same class at the same moment end up with one session rather than two.
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["OpenAttendanceSessionInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["AttendanceSession"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/attendance-sessions/{id}/records": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** How each student was marked in one roll call */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["AttendanceRecord"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    /**
-     * Save the whole roll call at once
-     * @description The screen saves the class in one call, inside one transaction. Only students actively enrolled in the group may be marked.
-     */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["RollCallInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["AttendanceRecord"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/evaluations": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Evaluations in the groups the caller may see, newest first */
-    get: {
-      parameters: {
-        query?: {
-          groupId?: string;
-          subjectId?: string;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Evaluation"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    put?: never;
-    /** Create an exam or a homework */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["NewEvaluationInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Evaluation"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/evaluations/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Remove an evaluation and the grades that belong to it */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Removed */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": null;
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    /**
-     * Change an evaluation
-     * @description Its group and subject are fixed. Moving it elsewhere is a different evaluation, and the unique constraint already says so.
-     */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["EvaluationChangesInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Evaluation"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/evaluations/{id}/grades": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Every grade on one evaluation */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["EvaluationGrade"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    /**
-     * Save the whole grade sheet at once
-     * @description A null score means the grade is still pending, which is not a zero. Only students actively enrolled in the group may be graded.
-     */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["GradeSheetInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["EvaluationGrade"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/grades": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Weighted average per student and subject
-     * @description Averages are weighted by each evaluation. A pending grade takes no part in the average: counting it as a zero would tell a family their child is failing a subject nobody has marked yet.
-     */
-    get: {
-      parameters: {
-        query?: {
-          studentId?: string;
-          groupId?: string;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["SubjectAverage"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/school-events": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Holidays, make-up days and events
-     * @description A range returns every event overlapping it, not only those starting inside it.
-     */
-    get: {
-      parameters: {
-        query?: {
-          from?: string;
-          to?: string;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["SchoolEvent"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    put?: never;
-    /** Add an event to the calendar */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["NewSchoolEventInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["SchoolEvent"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/school-events/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Remove an event */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Removed */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": null;
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    /** Change an event */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["SchoolEventChangesInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["SchoolEvent"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/events": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Outings in the groups the caller may see, newest first */
-    get: {
-      parameters: {
-        query?: {
-          groupId?: string;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Event"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    put?: never;
-    /**
-     * Create an outing for a group
-     * @description The title is unique within a group on a day.
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["NewEventInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Event"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/events/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Remove an outing and the marks that belong to it */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Removed */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": null;
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    /** Change an outing */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["EventChangesInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Event"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/events/{id}/participations": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * How each student was marked for one outing
-     * @description A student with no row is pending on both marks. The roster comes from the enrolments, not from here.
-     */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["EventParticipation"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/events/{id}/participations/{studentId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /** Set a student's authorization, payment, or both */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-          studentId: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["ParticipationChangesInput"];
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["EventParticipation"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/analytics/attendance-rate": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Percentage of attendance over the records the caller may see
-     * @description Late counts as attendance; absent and excused do not. With no records at all the rate is 0 and `total` says why.
-     */
-    get: {
-      parameters: {
-        query?: {
-          groupId?: string;
-          studentId?: string;
-          from?: string;
-          to?: string;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["AttendanceRate"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/analytics/absenteeism-trend": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Absence rate per day, oldest first */
-    get: {
-      parameters: {
-        query?: {
-          groupId?: string;
-          from?: string;
-          to?: string;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["AbsenteeismPoint"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/analytics/students-at-risk": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Students whose absences reach the threshold, most absences first */
-    get: {
-      parameters: {
-        query?: {
-          groupId?: string;
-          threshold?: number;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["StudentAtRisk"][];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/analytics/academic-summary": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Average, area affinity, and the subjects that stand out either way
-     * @description Weighting happens inside a subject. Averaging across subjects and areas is unweighted: a subject is not worth more for having been examined more often.
-     */
-    get: {
-      parameters: {
-        query?: {
-          groupId?: string;
-          studentId?: string;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Default Response */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["AcademicSummary"];
-          };
-        };
-        /** @description Default Response */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description Default Response */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-}
-export type webhooks = Record<string, never>;
-export interface components {
-  schemas: {
-    /** @enum {string} */
-    RoleInput: "teacher" | "coordinator" | "admin";
-    ErrorInput: {
-      /** @example not_found */
-      code: string;
-      /** @example student not found */
-      message: string;
-    };
-    CredentialsInput: {
-      /** @example ana */
-      username: string;
-      password: string;
-    };
-    ProfileInput: {
-      /** Format: uuid */
-      id: string;
-      name: string;
-      username: string;
-      /** @enum {string} */
-      role: "teacher" | "coordinator" | "admin";
-      email: string | null;
-      jobTitle: string | null;
-      mustChangePassword: boolean;
-    };
-    SessionInput: {
-      accessToken: string;
-      /** @enum {number} */
-      expiresInSeconds: 900;
-      profile: components["schemas"]["ProfileInput"];
-    };
-    PasswordChangeInput: {
-      currentPassword: string;
-      newPassword: string;
-    };
-    AttendanceRateInput: {
-      rate: number;
-      present: number;
-      total: number;
-    };
-    AbsenteeismPointInput: {
-      /** Format: date */
-      date: string;
-      absenceRate: number;
-    };
-    StudentAtRiskInput: {
-      /** Format: uuid */
-      studentId: string;
-      absences: number;
-      attendance: number;
-    };
-    AreaScoreInput: {
-      /** @enum {string} */
-      area: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
-      average: number;
-    };
-    SubjectScoreInput: {
-      /** Format: uuid */
-      subjectId: string;
-      score: number;
-    };
-    AcademicSummaryInput: {
-      averageScore: number;
-      /** @enum {string|null} */
-      topArea: "exact_sciences" | "biological_sciences" | "languages" | "humanities" | null;
-      areaAffinity: components["schemas"]["AreaScoreInput"][];
-      topSubjects: components["schemas"]["SubjectScoreInput"][];
-      attentionSubjects: components["schemas"]["SubjectScoreInput"][];
-    };
-    AssignmentInput: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      groupId: string;
-      /** Format: uuid */
-      subjectId: string;
-      /** Format: uuid */
-      teacherId: string;
-    };
-    NewAssignmentInput: {
-      /** Format: uuid */
-      groupId: string;
-      /** Format: uuid */
-      subjectId: string;
-      /** Format: uuid */
-      teacherId: string;
-    };
-    AssignmentChangesInput: {
-      /** Format: uuid */
-      teacherId: string;
-    };
-    AttendanceSessionInput: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      groupId: string;
-      date: string;
-      /** Format: uuid */
-      teacherId: string;
-    };
-    AttendanceRecordInput: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      sessionId: string;
-      /** Format: uuid */
-      studentId: string;
-      /** @enum {string} */
-      status: "present" | "absent" | "late" | "excused";
-    };
-    OpenAttendanceSessionInput: {
-      /** Format: uuid */
-      groupId: string;
-      /** Format: date */
-      date: string;
-    };
-    RollCallInput: {
-      entries: {
-        /** Format: uuid */
-        studentId: string;
         /** @enum {string} */
-        status: "present" | "absent" | "late" | "excused";
-      }[];
-    };
-    EnrollmentInput: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      studentId: string;
-      /** Format: uuid */
-      groupId: string;
-      joinedAt: string;
-      active: boolean;
-    };
-    EvaluationInput: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      groupId: string;
-      /** Format: uuid */
-      subjectId: string;
-      name: string;
-      /** @enum {string} */
-      type: "exam" | "homework";
-      date: string;
-      weight: number;
-    };
-    EvaluationGradeInput: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      evaluationId: string;
-      /** Format: uuid */
-      studentId: string;
-      score: number | null;
-    };
-    SubjectAverageInput: {
-      /** Format: uuid */
-      studentId: string;
-      /** Format: uuid */
-      subjectId: string;
-      score: number;
-    };
-    NewEvaluationInput: {
-      /** Format: uuid */
-      groupId: string;
-      /** Format: uuid */
-      subjectId: string;
-      name: string;
-      /** @enum {string} */
-      type: "exam" | "homework";
-      /** Format: date */
-      date: string;
-      weight: number;
-    };
-    EvaluationChangesInput: {
-      name?: string;
-      /** @enum {string} */
-      type?: "exam" | "homework";
-      /** Format: date */
-      date?: string;
-      weight?: number;
-    };
-    GradeSheetInput: {
-      entries: {
-        /** Format: uuid */
-        studentId: string;
-        score: number | null;
-      }[];
-    };
-    GroupInput: {
-      /** Format: uuid */
-      id: string;
-      name: string;
-      /** @enum {string} */
-      shift: "morning" | "afternoon" | "evening";
-      /** Format: uuid */
-      teacherId: string;
-    };
-    NewGroupInput: {
-      name: string;
-      /** @enum {string} */
-      shift: "morning" | "afternoon" | "evening";
-      /** Format: uuid */
-      teacherId: string;
-    };
-    GroupChangesInput: {
-      name?: string;
-      /** @enum {string} */
-      shift?: "morning" | "afternoon" | "evening";
-      /** Format: uuid */
-      teacherId?: string;
-    };
-    HealthInput: {
-      /** @enum {string} */
-      status: "ok";
-    };
-    ManagedProfileInput: {
-      /** Format: uuid */
-      id: string;
-      name: string;
-      username: string;
-      /** @enum {string} */
-      role: "teacher" | "coordinator" | "admin";
-      email: string | null;
-      jobTitle: string | null;
-      active: boolean;
-    };
-    NewProfileInput: {
-      name: string;
-      username: string;
-      /** @enum {string} */
-      role: "teacher" | "coordinator" | "admin";
-      password: string;
-      /** Format: email */
-      email?: string;
-      jobTitle?: string;
-    };
-    ProfileChangesInput: {
-      name?: string;
-      username?: string;
-      /** @enum {string} */
-      role?: "teacher" | "coordinator" | "admin";
-      password?: string;
-      /** Format: email */
-      email?: string;
-      jobTitle?: string;
-      active?: boolean;
-    };
-    EventInput: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      groupId: string;
-      title: string;
-      date: string;
-      location: string;
-      cost: number;
-    };
-    EventParticipationInput: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      eventId: string;
-      /** Format: uuid */
-      studentId: string;
-      /** @enum {string} */
-      authorization: "pending" | "authorized" | "denied";
-      /** @enum {string} */
-      payment: "pending" | "paid" | "waived";
-    };
-    NewEventInput: {
-      /** Format: uuid */
-      groupId: string;
-      title: string;
-      /** Format: date */
-      date: string;
-      location: string;
-      /** @default 0 */
-      cost: number;
-    };
-    EventChangesInput: {
-      title?: string;
-      /** Format: date */
-      date?: string;
-      location?: string;
-      cost?: number;
-    };
-    ParticipationChangesInput: {
-      /** @enum {string} */
-      authorization?: "pending" | "authorized" | "denied";
-      /** @enum {string} */
-      payment?: "pending" | "paid" | "waived";
-    };
-    SchoolEventInput: {
-      /** Format: uuid */
-      id: string;
-      /** @enum {string} */
-      type: "vacation" | "makeup" | "event";
-      title: string;
-      startDate: string;
-      endDate: string;
-    };
-    NewSchoolEventInput: {
-      /** @enum {string} */
-      type: "vacation" | "makeup" | "event";
-      title: string;
-      /** Format: date */
-      startDate: string;
-      /** Format: date */
-      endDate: string;
-    };
-    SchoolEventChangesInput: {
-      /** @enum {string} */
-      type?: "vacation" | "makeup" | "event";
-      title?: string;
-      /** Format: date */
-      startDate?: string;
-      /** Format: date */
-      endDate?: string;
-    };
-    StudentInput: {
-      /** Format: uuid */
-      id: string;
-      name: string;
-      birthDate: string;
-      guardianName: string;
-      guardianPhone: string;
-      active: boolean;
-    };
-    NewStudentInput: {
-      name: string;
-      /** Format: date */
-      birthDate: string;
-      guardianName: string;
-      guardianPhone: string;
-    };
-    StudentChangesInput: {
-      name?: string;
-      /** Format: date */
-      birthDate?: string;
-      guardianName?: string;
-      guardianPhone?: string;
-      active?: boolean;
-    };
-    SubjectInput: {
-      /** Format: uuid */
-      id: string;
-      name: string;
-      /** @enum {string} */
-      area: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
-    };
-    NewSubjectInput: {
-      name: string;
-      /** @enum {string} */
-      area: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
-    };
-    SubjectChangesInput: {
-      name?: string;
-      /** @enum {string} */
-      area?: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
-    };
-    /** @enum {string} */
-    Role: "teacher" | "coordinator" | "admin";
-    Error: {
-      /** @example not_found */
-      code: string;
-      /** @example student not found */
-      message: string;
-    };
-    Credentials: {
-      /** @example ana */
-      username: string;
-      password: string;
-    };
-    Profile: {
-      /** Format: uuid */
-      id: string;
-      name: string;
-      username: string;
-      /** @enum {string} */
-      role: "teacher" | "coordinator" | "admin";
-      email: string | null;
-      jobTitle: string | null;
-      mustChangePassword: boolean;
-    };
-    Session: {
-      accessToken: string;
-      /** @enum {number} */
-      expiresInSeconds: 900;
-      profile: components["schemas"]["Profile"];
-    };
-    PasswordChange: {
-      currentPassword: string;
-      newPassword: string;
-    };
-    AttendanceRate: {
-      rate: number;
-      present: number;
-      total: number;
-    };
-    AbsenteeismPoint: {
-      /** Format: date */
-      date: string;
-      absenceRate: number;
-    };
-    StudentAtRisk: {
-      /** Format: uuid */
-      studentId: string;
-      absences: number;
-      attendance: number;
-    };
-    AreaScore: {
-      /** @enum {string} */
-      area: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
-      average: number;
-    };
-    SubjectScore: {
-      /** Format: uuid */
-      subjectId: string;
-      score: number;
-    };
-    AcademicSummary: {
-      averageScore: number;
-      /** @enum {string|null} */
-      topArea: "exact_sciences" | "biological_sciences" | "languages" | "humanities" | null;
-      areaAffinity: components["schemas"]["AreaScore"][];
-      topSubjects: components["schemas"]["SubjectScore"][];
-      attentionSubjects: components["schemas"]["SubjectScore"][];
-    };
-    Assignment: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      groupId: string;
-      /** Format: uuid */
-      subjectId: string;
-      /** Format: uuid */
-      teacherId: string;
-    };
-    NewAssignment: {
-      /** Format: uuid */
-      groupId: string;
-      /** Format: uuid */
-      subjectId: string;
-      /** Format: uuid */
-      teacherId: string;
-    };
-    AssignmentChanges: {
-      /** Format: uuid */
-      teacherId: string;
-    };
-    AttendanceSession: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      groupId: string;
-      date: string;
-      /** Format: uuid */
-      teacherId: string;
-    };
-    AttendanceRecord: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      sessionId: string;
-      /** Format: uuid */
-      studentId: string;
-      /** @enum {string} */
-      status: "present" | "absent" | "late" | "excused";
-    };
-    OpenAttendanceSession: {
-      /** Format: uuid */
-      groupId: string;
-      /** Format: date */
-      date: string;
-    };
-    RollCall: {
-      entries: {
-        /** Format: uuid */
-        studentId: string;
-        /** @enum {string} */
-        status: "present" | "absent" | "late" | "excused";
-      }[];
-    };
-    Enrollment: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      studentId: string;
-      /** Format: uuid */
-      groupId: string;
-      joinedAt: string;
-      active: boolean;
-    };
-    Evaluation: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      groupId: string;
-      /** Format: uuid */
-      subjectId: string;
-      name: string;
-      /** @enum {string} */
-      type: "exam" | "homework";
-      date: string;
-      weight: number;
-    };
-    EvaluationGrade: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      evaluationId: string;
-      /** Format: uuid */
-      studentId: string;
-      score: number | null;
-    };
-    SubjectAverage: {
-      /** Format: uuid */
-      studentId: string;
-      /** Format: uuid */
-      subjectId: string;
-      score: number;
-    };
-    NewEvaluation: {
-      /** Format: uuid */
-      groupId: string;
-      /** Format: uuid */
-      subjectId: string;
-      name: string;
-      /** @enum {string} */
-      type: "exam" | "homework";
-      /** Format: date */
-      date: string;
-      weight: number;
-    };
-    EvaluationChanges: {
-      name?: string;
-      /** @enum {string} */
-      type?: "exam" | "homework";
-      /** Format: date */
-      date?: string;
-      weight?: number;
-    };
-    GradeSheet: {
-      entries: {
-        /** Format: uuid */
-        studentId: string;
-        score: number | null;
-      }[];
-    };
-    Group: {
-      /** Format: uuid */
-      id: string;
-      name: string;
-      /** @enum {string} */
-      shift: "morning" | "afternoon" | "evening";
-      /** Format: uuid */
-      teacherId: string;
-    };
-    NewGroup: {
-      name: string;
-      /** @enum {string} */
-      shift: "morning" | "afternoon" | "evening";
-      /** Format: uuid */
-      teacherId: string;
-    };
-    GroupChanges: {
-      name?: string;
-      /** @enum {string} */
-      shift?: "morning" | "afternoon" | "evening";
-      /** Format: uuid */
-      teacherId?: string;
-    };
-    Health: {
-      /** @enum {string} */
-      status: "ok";
-    };
-    ManagedProfile: {
-      /** Format: uuid */
-      id: string;
-      name: string;
-      username: string;
-      /** @enum {string} */
-      role: "teacher" | "coordinator" | "admin";
-      email: string | null;
-      jobTitle: string | null;
-      active: boolean;
-    };
-    NewProfile: {
-      name: string;
-      username: string;
-      /** @enum {string} */
-      role: "teacher" | "coordinator" | "admin";
-      password: string;
-      /** Format: email */
-      email?: string;
-      jobTitle?: string;
-    };
-    ProfileChanges: {
-      name?: string;
-      username?: string;
-      /** @enum {string} */
-      role?: "teacher" | "coordinator" | "admin";
-      password?: string;
-      /** Format: email */
-      email?: string;
-      jobTitle?: string;
-      active?: boolean;
-    };
-    Event: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      groupId: string;
-      title: string;
-      date: string;
-      location: string;
-      cost: number;
-    };
-    EventParticipation: {
-      /** Format: uuid */
-      id: string;
-      /** Format: uuid */
-      eventId: string;
-      /** Format: uuid */
-      studentId: string;
-      /** @enum {string} */
-      authorization: "pending" | "authorized" | "denied";
-      /** @enum {string} */
-      payment: "pending" | "paid" | "waived";
-    };
-    NewEvent: {
-      /** Format: uuid */
-      groupId: string;
-      title: string;
-      /** Format: date */
-      date: string;
-      location: string;
-      /** @default 0 */
-      cost: number;
-    };
-    EventChanges: {
-      title?: string;
-      /** Format: date */
-      date?: string;
-      location?: string;
-      cost?: number;
-    };
-    ParticipationChanges: {
-      /** @enum {string} */
-      authorization?: "pending" | "authorized" | "denied";
-      /** @enum {string} */
-      payment?: "pending" | "paid" | "waived";
-    };
-    SchoolEvent: {
-      /** Format: uuid */
-      id: string;
-      /** @enum {string} */
-      type: "vacation" | "makeup" | "event";
-      title: string;
-      startDate: string;
-      endDate: string;
-    };
-    NewSchoolEvent: {
-      /** @enum {string} */
-      type: "vacation" | "makeup" | "event";
-      title: string;
-      /** Format: date */
-      startDate: string;
-      /** Format: date */
-      endDate: string;
-    };
-    SchoolEventChanges: {
-      /** @enum {string} */
-      type?: "vacation" | "makeup" | "event";
-      title?: string;
-      /** Format: date */
-      startDate?: string;
-      /** Format: date */
-      endDate?: string;
-    };
-    Student: {
-      /** Format: uuid */
-      id: string;
-      name: string;
-      birthDate: string;
-      guardianName: string;
-      guardianPhone: string;
-      active: boolean;
-    };
-    NewStudent: {
-      name: string;
-      /** Format: date */
-      birthDate: string;
-      guardianName: string;
-      guardianPhone: string;
-    };
-    StudentChanges: {
-      name?: string;
-      /** Format: date */
-      birthDate?: string;
-      guardianName?: string;
-      guardianPhone?: string;
-      active?: boolean;
-    };
-    Subject: {
-      /** Format: uuid */
-      id: string;
-      name: string;
-      /** @enum {string} */
-      area: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
-    };
-    NewSubject: {
-      name: string;
-      /** @enum {string} */
-      area: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
-    };
-    SubjectChanges: {
-      name?: string;
-      /** @enum {string} */
-      area?: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+        Role: "teacher" | "coordinator" | "admin";
+        Error: {
+            /** @example not_found */
+            code: string;
+            /** @example student not found */
+            message: string;
+        };
+        Credentials: {
+            /** @example ana */
+            username: string;
+            password: string;
+        };
+        Profile: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            username: string;
+            /** @enum {string} */
+            role: "teacher" | "coordinator" | "admin";
+            email: string | null;
+            jobTitle: string | null;
+            mustChangePassword: boolean;
+        };
+        Session: {
+            accessToken: string;
+            /** @enum {number} */
+            expiresInSeconds: 900;
+            profile: components["schemas"]["Profile"];
+        };
+        PasswordChange: {
+            currentPassword: string;
+            newPassword: string;
+        };
+        AttendanceRate: {
+            rate: number;
+            present: number;
+            total: number;
+        };
+        AbsenteeismPoint: {
+            /** Format: date */
+            date: string;
+            absenceRate: number;
+        };
+        StudentAtRisk: {
+            /** Format: uuid */
+            studentId: string;
+            absences: number;
+            attendance: number;
+        };
+        AreaScore: {
+            /** @enum {string} */
+            area: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
+            average: number;
+        };
+        SubjectScore: {
+            /** Format: uuid */
+            subjectId: string;
+            score: number;
+        };
+        AcademicSummary: {
+            averageScore: number;
+            /** @enum {string|null} */
+            topArea: "exact_sciences" | "biological_sciences" | "languages" | "humanities" | null;
+            areaAffinity: components["schemas"]["AreaScore"][];
+            topSubjects: components["schemas"]["SubjectScore"][];
+            attentionSubjects: components["schemas"]["SubjectScore"][];
+        };
+        Assignment: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            groupId: string;
+            /** Format: uuid */
+            subjectId: string;
+            /** Format: uuid */
+            teacherId: string;
+        };
+        NewAssignment: {
+            /** Format: uuid */
+            groupId: string;
+            /** Format: uuid */
+            subjectId: string;
+            /** Format: uuid */
+            teacherId: string;
+        };
+        AssignmentChanges: {
+            /** Format: uuid */
+            teacherId: string;
+        };
+        AttendanceSession: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            groupId: string;
+            date: string;
+            /** Format: uuid */
+            teacherId: string;
+        };
+        AttendanceRecord: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            sessionId: string;
+            /** Format: uuid */
+            studentId: string;
+            /** @enum {string} */
+            status: "present" | "absent" | "late" | "excused";
+        };
+        OpenAttendanceSession: {
+            /** Format: uuid */
+            groupId: string;
+            /** Format: date */
+            date: string;
+        };
+        RollCall: {
+            entries: {
+                /** Format: uuid */
+                studentId: string;
+                /** @enum {string} */
+                status: "present" | "absent" | "late" | "excused";
+            }[];
+        };
+        Enrollment: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            studentId: string;
+            /** Format: uuid */
+            groupId: string;
+            joinedAt: string;
+            active: boolean;
+        };
+        Evaluation: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            groupId: string;
+            /** Format: uuid */
+            subjectId: string;
+            name: string;
+            /** @enum {string} */
+            type: "exam" | "homework";
+            date: string;
+            weight: number;
+        };
+        EvaluationGrade: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            evaluationId: string;
+            /** Format: uuid */
+            studentId: string;
+            score: number | null;
+        };
+        SubjectAverage: {
+            /** Format: uuid */
+            studentId: string;
+            /** Format: uuid */
+            subjectId: string;
+            score: number;
+        };
+        NewEvaluation: {
+            /** Format: uuid */
+            groupId: string;
+            /** Format: uuid */
+            subjectId: string;
+            name: string;
+            /** @enum {string} */
+            type: "exam" | "homework";
+            /** Format: date */
+            date: string;
+            weight: number;
+        };
+        EvaluationChanges: {
+            name?: string;
+            /** @enum {string} */
+            type?: "exam" | "homework";
+            /** Format: date */
+            date?: string;
+            weight?: number;
+        };
+        GradeSheet: {
+            entries: {
+                /** Format: uuid */
+                studentId: string;
+                score: number | null;
+            }[];
+        };
+        Group: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            shift: "morning" | "afternoon" | "evening";
+            /** Format: uuid */
+            teacherId: string;
+        };
+        NewGroup: {
+            name: string;
+            /** @enum {string} */
+            shift: "morning" | "afternoon" | "evening";
+            /** Format: uuid */
+            teacherId: string;
+        };
+        GroupChanges: {
+            name?: string;
+            /** @enum {string} */
+            shift?: "morning" | "afternoon" | "evening";
+            /** Format: uuid */
+            teacherId?: string;
+        };
+        Health: {
+            /** @enum {string} */
+            status: "ok";
+        };
+        ManagedProfile: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            username: string;
+            /** @enum {string} */
+            role: "teacher" | "coordinator" | "admin";
+            email: string | null;
+            jobTitle: string | null;
+            active: boolean;
+        };
+        NewProfile: {
+            name: string;
+            username: string;
+            /** @enum {string} */
+            role: "teacher" | "coordinator" | "admin";
+            password: string;
+            /** Format: email */
+            email?: string;
+            jobTitle?: string;
+        };
+        ProfileChanges: {
+            name?: string;
+            username?: string;
+            /** @enum {string} */
+            role?: "teacher" | "coordinator" | "admin";
+            password?: string;
+            /** Format: email */
+            email?: string;
+            jobTitle?: string;
+            active?: boolean;
+        };
+        Event: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            groupId: string;
+            title: string;
+            date: string;
+            location: string;
+            cost: number;
+        };
+        EventParticipation: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            eventId: string;
+            /** Format: uuid */
+            studentId: string;
+            /** @enum {string} */
+            authorization: "pending" | "authorized" | "denied";
+            /** @enum {string} */
+            payment: "pending" | "paid" | "waived";
+        };
+        NewEvent: {
+            /** Format: uuid */
+            groupId: string;
+            title: string;
+            /** Format: date */
+            date: string;
+            location: string;
+            /** @default 0 */
+            cost: number;
+        };
+        EventChanges: {
+            title?: string;
+            /** Format: date */
+            date?: string;
+            location?: string;
+            cost?: number;
+        };
+        ParticipationChanges: {
+            /** @enum {string} */
+            authorization?: "pending" | "authorized" | "denied";
+            /** @enum {string} */
+            payment?: "pending" | "paid" | "waived";
+        };
+        SchoolEvent: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            type: "vacation" | "makeup" | "event";
+            title: string;
+            startDate: string;
+            endDate: string;
+        };
+        NewSchoolEvent: {
+            /** @enum {string} */
+            type: "vacation" | "makeup" | "event";
+            title: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate: string;
+        };
+        SchoolEventChanges: {
+            /** @enum {string} */
+            type?: "vacation" | "makeup" | "event";
+            title?: string;
+            /** Format: date */
+            startDate?: string;
+            /** Format: date */
+            endDate?: string;
+        };
+        Student: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            birthDate: string;
+            guardianName: string;
+            guardianPhone: string;
+            active: boolean;
+        };
+        NewStudent: {
+            name: string;
+            /** Format: date */
+            birthDate: string;
+            guardianName: string;
+            guardianPhone: string;
+        };
+        StudentChanges: {
+            name?: string;
+            /** Format: date */
+            birthDate?: string;
+            guardianName?: string;
+            guardianPhone?: string;
+            active?: boolean;
+        };
+        Subject: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            area: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
+        };
+        NewSubject: {
+            name: string;
+            /** @enum {string} */
+            area: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
+        };
+        SubjectChanges: {
+            name?: string;
+            /** @enum {string} */
+            area?: "exact_sciences" | "biological_sciences" | "languages" | "humanities";
+        };
+    };
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;
