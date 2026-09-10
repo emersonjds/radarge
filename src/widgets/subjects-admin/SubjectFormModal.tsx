@@ -38,7 +38,7 @@ function SubjectFormBody({ subject, onClose }: { subject: Subject | null; onClos
   const updateSubject = useUpdateSubject();
 
   const [name, setName] = useState(subject?.name ?? "");
-  const [area, setArea] = useState<Area>(subject?.area ?? "exatas");
+  const [area, setArea] = useState<Area>(subject?.area ?? "exact_sciences");
   const [erro, setErro] = useState<string | null>(null);
   const saving = createSubject.isPending || updateSubject.isPending;
 

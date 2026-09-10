@@ -3,9 +3,9 @@ import type { Group } from "./model";
 import { groupsForRegente, visibleGroups } from "./scope";
 
 const groups: Group[] = [
-  { id: "g1", name: "A", shift: "manhã", teacherId: "t1" },
-  { id: "g2", name: "B", shift: "manhã", teacherId: "t2" },
-  { id: "g3", name: "C", shift: "manhã", teacherId: "t1" },
+  { id: "g1", name: "A", shift: "morning", teacherId: "t1" },
+  { id: "g2", name: "B", shift: "morning", teacherId: "t2" },
+  { id: "g3", name: "C", shift: "morning", teacherId: "t1" },
 ];
 
 const groupIds = (list: Group[]) => list.map((group) => group.id);

@@ -49,17 +49,17 @@ const NOMES = [
 ];
 
 const MATERIAS = [
-  { id: "materia-matematica", name: "Matemática", area: "exatas" },
-  { id: "materia-fisica", name: "Física", area: "exatas" },
-  { id: "materia-biologia", name: "Biologia", area: "biologicas" },
-  { id: "materia-quimica", name: "Química", area: "biologicas" },
-  { id: "materia-portugues", name: "Português", area: "linguagens" },
-  { id: "materia-ingles", name: "Inglês", area: "linguagens" },
-  { id: "materia-historia", name: "História", area: "humanas" },
-  { id: "materia-geografia", name: "Geografia", area: "humanas" },
+  { id: "materia-matematica", name: "Matemática", area: "exact_sciences" },
+  { id: "materia-fisica", name: "Física", area: "exact_sciences" },
+  { id: "materia-biologia", name: "Biologia", area: "biological_sciences" },
+  { id: "materia-quimica", name: "Química", area: "biological_sciences" },
+  { id: "materia-portugues", name: "Português", area: "languages" },
+  { id: "materia-ingles", name: "Inglês", area: "languages" },
+  { id: "materia-historia", name: "História", area: "humanities" },
+  { id: "materia-geografia", name: "Geografia", area: "humanities" },
 ] as const;
 
-const AREAS_SEED = ["exatas", "biologicas", "linguagens", "humanas"] as const;
+const AREAS_SEED = ["exact_sciences", "biological_sciences", "languages", "humanities"] as const;
 
 function scoreFor(alunoIdx: number, materiaIdx: number, area: string): number {
   const areaPreferida = AREAS_SEED[alunoIdx % AREAS_SEED.length];
