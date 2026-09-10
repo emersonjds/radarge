@@ -1,46 +1,46 @@
-import { mutateCollection, readCollection } from "@/shared/lib/storage/db";
-import { attendanceRecordSchema, type AttendanceRecord, type AttendanceStatus } from "./model";
+import type { components } from "@/shared/api/schema";
+import { apiClient } from "@/shared/lib/api/instance";
 
-export async function fetchAttendanceRecords(): Promise<AttendanceRecord[]> {
-  const rows = await readCollection("attendanceRecords");
-  return rows.map((row) => attendanceRecordSchema.parse(row));
-}
+export type AttendanceRecord = components["schemas"]["AttendanceRecord"];
+export type RollCallEntry = components["schemas"]["RollCall"]["entries"][number];
 
-export async function fetchAttendanceRecordsBySession(
-  sessionId: string,
-): Promise<AttendanceRecord[]> {
-  const records = await fetchAttendanceRecords();
-  return records.filter((record) => record.sessionId === sessionId);
-}
+export const fetchAttendanceRecordsBySession = (sessionId: string): Promise<AttendanceRecord[]> =>
+  apiClient().request<AttendanceRecord[]>(`/attendance-sessions/${sessionId}/records`);
 
-export async function fetchAttendanceRecordsByStudent(
+/**
+ * Reading every record means reading every session's sheet, since the API scopes
+ * records to a roll call. Screens that only need one class should ask by session.
+ */
+export const fetchAttendanceRecords = async (): Promise<AttendanceRecord[]> => {
+  const sessions =
+    await apiClient().request<components["schemas"]["AttendanceSession"][]>("/attendance-sessions");
+  const sheets = await Promise.all(
+    sessions.map((session) => fetchAttendanceRecordsBySession(session.id)),
+  );
+  return sheets.flat();
+};
+
+export const fetchAttendanceRecordsByStudent = async (
   studentId: string,
-): Promise<AttendanceRecord[]> {
+): Promise<AttendanceRecord[]> => {
   const records = await fetchAttendanceRecords();
   return records.filter((record) => record.studentId === studentId);
+};
+
+export interface SaveRollCallInput {
+  sessionId: string;
+  entries: RollCallEntry[];
 }
 
 /**
- * Set a student's status in a session. Unique per (session, student) — an existing
- * record is updated in place instead of duplicated (server constraint later).
+ * The whole sheet goes in one call, so a half-saved roll call is not a state the
+ * database can reach. The payload field is `entries`, which is what the API reads.
  */
-export async function setAttendanceRecord(input: {
-  sessionId: string;
-  studentId: string;
-  status: AttendanceStatus;
-}): Promise<AttendanceRecord> {
-  const record = attendanceRecordSchema.parse({
-    id: `record-${input.sessionId}-${input.studentId}`,
-    ...input,
+export const saveRollCall = ({
+  sessionId,
+  entries,
+}: SaveRollCallInput): Promise<AttendanceRecord[]> =>
+  apiClient().request<AttendanceRecord[]>(`/attendance-sessions/${sessionId}/records`, {
+    method: "PUT",
+    body: { entries },
   });
-  await mutateCollection<AttendanceRecord>("attendanceRecords", (rows) => {
-    const index = rows.findIndex(
-      (row) => row.sessionId === record.sessionId && row.studentId === record.studentId,
-    );
-    if (index === -1) return [...rows, record];
-    const next = [...rows];
-    next[index] = record;
-    return next;
-  });
-  return record;
-}

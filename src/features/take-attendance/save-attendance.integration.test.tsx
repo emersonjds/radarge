@@ -1,67 +1,84 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { act, waitFor } from "@testing-library/react";
-import { resetDb } from "@/shared/lib/storage/db";
+import { http, HttpResponse } from "msw";
+import { act } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { server } from "@/test/msw/server";
 import { renderHookWithQuery } from "@/test/react-query";
-import {
-  useCreateAttendanceSession,
-  useAttendanceSessionsByGroup,
-} from "@/entities/attendance-session/queries";
-import {
-  useSetAttendanceRecord,
-  useAttendanceRecordsBySession,
-} from "@/entities/attendance-record/queries";
+import { resetApiClient } from "@/shared/lib/api/instance";
+import { useCreateAttendanceSession } from "@/entities/attendance-session/queries";
+import { useSaveRollCall } from "@/entities/attendance-record/queries";
 
-describe("salvar chamada (integration, over the store)", () => {
-  beforeEach(async () => {
-    await resetDb();
+const API_URL = "http://api.test";
+const SESSION_ID = "session-1";
+
+beforeEach(() => {
+  vi.stubEnv("NEXT_PUBLIC_API_URL", API_URL);
+  resetApiClient();
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
+describe("saving a roll call", () => {
+  it("opens the session, then saves every mark in a single request", async () => {
+    const openings: unknown[] = [];
+    let sheet: unknown = null;
+    let sheetWrites = 0;
+
+    server.use(
+      http.post("*/attendance-sessions", async ({ request }) => {
+        openings.push(await request.json());
+        return HttpResponse.json({
+          id: SESSION_ID,
+          groupId: "group-1",
+          date: "2026-09-10",
+          teacherId: "teacher-1",
+        });
+      }),
+      http.put(`*/attendance-sessions/${SESSION_ID}/records`, async ({ request }) => {
+        sheetWrites += 1;
+        sheet = await request.json();
+        return HttpResponse.json([]);
+      }),
+    );
+
+    const { result: open } = renderHookWithQuery(() => useCreateAttendanceSession());
+    const { result: save } = renderHookWithQuery(() => useSaveRollCall());
+
+    await act(async () => {
+      const session = await open.current.mutateAsync({ groupId: "group-1", date: "2026-09-10" });
+      await save.current.mutateAsync({
+        sessionId: session.id,
+        entries: [
+          { studentId: "student-1", status: "present" },
+          { studentId: "student-2", status: "absent" },
+        ],
+      });
+    });
+
+    expect(openings).toEqual([{ groupId: "group-1", date: "2026-09-10" }]);
+    expect(sheetWrites).toBe(1);
+    expect(sheet).toEqual({
+      entries: [
+        { studentId: "student-1", status: "present" },
+        { studentId: "student-2", status: "absent" },
+      ],
+    });
   });
 
-  it("creates a session, upserts presence status, and never duplicates", async () => {
-    const sessionId = "chamada-turma-mat-b-2026-07-02";
-
-    const { result: criar } = renderHookWithQuery(() => useCreateAttendanceSession());
-    await act(async () => {
-      await criar.current.mutateAsync({
-        groupId: "turma-mat-b",
-        date: "2026-07-02",
-        teacherId: "perfil-ricardo",
-      });
-      await criar.current.mutateAsync({
-        groupId: "turma-mat-b",
-        date: "2026-07-02",
-        teacherId: "perfil-ricardo",
-      });
-    });
-
-    const { result: definir } = renderHookWithQuery(() => useSetAttendanceRecord());
-    await act(async () => {
-      await definir.current.mutateAsync({
-        sessionId,
-        studentId: "aluno-1",
-        status: "absent",
-      });
-      await definir.current.mutateAsync({
-        sessionId,
-        studentId: "aluno-1",
-        status: "present",
-      });
-    });
-
-    const { result: chamadas } = renderHookWithQuery(() =>
-      useAttendanceSessionsByGroup("turma-mat-b"),
+  it("lets the API's refusal through instead of turning it into a silent success", async () => {
+    server.use(
+      http.post("*/attendance-sessions", () =>
+        HttpResponse.json({ code: "forbidden", message: "not your group" }, { status: 403 }),
+      ),
     );
-    await waitFor(() => expect(chamadas.current.isSuccess).toBe(true));
-    const doDia = (chamadas.current.data ?? []).filter((chamada) => chamada.date === "2026-07-02");
-    expect(doDia).toHaveLength(1);
 
-    const { result: presencas } = renderHookWithQuery(() =>
-      useAttendanceRecordsBySession(sessionId),
-    );
-    await waitFor(() => expect(presencas.current.isSuccess).toBe(true));
-    const doAluno = (presencas.current.data ?? []).filter(
-      (presenca) => presenca.studentId === "aluno-1",
-    );
-    expect(doAluno).toHaveLength(1);
-    expect(doAluno[0].status).toBe("present");
+    const { result: open } = renderHookWithQuery(() => useCreateAttendanceSession());
+
+    await expect(
+      act(async () => {
+        await open.current.mutateAsync({ groupId: "someone-elses-group", date: "2026-09-10" });
+      }),
+    ).rejects.toMatchObject({ code: "forbidden" });
   });
 });

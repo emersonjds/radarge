@@ -2,10 +2,10 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  setAttendanceRecord,
   fetchAttendanceRecords,
-  fetchAttendanceRecordsByStudent,
   fetchAttendanceRecordsBySession,
+  fetchAttendanceRecordsByStudent,
+  saveRollCall,
 } from "./api";
 
 export const attendanceRecordKeys = {
@@ -34,18 +34,18 @@ export function useAttendanceRecordsByStudent(studentId: string) {
   });
 }
 
-export function useSetAttendanceRecord() {
+export function useSaveRollCall() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: setAttendanceRecord,
-    onSuccess: (record) => {
+    mutationFn: saveRollCall,
+    onSuccess: (_records, input) => {
       queryClient.invalidateQueries({ queryKey: attendanceRecordKeys.all });
       queryClient.invalidateQueries({
-        queryKey: attendanceRecordKeys.bySession(record.sessionId),
+        queryKey: attendanceRecordKeys.bySession(input.sessionId),
       });
-      queryClient.invalidateQueries({
-        queryKey: attendanceRecordKeys.byStudent(record.studentId),
-      });
+      // Every student on the sheet moved, and their per-student views are keyed
+      // individually, so the whole branch goes rather than each key by hand.
+      queryClient.invalidateQueries({ queryKey: ["attendanceRecords", "student"] });
     },
   });
 }

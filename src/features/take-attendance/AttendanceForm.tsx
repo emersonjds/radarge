@@ -6,7 +6,7 @@ import { useStudentsByGroup } from "@/entities/student/queries";
 import { useCreateAttendanceSession } from "@/entities/attendance-session/queries";
 import type { AttendanceStatus } from "@/entities/attendance-record/model";
 import {
-  useSetAttendanceRecord,
+  useSaveRollCall,
   useAttendanceRecordsBySession,
 } from "@/entities/attendance-record/queries";
 import { useGroups } from "@/entities/group/queries";
@@ -62,7 +62,7 @@ export function AttendanceForm() {
   }
 
   const createAttendanceSession = useCreateAttendanceSession();
-  const setAttendanceRecord = useSetAttendanceRecord();
+  const saveRollCall = useSaveRollCall();
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [salvo, setSalvo] = useState(false);
@@ -93,21 +93,14 @@ export function AttendanceForm() {
     setSalvo(false);
     setSalvando(true);
     try {
-      const chamada = await createAttendanceSession.mutateAsync({
-        groupId,
-        date: HOJE,
-        teacherId: profileId ?? "",
-      });
-      const lancamentos = (alunos ?? []).filter((aluno) => statusPorAluno[aluno.id]);
-      await Promise.all(
-        lancamentos.map((aluno) =>
-          setAttendanceRecord.mutateAsync({
-            sessionId: chamada.id,
-            studentId: aluno.id,
-            status: statusPorAluno[aluno.id],
-          }),
-        ),
-      );
+      const chamada = await createAttendanceSession.mutateAsync({ groupId, date: HOJE });
+      const entries = (alunos ?? [])
+        .filter((aluno) => statusPorAluno[aluno.id])
+        .map((aluno) => ({ studentId: aluno.id, status: statusPorAluno[aluno.id] }));
+
+      if (entries.length > 0) {
+        await saveRollCall.mutateAsync({ sessionId: chamada.id, entries });
+      }
       setSalvo(true);
     } catch {
       setErro("Não foi possível salvar a chamada. Tente novamente.");
