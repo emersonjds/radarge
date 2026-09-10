@@ -4,31 +4,33 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { credentialsFormSchema, type CredentialsFormValues } from "@/entities/profile/model";
-import { sessionKeys } from "@/features/session/use-session";
+import {
+  passwordChangeFormSchema,
+  type PasswordChangeFormValues,
+} from "@/entities/profile/model";
 import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import { signIn } from "./api";
+import { changePassword } from "./api";
 
-export function LoginForm() {
+export function ChangePasswordForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const form = useForm<CredentialsFormValues>({
-    resolver: zodResolver(credentialsFormSchema),
-    defaultValues: { username: "", password: "" },
+  const form = useForm<PasswordChangeFormValues>({
+    resolver: zodResolver(passwordChangeFormSchema),
+    defaultValues: { currentPassword: "", newPassword: "" },
   });
 
-  const submit = async (values: CredentialsFormValues) => {
+  const submit = async (values: PasswordChangeFormValues) => {
     try {
-      const profile = await signIn(values);
-      queryClient.setQueryData(sessionKeys.current, profile);
-      router.replace(profile.mustChangePassword ? "/change-password" : "/");
+      await changePassword(values);
+      queryClient.clear();
+      router.replace("/login");
     } catch (error) {
       form.setError("root", {
-        message: messageForError(error, SIGN_IN_FAILED, { unauthorized: SIGN_IN_FAILED }),
+        message: messageForError(error, CHANGE_FAILED, { unauthorized: CURRENT_PASSWORD_WRONG }),
       });
     }
   };
@@ -42,19 +44,25 @@ export function LoginForm() {
         noValidate
         className="w-full max-w-sm duration-500 animate-in fade-in slide-in-from-bottom-3 motion-reduce:animate-none"
       >
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Entrar</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Defina sua senha</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Use o usuário e a senha que a coordenação cadastrou para você.
+          Sua senha atual foi criada pela coordenação e serve para um acesso só.
         </p>
 
         <FormField
           control={form.control}
-          name="username"
+          name="currentPassword"
           render={({ field }) => (
             <FormItem className="mt-8">
-              <FormLabel>Usuário</FormLabel>
+              <FormLabel>Senha atual</FormLabel>
               <FormControl>
-                <Input autoFocus autoComplete="username" className="h-11" {...field} />
+                <Input
+                  type="password"
+                  autoFocus
+                  autoComplete="current-password"
+                  className="h-11"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -63,17 +71,12 @@ export function LoginForm() {
 
         <FormField
           control={form.control}
-          name="password"
+          name="newPassword"
           render={({ field }) => (
             <FormItem className="mt-5">
-              <FormLabel>Senha</FormLabel>
+              <FormLabel>Nova senha</FormLabel>
               <FormControl>
-                <Input
-                  type="password"
-                  autoComplete="current-password"
-                  className="h-11"
-                  {...field}
-                />
+                <Input type="password" autoComplete="new-password" className="h-11" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -90,11 +93,17 @@ export function LoginForm() {
         )}
 
         <Button type="submit" className="mt-7 h-11 w-full text-sm" disabled={isSubmitting}>
-          {isSubmitting ? "Entrando…" : "Entrar"}
+          {isSubmitting ? "Salvando…" : "Salvar e entrar de novo"}
         </Button>
+
+        <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+          Trocar a senha encerra os acessos abertos, inclusive este. Você vai entrar de novo com a
+          senha nova.
+        </p>
       </form>
     </Form>
   );
 }
 
-const SIGN_IN_FAILED = "Usuário ou senha incorretos.";
+const CHANGE_FAILED = "Não foi possível trocar a senha.";
+const CURRENT_PASSWORD_WRONG = "A senha atual está incorreta.";
