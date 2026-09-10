@@ -1,6 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStudent } from "@/entities/student/queries";
@@ -19,12 +18,12 @@ import { useSession } from "@/features/session/use-session";
 import { countAbsences, attendanceRate } from "@/features/analytics/model";
 import { computeAgeAt, todayIso } from "@/entities/student/age";
 import { formatPercent } from "@/shared/lib/format";
+import { usePageTitle } from "@/shared/providers/page-title";
 import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { ArrowLeft } from "lucide-react";
 import { AttendanceCalendar, type DayEvent } from "./AttendanceCalendar";
 import { AcademicPanel } from "./AcademicPanel";
 import { studentGradesInScope, studentGroupsInScope } from "./scope";
@@ -49,12 +48,10 @@ function BackLink({
   href,
   label,
   className,
-  children,
 }: {
   href: string;
   label: string;
   className?: string;
-  children?: ReactNode;
 }) {
   const router = useRouter();
 
@@ -67,7 +64,6 @@ function BackLink({
         router.replace(href);
       }}
     >
-      {children}
       {label}
     </Link>
   );
@@ -97,14 +93,17 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
     visibleGroups(groups ?? [], role, profileId).map((group) => group.id),
   );
   const studentGroups = studentGroupsInScope(enrollments ?? [], groups ?? [], role, profileId);
-
-  if (isLoadingStudent || isLoadingGroups || isLoadingEnrollments) {
-    return <p className="text-sm text-muted-foreground">Carregando aluno…</p>;
-  }
+  const isLoadingAny = isLoadingStudent || isLoadingGroups || isLoadingEnrollments;
 
   // The whole record is PII of a minor: a teacher reaches it only through the
   // students they teach. Outside that, the student does not exist — not even by direct link.
   const outOfScope = isTeacher && studentGroups.length === 0;
+
+  usePageTitle(!isLoadingAny && student && !outOfScope ? student.name : null);
+
+  if (isLoadingAny) {
+    return <p className="text-sm text-muted-foreground">Carregando aluno…</p>;
+  }
 
   if (!student || outOfScope) {
     return (
@@ -133,16 +132,6 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
     role,
   );
 
-  const goBack = (
-    <BackLink
-      href={backHref}
-      label={backLabel}
-      className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-    >
-      <ArrowLeft className="size-4" />
-    </BackLink>
-  );
-
   const statusByDate = new Map<string, AttendanceStatus>();
   for (const record of visibleRecords) {
     const session = sessionById.get(record.sessionId);
@@ -165,18 +154,12 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-2">
-        {goBack}
-        <div className="flex items-center gap-4">
-          <AvatarText name={student.name} />
-          <div>
-            <h1 className="text-xl font-semibold text-foreground sm:text-2xl">{student.name}</h1>
-            <p className="text-sm text-muted-foreground">Desempenho e presença</p>
-          </div>
-          <Badge variant={student.active ? "success" : "danger"}>
-            {student.active ? "ATIVO" : "INATIVO"}
-          </Badge>
-        </div>
+      <header className="flex items-center gap-4">
+        <AvatarText name={student.name} />
+        <p className="text-sm text-muted-foreground">Desempenho e presença</p>
+        <Badge variant={student.active ? "success" : "danger"}>
+          {student.active ? "ATIVO" : "INATIVO"}
+        </Badge>
       </header>
 
       {!student.active && (

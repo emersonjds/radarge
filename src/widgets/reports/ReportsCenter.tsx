@@ -17,6 +17,7 @@ import { overallAverage, studentAptitude } from "@/features/analytics/academic";
 import { messageForError } from "@/shared/lib/api/error-message";
 import { formatPercent, formatScore } from "@/shared/lib/format";
 import { downloadCsv, toCsv } from "@/shared/lib/csv";
+import { usePageTitle } from "@/shared/providers/page-title";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { DownloadIcon } from "@tailadmin/icons";
@@ -30,6 +31,8 @@ const control =
   "h-11 md:h-9 rounded-lg border border-input bg-transparent px-3 text-base text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20 md:text-sm";
 
 export function ReportsCenter() {
+  usePageTitle("Relatórios");
+
   const { data: students, isLoading: isLoadingStudents } = useStudents();
   const { data: groups } = useGroups();
   const { data: enrollments } = useEnrollments();
@@ -37,7 +40,6 @@ export function ReportsCenter() {
   const { data: subjects } = useSubjects();
 
   const [groupId, setGroupId] = useState(ALL_GROUPS);
-  const [term, setTerm] = useState("2026-1");
 
   const groupFilter = groupId === ALL_GROUPS ? {} : { groupId };
   const {
@@ -139,12 +141,9 @@ export function ReportsCenter() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Relatórios</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Panorama acadêmico e de frequência por aula — clique num aluno para a ficha completa
-          </p>
-        </div>
+        <p className="max-w-[68ch] text-sm text-muted-foreground">
+          Panorama acadêmico e de frequência por aula — clique num aluno para a ficha completa
+        </p>
         <div className="flex flex-wrap items-end gap-3">
           <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
             Aula
@@ -160,18 +159,6 @@ export function ReportsCenter() {
                   {group.name}
                 </option>
               ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-            Período
-            <select
-              aria-label="Selecionar período"
-              className={control}
-              value={term}
-              onChange={(event) => setTerm(event.target.value)}
-            >
-              <option value="2026-1">Semestre 1 (2026)</option>
-              <option value="2026-2">Semestre 2 (2026)</option>
             </select>
           </label>
           <Button

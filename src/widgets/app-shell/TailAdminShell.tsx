@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { roleLabels } from "@/entities/profile/model";
 import { useSession } from "@/features/session/use-session";
+import { PageTitleProvider } from "@/shared/providers/page-title";
 import { useSidebar } from "@tailadmin/context/SidebarContext";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
@@ -43,8 +44,10 @@ export function TailAdminShell({ children }: TailAdminShellProps) {
       >
         <AppHeader name={profile.name} jobTitle={jobTitle} onLogout={logout} />
         <main className="mx-auto w-full max-w-(--breakpoint-2xl) flex-1 p-4 md:p-6">
-          <AppBreadcrumb />
-          {children}
+          <PageTitleProvider>
+            <AppBreadcrumb />
+            {children}
+          </PageTitleProvider>
         </main>
       </div>
     </div>

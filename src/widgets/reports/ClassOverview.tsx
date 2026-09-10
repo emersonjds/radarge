@@ -17,9 +17,9 @@ export interface ClassOverviewProps {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-muted p-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-foreground">{value}</p>
+    <div className="rounded-lg border border-border bg-gray-50 p-3">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="mt-1 text-xl font-semibold text-foreground tabular-nums">{value}</p>
     </div>
   );
 }
@@ -47,17 +47,15 @@ export function ClassOverview({
         <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Stat label="Frequência média" value={formatPercent(avgAttendance)} />
           <Stat label="Nota média" value={formatScore(summary.averageScore)} />
-          <div className="rounded-xl bg-muted p-4">
-            <p className="text-xs text-muted-foreground">Área forte</p>
-            <p className="mt-1 text-lg font-bold text-foreground">
-              {summary.topArea ? areaLabels[summary.topArea] : "—"}
-            </p>
-          </div>
-          <div className="rounded-xl bg-muted p-4">
-            <p className="text-xs text-muted-foreground">Matérias de destaque</p>
+          <Stat
+            label="Área forte"
+            value={summary.topArea ? areaLabels[summary.topArea] : "—"}
+          />
+          <div className="rounded-lg border border-border bg-gray-50 p-3">
+            <p className="text-xs font-medium text-muted-foreground">Matérias de destaque</p>
             <p className="mt-1 flex flex-wrap gap-1">
               {summary.topSubjects.length === 0 ? (
-                <span className="text-sm text-muted-foreground">—</span>
+                <span className="text-xl font-semibold text-foreground">—</span>
               ) : (
                 summary.topSubjects.map((item) => {
                   const subject = subjectById.get(item.subjectId);
