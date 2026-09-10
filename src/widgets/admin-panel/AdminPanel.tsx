@@ -15,6 +15,7 @@ import { messageForError } from "@/shared/lib/api/error-message";
 import { formatPercent } from "@/shared/lib/format";
 import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
+import { Card } from "@/shared/ui/card";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -37,7 +38,7 @@ interface KpiCardProps {
 
 function KpiCard({ label, value, icon, badge }: KpiCardProps) {
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm md:p-5">
+    <Card>
       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-primary">
         {icon}
       </div>
@@ -48,7 +49,7 @@ function KpiCard({ label, value, icon, badge }: KpiCardProps) {
         </div>
         {badge}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -194,13 +195,13 @@ export function AdminPanel() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border bg-card p-4 shadow-sm lg:col-span-2">
+        <Card className="lg:col-span-2">
           <h2 className="text-lg font-semibold text-foreground">Frequência por aula</h2>
           <p className="mb-2 text-sm text-muted-foreground">Comparativo de presença por aula</p>
           <AttendanceBarChart data={attendanceRateByGroup} />
-        </div>
+        </Card>
 
-        <div className="rounded-xl border bg-card p-4 shadow-sm">
+        <Card>
           <h2 className="mb-4 text-lg font-semibold text-foreground">
             Alertas de baixa frequência
           </h2>
@@ -231,13 +232,13 @@ export function AdminPanel() {
           >
             Ver todos os alunos em risco
           </Link>
-        </div>
+        </Card>
       </div>
 
-      <div className="rounded-xl border bg-card p-4 shadow-sm">
+      <Card>
         <h2 className="mb-2 text-lg font-semibold text-foreground">Tendência de frequência</h2>
         <TrendLineChart points={trend} />
-      </div>
+      </Card>
     </div>
   );
 }

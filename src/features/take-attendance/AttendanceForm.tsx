@@ -14,6 +14,7 @@ import { useSession } from "@/features/session/use-session";
 import { formatDateLong } from "@/shared/lib/format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { CalenderIcon } from "@tailadmin/icons";
 import { StudentRow, STATUS_OPTIONS } from "./StudentRow";
 import { groupsForTeacher } from "@/entities/group/scope";
@@ -110,46 +111,53 @@ export function AttendanceForm() {
 
   return (
     <div className="flex flex-col gap-5">
-      <header className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 md:p-5">
-        <div className="flex flex-col gap-2">
-          <select
-            className="w-full rounded-lg border border-input bg-transparent px-3 py-2.5 text-lg font-semibold text-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-hidden"
-            value={groupId}
-            disabled={isLoadingGroups}
-            onChange={(event) => setSelectedGroupId(event.target.value)}
-            aria-label="Selecionar aula"
-          >
-            {(groups ?? []).map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
-              </option>
+      <Card asChild>
+        <header className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <select
+              className="w-full rounded-lg border border-input bg-transparent px-3 py-2.5 text-lg font-semibold text-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-hidden"
+              value={groupId}
+              disabled={isLoadingGroups}
+              onChange={(event) => setSelectedGroupId(event.target.value)}
+              aria-label="Selecionar aula"
+            >
+              {(groups ?? []).map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
+            <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <CalenderIcon />
+              {formatDateLong(TODAY)}
+            </p>
+          </div>
+
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Buscar aluno por nome ou matrícula..."
+            className="h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-hidden"
+          />
+
+          <div className="grid grid-cols-4 gap-2">
+            {STATUS_OPTIONS.map((option) => (
+              <div
+                key={option.value}
+                className="flex flex-col items-center rounded-lg bg-muted py-2"
+              >
+                <span className={`text-xs font-medium ${tileLabelColor[option.value]}`}>
+                  {option.label}
+                </span>
+                <span className="text-lg font-semibold text-foreground">
+                  {counts[option.value]}
+                </span>
+              </div>
             ))}
-          </select>
-          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <CalenderIcon />
-            {formatDateLong(TODAY)}
-          </p>
-        </div>
-
-        <input
-          type="search"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Buscar aluno por nome ou matrícula..."
-          className="h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-hidden"
-        />
-
-        <div className="grid grid-cols-4 gap-2">
-          {STATUS_OPTIONS.map((option) => (
-            <div key={option.value} className="flex flex-col items-center rounded-lg bg-muted py-2">
-              <span className={`text-xs font-medium ${tileLabelColor[option.value]}`}>
-                {option.label}
-              </span>
-              <span className="text-lg font-semibold text-foreground">{counts[option.value]}</span>
-            </div>
-          ))}
-        </div>
-      </header>
+          </div>
+        </header>
+      </Card>
 
       <div>
         <Button

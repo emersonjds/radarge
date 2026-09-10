@@ -10,8 +10,8 @@ import { useStudentsByGroup } from "@/entities/student/queries";
 import { summarizeParticipation } from "@/features/events/summary";
 import { useSession } from "@/features/session/use-session";
 import { formatCurrency, formatDate } from "@/shared/lib/format";
-import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { EventDetail } from "./EventDetail";
 import { EventFormModal } from "./EventFormModal";
 
@@ -28,13 +28,19 @@ export function Events() {
     () => visibleGroups(groups ?? [], role, profileId),
     [groups, role, profileId],
   );
-  const scopedGroupIds = useMemo(() => new Set(scopedGroups.map((group) => group.id)), [scopedGroups]);
+  const scopedGroupIds = useMemo(
+    () => new Set(scopedGroups.map((group) => group.id)),
+    [scopedGroups],
+  );
   const scopedEvents = useMemo(
     () => (events ?? []).filter((event) => scopedGroupIds.has(event.groupId)),
     [events, scopedGroupIds],
   );
 
-  const groupById = useMemo(() => new Map(scopedGroups.map((group) => [group.id, group])), [scopedGroups]);
+  const groupById = useMemo(
+    () => new Map(scopedGroups.map((group) => [group.id, group])),
+    [scopedGroups],
+  );
 
   const selectedEvent = scopedEvents.find((event) => event.id === selectedEventId) ?? null;
   const selectedGroup = selectedEvent ? groupById.get(selectedEvent.groupId) : undefined;
@@ -92,7 +98,11 @@ export function Events() {
       )}
 
       {canManage && (
-        <EventFormModal event={editing} groups={scopedGroups} onClose={() => setEditing(undefined)} />
+        <EventFormModal
+          event={editing}
+          groups={scopedGroups}
+          onClose={() => setEditing(undefined)}
+        />
       )}
     </div>
   );
@@ -115,33 +125,30 @@ function EventCard({ event, onSelect }: EventCardProps) {
 
   return (
     <li>
-      <button
-        type="button"
-        onClick={onSelect}
-        className={cn(
-          "flex w-full flex-col gap-1 rounded-xl border bg-card px-4 py-3 text-left shadow-sm transition-colors hover:bg-muted",
-        )}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="font-medium text-foreground">{event.title}</p>
-          <p className="text-sm font-medium text-foreground">
-            {free ? "Gratuito" : formatCurrency(event.cost)}
+      <Card asChild className="px-4 py-3 text-left transition-colors hover:bg-muted">
+        <button type="button" onClick={onSelect} className="flex w-full flex-col gap-1">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-medium text-foreground">{event.title}</p>
+            <p className="text-sm font-medium text-foreground">
+              {free ? "Gratuito" : formatCurrency(event.cost)}
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {formatDate(event.date)} · {event.location}
           </p>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          {formatDate(event.date)} · {event.location}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {summary.authorized} autorizados · {summary.pendingAuthorization} aguardando ·{" "}
-          {summary.denied} não autorizados
-          {!free && (
-            <>
-              {" "}
-              · {formatCurrency(summary.collected)} de {formatCurrency(summary.expected)} arrecadado
-            </>
-          )}
-        </p>
-      </button>
+          <p className="text-xs text-muted-foreground">
+            {summary.authorized} autorizados · {summary.pendingAuthorization} aguardando ·{" "}
+            {summary.denied} não autorizados
+            {!free && (
+              <>
+                {" "}
+                · {formatCurrency(summary.collected)} de {formatCurrency(summary.expected)}{" "}
+                arrecadado
+              </>
+            )}
+          </p>
+        </button>
+      </Card>
     </li>
   );
 }

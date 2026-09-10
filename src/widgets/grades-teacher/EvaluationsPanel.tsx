@@ -5,6 +5,7 @@ import { evaluationTypeLabels, type Evaluation } from "@/entities/evaluation/mod
 import { useEvaluationsByAssignment, useDeleteEvaluation } from "@/entities/evaluation/queries";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { IconButton } from "@/shared/ui/icon-button";
 import { EvaluationFormModal } from "./EvaluationFormModal";
 import { GradeEntryPanel } from "./GradeEntryPanel";
@@ -34,33 +35,35 @@ export function EvaluationsPanel({ groupId, subjectId }: { groupId: string; subj
       ) : (
         <ul className="flex flex-col gap-2">
           {(evaluations ?? []).map((evaluation: Evaluation) => (
-            <li key={evaluation.id} className="rounded-xl border bg-card px-4 py-3 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="font-medium text-foreground">{evaluation.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {evaluationTypeLabels[evaluation.type]} · peso {evaluation.weight} ·{" "}
-                    {evaluation.date}
-                  </p>
+            <Card asChild key={evaluation.id} className="px-4 py-3">
+              <li>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="font-medium text-foreground">{evaluation.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {evaluationTypeLabels[evaluation.type]} · peso {evaluation.weight} ·{" "}
+                      {evaluation.date}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setOpenId(openId === evaluation.id ? null : evaluation.id)}
+                    >
+                      {openId === evaluation.id ? "Fechar notas" : "Lançar notas"}
+                    </Button>
+                    <IconButton
+                      icon={Trash2}
+                      label={`Excluir ${evaluation.name}`}
+                      tone="destructive"
+                      onClick={() => remove(evaluation)}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setOpenId(openId === evaluation.id ? null : evaluation.id)}
-                  >
-                    {openId === evaluation.id ? "Fechar notas" : "Lançar notas"}
-                  </Button>
-                  <IconButton
-                    icon={Trash2}
-                    label={`Excluir ${evaluation.name}`}
-                    tone="destructive"
-                    onClick={() => remove(evaluation)}
-                  />
-                </div>
-              </div>
-              {openId === evaluation.id && <GradeEntryPanel evaluation={evaluation} />}
-            </li>
+                {openId === evaluation.id && <GradeEntryPanel evaluation={evaluation} />}
+              </li>
+            </Card>
           ))}
           {(evaluations ?? []).length === 0 && (
             <li className="text-sm text-muted-foreground">Nenhuma avaliação ainda.</li>

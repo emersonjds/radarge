@@ -5,6 +5,7 @@ import { areaLabels, type Subject } from "@/entities/subject/model";
 import { useSubjects, useDeleteSubject } from "@/entities/subject/queries";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { IconButton } from "@/shared/ui/icon-button";
 import { SubjectFormModal } from "./SubjectFormModal";
 
@@ -45,28 +46,27 @@ export function SubjectsAdmin() {
       ) : (
         <ul className="flex flex-col gap-2">
           {(subjects ?? []).map((subject) => (
-            <li
-              key={subject.id}
-              className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm"
-            >
-              <div>
-                <p className="font-medium text-foreground">{subject.name}</p>
-                <p className="text-xs text-muted-foreground">{areaLabels[subject.area]}</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <IconButton
-                  icon={Pencil}
-                  label={`Editar ${subject.name}`}
-                  onClick={() => setEditing(subject)}
-                />
-                <IconButton
-                  icon={Trash2}
-                  label={`Excluir ${subject.name}`}
-                  tone="destructive"
-                  onClick={() => remove(subject)}
-                />
-              </div>
-            </li>
+            <Card asChild key={subject.id} className="flex items-center justify-between px-4 py-3">
+              <li>
+                <div>
+                  <p className="font-medium text-foreground">{subject.name}</p>
+                  <p className="text-xs text-muted-foreground">{areaLabels[subject.area]}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <IconButton
+                    icon={Pencil}
+                    label={`Editar ${subject.name}`}
+                    onClick={() => setEditing(subject)}
+                  />
+                  <IconButton
+                    icon={Trash2}
+                    label={`Excluir ${subject.name}`}
+                    tone="destructive"
+                    onClick={() => remove(subject)}
+                  />
+                </div>
+              </li>
+            </Card>
           ))}
         </ul>
       )}

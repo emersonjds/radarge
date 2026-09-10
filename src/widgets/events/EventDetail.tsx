@@ -24,9 +24,10 @@ import { summarizeParticipation, type EventSummary } from "@/features/events/sum
 import { formatCurrency, formatDate, formatPercent } from "@/shared/lib/format";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 
 const selectClasses =
-  "h-11 w-full min-w-36 rounded-lg border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:outline-hidden sm:h-9";
+  "h-11 w-full min-w-36 rounded-lg border border-input bg-transparent px-3 text-base text-foreground focus:border-ring focus:outline-hidden md:h-9 md:text-sm";
 
 type StatTone = "neutral" | "success" | "warning" | "danger";
 
@@ -204,158 +205,161 @@ export function EventDetail({
         </Button>
       </div>
 
-      <header className="flex flex-wrap items-start justify-between gap-3 rounded-xl border bg-card p-4 shadow-sm md:p-5">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground">{event.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {formatDate(event.date)} · {event.location} · {group.name}
-          </p>
-          <p className="mt-1 text-sm font-medium text-foreground">
-            {free ? "Gratuito" : `${formatCurrency(event.cost)} por aluno`}
-          </p>
-        </div>
-        {canManage && (
-          <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={onEdit}>
-              <Pencil className="size-4" />
-              Editar
-            </Button>
-            <Button type="button" variant="destructive" size="sm" onClick={remove}>
-              <Trash2 className="size-4" />
-              Excluir
-            </Button>
+      <Card asChild>
+        <header className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-semibold text-foreground">{event.title}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {formatDate(event.date)} · {event.location} · {group.name}
+            </p>
+            <p className="mt-1 text-sm font-medium text-foreground">
+              {free ? "Gratuito" : `${formatCurrency(event.cost)} por aluno`}
+            </p>
           </div>
-        )}
-      </header>
-
-      <section
-        aria-label="Indicadores do evento"
-        className="rounded-xl border bg-card p-4 shadow-sm md:p-5"
-      >
-        {summary.total === 0 ? (
-          <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-            Nenhum aluno matriculado nesta aula ainda. Os indicadores aparecem assim que houver
-            alunos.
-          </div>
-        ) : free ? (
-          <div className="flex flex-col gap-3">
-            <AuthorizationGroup summary={summary} />
-            <div className="flex items-center justify-between rounded-lg border border-border bg-gray-50 p-3 lg:max-w-xs">
-              <p className="text-xs text-muted-foreground">Total de alunos</p>
-              <p className="text-2xl font-semibold text-foreground">{summary.total}</p>
+          {canManage && (
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={onEdit}>
+                <Pencil className="size-4" />
+                Editar
+              </Button>
+              <Button type="button" variant="destructive" size="sm" onClick={remove}>
+                <Trash2 className="size-4" />
+                Excluir
+              </Button>
             </div>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            <MoneyCard summary={summary} />
-            <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-6">
+          )}
+        </header>
+      </Card>
+
+      <Card asChild>
+        <section aria-label="Indicadores do evento">
+          {summary.total === 0 ? (
+            <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
+              Nenhum aluno matriculado nesta aula ainda. Os indicadores aparecem assim que houver
+              alunos.
+            </div>
+          ) : free ? (
+            <div className="flex flex-col gap-3">
               <AuthorizationGroup summary={summary} />
-              <div className="border-t border-border pt-4 lg:border-t-0 lg:pt-0">
-                <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  Pagamento
-                </p>
-                <div className="mt-2 grid grid-cols-3 gap-2 sm:gap-3">
-                  <Stat tone="neutral" label="Pagos" value={String(summary.paid)} />
-                  <Stat tone="neutral" label="Pendentes" value={String(summary.pendingPayment)} />
-                  <Stat tone="neutral" label="Isentos" value={String(summary.waived)} />
+              <div className="flex items-center justify-between rounded-lg border border-border bg-gray-50 p-3 lg:max-w-xs">
+                <p className="text-xs text-muted-foreground">Total de alunos</p>
+                <p className="text-2xl font-semibold text-foreground">{summary.total}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <MoneyCard summary={summary} />
+              <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-6">
+                <AuthorizationGroup summary={summary} />
+                <div className="border-t border-border pt-4 lg:border-t-0 lg:pt-0">
+                  <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                    Pagamento
+                  </p>
+                  <div className="mt-2 grid grid-cols-3 gap-2 sm:gap-3">
+                    <Stat tone="neutral" label="Pagos" value={String(summary.paid)} />
+                    <Stat tone="neutral" label="Pendentes" value={String(summary.pendingPayment)} />
+                    <Stat tone="neutral" label="Isentos" value={String(summary.waived)} />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </section>
+          )}
+        </section>
+      </Card>
 
       {/* Cards instead of a table: the teacher fills this in class on a phone, and a table forces sideways scrolling. */}
-      <ul className="divide-y rounded-xl border bg-card shadow-sm">
-        {(students ?? []).map((student) => {
-          const participation = participationOf(student.id);
-          const message = buildEventNotice({ event, group, student });
-          const link = whatsappLink(student.guardianPhone, message);
+      <Card asChild className="divide-y p-0">
+        <ul>
+          {(students ?? []).map((student) => {
+            const participation = participationOf(student.id);
+            const message = buildEventNotice({ event, group, student });
+            const link = whatsappLink(student.guardianPhone, message);
 
-          return (
-            <li
-              key={student.id}
-              className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:gap-4"
-            >
-              <span className="font-medium text-foreground lg:flex-1">{student.name}</span>
+            return (
+              <li
+                key={student.id}
+                className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:gap-4"
+              >
+                <span className="font-medium text-foreground lg:flex-1">{student.name}</span>
 
-              <div className="grid grid-cols-2 gap-2 lg:flex lg:w-auto">
-                <select
-                  aria-label={`Autorização de ${student.name}`}
-                  value={participation.authorization}
-                  onChange={(changeEvent) =>
-                    setParticipation.mutate({
-                      eventId: event.id,
-                      studentId: student.id,
-                      authorization: changeEvent.target.value as AuthorizationStatus,
-                    })
-                  }
-                  className={selectClasses}
-                >
-                  {Object.entries(authorizationLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-
-                {!free && (
+                <div className="grid grid-cols-2 gap-2 lg:flex lg:w-auto">
                   <select
-                    aria-label={`Pagamento de ${student.name}`}
-                    value={participation.payment}
+                    aria-label={`Autorização de ${student.name}`}
+                    value={participation.authorization}
                     onChange={(changeEvent) =>
                       setParticipation.mutate({
                         eventId: event.id,
                         studentId: student.id,
-                        payment: changeEvent.target.value as PaymentStatus,
+                        authorization: changeEvent.target.value as AuthorizationStatus,
                       })
                     }
                     className={selectClasses}
                   >
-                    {Object.entries(paymentLabels).map(([value, label]) => (
+                    {Object.entries(authorizationLabels).map(([value, label]) => (
                       <option key={value} value={value}>
                         {label}
                       </option>
                     ))}
                   </select>
-                )}
-              </div>
 
-              <div className="flex items-center gap-2">
-                {link && (
+                  {!free && (
+                    <select
+                      aria-label={`Pagamento de ${student.name}`}
+                      value={participation.payment}
+                      onChange={(changeEvent) =>
+                        setParticipation.mutate({
+                          eventId: event.id,
+                          studentId: student.id,
+                          payment: changeEvent.target.value as PaymentStatus,
+                        })
+                      }
+                      className={selectClasses}
+                    >
+                      {Object.entries(paymentLabels).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {link && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="h-11 flex-1 sm:h-9 lg:flex-none"
+                    >
+                      <a href={link} target="_blank" rel="noopener noreferrer">
+                        <MessageCircle className="size-4" />
+                        WhatsApp
+                      </a>
+                    </Button>
+                  )}
                   <Button
-                    asChild
-                    variant="outline"
+                    type="button"
+                    variant="ghost"
                     size="sm"
                     className="h-11 flex-1 sm:h-9 lg:flex-none"
+                    onClick={() => copyNotice(student)}
                   >
-                    <a href={link} target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="size-4" />
-                      WhatsApp
-                    </a>
+                    <Copy className="size-4" />
+                    {copiedStudentId === student.id ? "Copiado!" : "Copiar texto"}
                   </Button>
-                )}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-11 flex-1 sm:h-9 lg:flex-none"
-                  onClick={() => copyNotice(student)}
-                >
-                  <Copy className="size-4" />
-                  {copiedStudentId === student.id ? "Copiado!" : "Copiar texto"}
-                </Button>
-              </div>
-            </li>
-          );
-        })}
+                </div>
+              </li>
+            );
+          })}
 
-        {(students ?? []).length === 0 && (
-          <li className="p-4 text-sm text-muted-foreground">
-            Nenhum aluno matriculado nesta aula.
-          </li>
-        )}
-      </ul>
+          {(students ?? []).length === 0 && (
+            <li className="p-4 text-sm text-muted-foreground">
+              Nenhum aluno matriculado nesta aula.
+            </li>
+          )}
+        </ul>
+      </Card>
     </div>
   );
 }

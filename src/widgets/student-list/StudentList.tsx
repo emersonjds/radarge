@@ -14,6 +14,7 @@ import { formatPercent } from "@/shared/lib/format";
 import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PlusIcon } from "@tailadmin/icons";
@@ -22,8 +23,8 @@ import { StudentFormModal } from "./StudentFormModal";
 
 const RISK_ABSENCE_THRESHOLD = 3;
 
-const th = "px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground";
-const td = "px-5 py-4 text-sm text-foreground";
+const th = "text-xs font-medium uppercase tracking-wide text-muted-foreground";
+
 export function StudentList() {
   const { role, profile, status: sessionStatus } = useSession();
   const { data: students, isLoading: isLoadingStudents } = useStudents();
@@ -134,7 +135,7 @@ export function StudentList() {
             className="h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-hidden sm:w-80"
           />
           {!isTeacher && (
-            <Button className="h-11" onClick={() => setFormStudent(null)}>
+            <Button onClick={() => setFormStudent(null)}>
               <PlusIcon />
               Adicionar aluno
             </Button>
@@ -142,7 +143,7 @@ export function StudentList() {
         </div>
       </header>
 
-      <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+      <Card className="overflow-hidden p-0">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader className="border-b border-border bg-muted">
@@ -160,37 +161,28 @@ export function StudentList() {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell
-                    className={`${td} text-center text-muted-foreground`}
-                    colSpan={columnCount}
-                  >
+                  <TableCell className="text-center text-muted-foreground" colSpan={columnCount}>
                     Carregando alunos…
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && hasRiskError && (
                 <TableRow>
-                  <TableCell className={`${td} text-center text-destructive`} colSpan={columnCount}>
+                  <TableCell className="text-center text-destructive" colSpan={columnCount}>
                     {messageForError(riskError, "Não foi possível carregar a frequência.")}
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && !hasRiskError && hasNoGroups && (
                 <TableRow>
-                  <TableCell
-                    className={`${td} text-center text-muted-foreground`}
-                    colSpan={columnCount}
-                  >
+                  <TableCell className="text-center text-muted-foreground" colSpan={columnCount}>
                     Você não tem aulas atribuídas
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && !hasRiskError && !hasNoGroups && rows.length === 0 && (
                 <TableRow>
-                  <TableCell
-                    className={`${td} text-center text-muted-foreground`}
-                    colSpan={columnCount}
-                  >
+                  <TableCell className="text-center text-muted-foreground" colSpan={columnCount}>
                     Nenhum aluno encontrado
                   </TableCell>
                 </TableRow>
@@ -201,15 +193,15 @@ export function StudentList() {
                   const atRisk = absences >= RISK_ABSENCE_THRESHOLD;
                   return (
                     <TableRow key={student.id} className="border-t border-border">
-                      <TableCell className={td}>
+                      <TableCell>
                         <div className="flex items-center gap-3">
                           <AvatarText name={student.name} />
                           <span className="font-medium text-foreground">{student.name}</span>
                         </div>
                       </TableCell>
-                      {!isTeacher && <TableCell className={td}>{age} anos</TableCell>}
+                      {!isTeacher && <TableCell>{age} anos</TableCell>}
                       {!isTeacher && (
-                        <TableCell className={td}>
+                        <TableCell>
                           <div className="flex flex-col">
                             <span className="text-foreground">{student.guardianName}</span>
                             <span className="text-xs text-muted-foreground">
@@ -218,17 +210,15 @@ export function StudentList() {
                           </div>
                         </TableCell>
                       )}
-                      <TableCell className={td}>{groupNames}</TableCell>
-                      <TableCell className={td}>
-                        {attendance === null ? "—" : formatPercent(attendance)}
-                      </TableCell>
-                      <TableCell className={td}>{absences}</TableCell>
-                      <TableCell className={td}>
+                      <TableCell>{groupNames}</TableCell>
+                      <TableCell>{attendance === null ? "—" : formatPercent(attendance)}</TableCell>
+                      <TableCell>{absences}</TableCell>
+                      <TableCell>
                         <Badge variant={atRisk ? "danger" : "success"}>
                           {atRisk ? "Em risco" : "Regular"}
                         </Badge>
                       </TableCell>
-                      <TableCell className={td}>
+                      <TableCell>
                         <div className="flex items-center gap-1">
                           <IconButton
                             icon={Eye}
@@ -263,7 +253,7 @@ export function StudentList() {
             </TableBody>
           </Table>
         </div>
-      </div>
+      </Card>
 
       <StudentFormModal student={formStudent} onClose={() => setFormStudent(undefined)} />
     </div>

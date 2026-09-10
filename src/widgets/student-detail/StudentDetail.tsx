@@ -22,6 +22,7 @@ import { formatPercent } from "@/shared/lib/format";
 import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import { AttendanceCalendar, type DayEvent } from "./AttendanceCalendar";
@@ -83,8 +84,7 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
   const isTeacher = role === "teacher";
   const { data: student, isLoading: isLoadingStudent } = useStudent(studentId);
   const { data: groups, isLoading: isLoadingGroups } = useGroups();
-  const { data: enrollments, isLoading: isLoadingEnrollments } =
-    useEnrollmentsByStudent(studentId);
+  const { data: enrollments, isLoading: isLoadingEnrollments } = useEnrollmentsByStudent(studentId);
   const { data: attendanceSessions } = useAttendanceSessions();
   const { data: attendanceRecords, isLoading: isLoadingAttendance } =
     useAttendanceRecordsByStudent(studentId);
@@ -162,9 +162,7 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
 
   // With no records at all, "0%" would read as perfect attendance — better to claim nothing.
   const hasNoRecords = visibleRecords.length === 0;
-  const attendancePercent = hasNoRecords
-    ? "—"
-    : formatPercent(attendanceRate(visibleRecords));
+  const attendancePercent = hasNoRecords ? "—" : formatPercent(attendanceRate(visibleRecords));
   const absences = hasNoRecords ? "—" : String(countAbsences(visibleRecords));
 
   return (
@@ -190,59 +188,61 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
       )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <section className="flex flex-col gap-6 rounded-xl border bg-card p-4 shadow-sm lg:col-span-1">
-          <dl className="grid grid-cols-3 gap-3 text-sm">
-            <div>
-              <dt className="text-muted-foreground">Idade</dt>
-              <dd className="font-medium text-foreground">
-                {computeAgeAt(student.birthDate, todayIso())} anos
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Responsável</dt>
-              <dd className="font-medium text-foreground">{student.guardianName}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Telefone</dt>
-              <dd className="font-medium text-foreground">
-                <a className="hover:underline" href={`tel:${student.guardianPhone}`}>
-                  {student.guardianPhone}
-                </a>
-              </dd>
-            </div>
-          </dl>
+        <Card asChild className="lg:col-span-1">
+          <section className="flex flex-col gap-6">
+            <dl className="grid grid-cols-3 gap-3 text-sm">
+              <div>
+                <dt className="text-muted-foreground">Idade</dt>
+                <dd className="font-medium text-foreground">
+                  {computeAgeAt(student.birthDate, todayIso())} anos
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Responsável</dt>
+                <dd className="font-medium text-foreground">{student.guardianName}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Telefone</dt>
+                <dd className="font-medium text-foreground">
+                  <a className="hover:underline" href={`tel:${student.guardianPhone}`}>
+                    {student.guardianPhone}
+                  </a>
+                </dd>
+              </div>
+            </dl>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-muted p-4 text-center">
-              <p className="text-2xl font-bold text-foreground">{attendancePercent}</p>
-              <p className="text-xs text-muted-foreground">Frequência</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-muted p-4 text-center">
+                <p className="text-2xl font-bold text-foreground">{attendancePercent}</p>
+                <p className="text-xs text-muted-foreground">Frequência</p>
+              </div>
+              <div className="rounded-xl bg-muted p-4 text-center">
+                <p className="text-2xl font-bold text-foreground">{absences}</p>
+                <p className="text-xs text-muted-foreground">Faltas</p>
+              </div>
             </div>
-            <div className="rounded-xl bg-muted p-4 text-center">
-              <p className="text-2xl font-bold text-foreground">{absences}</p>
-              <p className="text-xs text-muted-foreground">Faltas</p>
-            </div>
-          </div>
 
-          <div>
-            <p className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              Aulas
-            </p>
-            {studentGroups.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sem aulas matriculadas.</p>
-            ) : (
-              <ul className="flex flex-wrap gap-2">
-                {studentGroups.map((group) => (
-                  <li
-                    key={group.id}
-                    className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-foreground"
-                  >
-                    {group.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
+            <div>
+              <p className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                Aulas
+              </p>
+              {studentGroups.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Sem aulas matriculadas.</p>
+              ) : (
+                <ul className="flex flex-wrap gap-2">
+                  {studentGroups.map((group) => (
+                    <li
+                      key={group.id}
+                      className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-foreground"
+                    >
+                      {group.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+        </Card>
 
         <Tabs defaultValue="presenca" className="flex flex-col gap-4 lg:col-span-2">
           <TabsList className="grid w-full grid-cols-2 sm:w-64">
@@ -251,22 +251,24 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
           </TabsList>
 
           <TabsContent value="presenca">
-            <section className="rounded-xl border bg-card p-4 shadow-sm">
-              {isLoadingAttendance && (
-                <p className="text-sm text-muted-foreground">Carregando registros…</p>
-              )}
-              {!isLoadingAttendance && month && (
-                <AttendanceCalendar
-                  key={student.id}
-                  month={month}
-                  statusByDate={statusByDate}
-                  eventsByDate={eventsByDate}
-                />
-              )}
-              {!isLoadingAttendance && !month && (
-                <p className="text-sm text-muted-foreground">Sem registros de presença.</p>
-              )}
-            </section>
+            <Card asChild>
+              <section>
+                {isLoadingAttendance && (
+                  <p className="text-sm text-muted-foreground">Carregando registros…</p>
+                )}
+                {!isLoadingAttendance && month && (
+                  <AttendanceCalendar
+                    key={student.id}
+                    month={month}
+                    statusByDate={statusByDate}
+                    eventsByDate={eventsByDate}
+                  />
+                )}
+                {!isLoadingAttendance && !month && (
+                  <p className="text-sm text-muted-foreground">Sem registros de presença.</p>
+                )}
+              </section>
+            </Card>
           </TabsContent>
 
           <TabsContent value="notas">

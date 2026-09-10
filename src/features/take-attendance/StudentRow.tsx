@@ -1,6 +1,8 @@
 import type { Student } from "@/entities/student/model";
 import type { AttendanceStatus } from "@/entities/attendance-record/model";
 import { AvatarText } from "@/shared/ui/avatar-text";
+import { Card } from "@/shared/ui/card";
+import { cn } from "@/shared/lib/utils";
 
 // `short` follows the Brazilian class-register convention: P/A/F/J.
 export const STATUS_OPTIONS: Array<{
@@ -28,10 +30,11 @@ export interface StudentRowProps {
 
 export function StudentRow({ student, status, onSelectStatus }: StudentRowProps) {
   return (
-    <div
-      className={`flex items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm ${
-        status === "absent" ? "opacity-70" : ""
-      }`}
+    <Card
+      className={cn(
+        "flex items-center justify-between gap-3 px-4 py-3",
+        status === "absent" && "opacity-70",
+      )}
     >
       <div className="flex min-w-0 items-center gap-3">
         <AvatarText name={student.name} />
@@ -53,7 +56,9 @@ export function StudentRow({ student, status, onSelectStatus }: StudentRowProps)
               aria-label={option.label}
               title={option.label}
               className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold transition ${
-                isActive ? option.active : "border border-input text-muted-foreground hover:bg-muted"
+                isActive
+                  ? option.active
+                  : "border border-input text-muted-foreground hover:bg-muted"
               }`}
               onClick={() => onSelectStatus(option.value)}
             >
@@ -62,6 +67,6 @@ export function StudentRow({ student, status, onSelectStatus }: StudentRowProps)
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 }

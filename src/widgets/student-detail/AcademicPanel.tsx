@@ -11,6 +11,7 @@ import {
 } from "@/features/analytics/academic";
 import { formatScore } from "@/shared/lib/format";
 import { Badge } from "@/shared/ui/badge";
+import { Card } from "@/shared/ui/card";
 
 export interface AcademicPanelProps {
   grades: Grade[];
@@ -37,10 +38,12 @@ function Bar({ label, value, isTop }: { label: string; value: number; isTop: boo
 export function AcademicPanel({ grades, subjects }: AcademicPanelProps) {
   if (grades.length === 0) {
     return (
-      <section className="rounded-xl border bg-card p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-foreground">Desempenho acadêmico</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Sem notas lançadas.</p>
-      </section>
+      <Card asChild>
+        <section>
+          <h2 className="text-lg font-semibold text-foreground">Desempenho acadêmico</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Sem notas lançadas.</p>
+        </section>
+      </Card>
     );
   }
 
@@ -52,46 +55,48 @@ export function AcademicPanel({ grades, subjects }: AcademicPanelProps) {
   const topSubjectScore = subjectAverages[0]?.score ?? 0;
 
   return (
-    <section className="rounded-xl border bg-card p-4 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-foreground">Desempenho acadêmico</h2>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground">Nota geral</p>
-            <p className="text-xl font-bold text-foreground">{formatScore(average)}</p>
+    <Card asChild>
+      <section>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-foreground">Desempenho acadêmico</h2>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Nota geral</p>
+              <p className="text-xl font-bold text-foreground">{formatScore(average)}</p>
+            </div>
+            {aptitude && <Badge variant="success">Aptidão: {areaLabels[aptitude]}</Badge>}
           </div>
-          {aptitude && <Badge variant="success">Aptidão: {areaLabels[aptitude]}</Badge>}
         </div>
-      </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div>
-          <p className="mb-3 text-sm font-medium text-foreground">Notas por matéria</p>
-          <ul className="flex flex-col gap-2">
-            {subjectAverages.map((item) => (
-              <Bar
-                key={item.subject.id}
-                label={item.subject.name}
-                value={item.score}
-                isTop={item.score === topSubjectScore}
-              />
-            ))}
-          </ul>
+        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div>
+            <p className="mb-3 text-sm font-medium text-foreground">Notas por matéria</p>
+            <ul className="flex flex-col gap-2">
+              {subjectAverages.map((item) => (
+                <Bar
+                  key={item.subject.id}
+                  label={item.subject.name}
+                  value={item.score}
+                  isTop={item.score === topSubjectScore}
+                />
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="mb-3 text-sm font-medium text-foreground">Aptidão por área</p>
+            <ul className="flex flex-col gap-2">
+              {areas.map((item) => (
+                <Bar
+                  key={item.area}
+                  label={areaLabels[item.area]}
+                  value={item.average}
+                  isTop={item.average === topAreaAverage}
+                />
+              ))}
+            </ul>
+          </div>
         </div>
-        <div>
-          <p className="mb-3 text-sm font-medium text-foreground">Aptidão por área</p>
-          <ul className="flex flex-col gap-2">
-            {areas.map((item) => (
-              <Bar
-                key={item.area}
-                label={areaLabels[item.area]}
-                value={item.average}
-                isTop={item.average === topAreaAverage}
-              />
-            ))}
-          </ul>
-        </div>
-      </div>
-    </section>
+      </section>
+    </Card>
   );
 }

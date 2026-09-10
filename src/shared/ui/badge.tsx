@@ -19,6 +19,8 @@ const badgeVariants = cva(
         link: "text-primary underline-offset-4 [a&]:hover:underline",
         success: "bg-success-50 text-success-700",
         danger: "bg-error-50 text-error-700",
+        warning: "bg-warning-50 text-warning-700",
+        info: "bg-blue-light-50 text-blue-light-700",
       },
     },
     defaultVariants: {

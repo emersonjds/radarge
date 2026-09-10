@@ -23,6 +23,7 @@ import { ProfileFormModal } from "./ProfileFormModal";
 import { messageForError } from "@/shared/lib/api/error-message";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
@@ -87,168 +88,169 @@ export function ProfilesAdmin() {
         </p>
       </header>
 
-      <section className="rounded-xl border bg-card p-4 shadow-sm md:p-5">
-        <h2 className="mb-5 text-lg font-semibold text-foreground">Novo perfil</h2>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(submit)} noValidate className="flex flex-col gap-5">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome</FormLabel>
-                    <FormControl>
-                      <Input className="h-11" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Login de usuário</FormLabel>
-                    <FormControl>
-                      <Input autoCapitalize="none" className="h-11" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Papel</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
+      <Card asChild>
+        <section>
+          <h2 className="mb-5 text-lg font-semibold text-foreground">Novo perfil</h2>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(submit)} noValidate className="flex flex-col gap-5">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome</FormLabel>
                       <FormControl>
-                        <SelectTrigger className="h-11 w-full">
-                          <SelectValue />
-                        </SelectTrigger>
+                        <Input {...field} />
                       </FormControl>
-                      <SelectContent>
-                        {ROLES.map((role) => (
-                          <SelectItem key={role} value={role}>
-                            {roleLabels[role]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Senha</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        autoComplete="new-password"
-                        className="h-11"
-                        {...field}
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Login de usuário</FormLabel>
+                      <FormControl>
+                        <Input autoCapitalize="none" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Papel</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {ROLES.map((role) => (
+                            <SelectItem key={role} value={role}>
+                              {roleLabels[role]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Senha</FormLabel>
+                      <FormControl>
+                        <Input type="password" autoComplete="new-password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {errors.root && (
+                <p role="alert" className="text-sm text-destructive">
+                  {errors.root.message}
+                </p>
+              )}
+              {createdMessage && (
+                <p role="status" className="text-sm text-success-600">
+                  {createdMessage}
+                </p>
+              )}
+
+              <div>
+                <Button type="submit" size="sm" disabled={isSubmitting}>
+                  {isSubmitting ? "Criando…" : "Criar perfil"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </section>
+      </Card>
+
+      <Card asChild>
+        <section>
+          <h2 className="mb-5 text-lg font-semibold text-foreground">Perfis existentes</h2>
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">Carregando…</p>
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {(profiles ?? []).map((profile) => {
+                const isCurrentUser = profile.id === profileId;
+                return (
+                  <li
+                    key={profile.id}
+                    className="flex flex-wrap items-center gap-3 rounded-xl border border-border px-4 py-3"
+                  >
+                    <div className="mr-auto min-w-0">
+                      <p
+                        className={cn(
+                          "flex items-center gap-2 font-medium",
+                          profile.active ? "text-foreground" : "text-muted-foreground",
+                        )}
+                      >
+                        {profile.name}
+                        {isCurrentUser && <Badge variant="outline">Você</Badge>}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        @{profile.username} · {roleLabels[profile.role]}
+                      </p>
+                    </div>
+                    <Badge variant={profile.active ? "success" : "secondary"}>
+                      {profile.active ? "Ativo" : "Inativo"}
+                    </Badge>
+                    <div className="flex items-center gap-1">
+                      <IconButton
+                        icon={Pencil}
+                        label={`Editar ${profile.name}`}
+                        onClick={() => setEditingProfile(profile)}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {errors.root && (
-              <p role="alert" className="text-sm text-destructive">
-                {errors.root.message}
-              </p>
-            )}
-            {createdMessage && (
-              <p role="status" className="text-sm text-success-600">
-                {createdMessage}
-              </p>
-            )}
-
-            <div>
-              <Button type="submit" size="sm" disabled={isSubmitting}>
-                {isSubmitting ? "Criando…" : "Criar perfil"}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </section>
-
-      <section className="rounded-xl border bg-card p-4 shadow-sm md:p-5">
-        <h2 className="mb-5 text-lg font-semibold text-foreground">Perfis existentes</h2>
-        {isLoading ? (
-          <p className="text-sm text-muted-foreground">Carregando…</p>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {(profiles ?? []).map((profile) => {
-              const isCurrentUser = profile.id === profileId;
-              return (
-                <li
-                  key={profile.id}
-                  className="flex flex-wrap items-center gap-3 rounded-xl border border-border px-4 py-3"
-                >
-                  <div className="mr-auto min-w-0">
-                    <p
-                      className={cn(
-                        "flex items-center gap-2 font-medium",
-                        profile.active ? "text-foreground" : "text-muted-foreground",
+                      {!isCurrentUser && (
+                        <>
+                          <IconButton
+                            icon={profile.active ? PowerOff : Power}
+                            label={
+                              profile.active
+                                ? `Desativar ${profile.name}`
+                                : `Ativar ${profile.name}`
+                            }
+                            disabled={setActive.isPending}
+                            onClick={() =>
+                              setActive.mutate({ id: profile.id, active: !profile.active })
+                            }
+                          />
+                          <IconButton
+                            icon={Trash2}
+                            label={`Excluir ${profile.name}`}
+                            tone="destructive"
+                            disabled={deleteProfile.isPending}
+                            onClick={() => confirmDelete(profile)}
+                          />
+                        </>
                       )}
-                    >
-                      {profile.name}
-                      {isCurrentUser && <Badge variant="outline">Você</Badge>}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      @{profile.username} · {roleLabels[profile.role]}
-                    </p>
-                  </div>
-                  <Badge variant={profile.active ? "success" : "secondary"}>
-                    {profile.active ? "Ativo" : "Inativo"}
-                  </Badge>
-                  <div className="flex items-center gap-1">
-                    <IconButton
-                      icon={Pencil}
-                      label={`Editar ${profile.name}`}
-                      onClick={() => setEditingProfile(profile)}
-                    />
-                    {!isCurrentUser && (
-                      <>
-                        <IconButton
-                          icon={profile.active ? PowerOff : Power}
-                          label={
-                            profile.active ? `Desativar ${profile.name}` : `Ativar ${profile.name}`
-                          }
-                          disabled={setActive.isPending}
-                          onClick={() =>
-                            setActive.mutate({ id: profile.id, active: !profile.active })
-                          }
-                        />
-                        <IconButton
-                          icon={Trash2}
-                          label={`Excluir ${profile.name}`}
-                          tone="destructive"
-                          disabled={deleteProfile.isPending}
-                          onClick={() => confirmDelete(profile)}
-                        />
-                      </>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      </Card>
 
       <ProfileFormModal profile={editingProfile} onClose={() => setEditingProfile(null)} />
     </div>

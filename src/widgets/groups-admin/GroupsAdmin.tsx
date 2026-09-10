@@ -6,6 +6,7 @@ import { useGroups, useDeleteGroup } from "@/entities/group/queries";
 import { useProfiles } from "@/entities/profile/queries";
 import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { IconButton } from "@/shared/ui/icon-button";
 import { GroupFormModal } from "./GroupFormModal";
 import { GroupAssignmentsPanel } from "./GroupAssignmentsPanel";
@@ -53,46 +54,48 @@ export function GroupsAdmin() {
       ) : (
         <ul className="flex flex-col gap-2">
           {(groups ?? []).map((group) => (
-            <li key={group.id} className="rounded-xl border bg-card px-4 py-3 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="font-medium text-foreground">{group.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {shiftLabels[group.shift]} · Regente: {teacherName(group.teacherId)}
-                  </p>
+            <Card asChild key={group.id} className="px-4 py-3">
+              <li>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="font-medium text-foreground">{group.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {shiftLabels[group.shift]} · Regente: {teacherName(group.teacherId)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <IconButton
+                      icon={ChevronDown}
+                      label={
+                        expandedId === group.id
+                          ? `Fechar detalhes de ${group.name}`
+                          : `Ver detalhes de ${group.name}`
+                      }
+                      aria-expanded={expandedId === group.id}
+                      className={expandedId === group.id ? "rotate-180" : undefined}
+                      onClick={() => setExpandedId(expandedId === group.id ? null : group.id)}
+                    />
+                    <IconButton
+                      icon={Pencil}
+                      label={`Editar ${group.name}`}
+                      onClick={() => setEditing(group)}
+                    />
+                    <IconButton
+                      icon={Trash2}
+                      label={`Excluir ${group.name}`}
+                      tone="destructive"
+                      onClick={() => remove(group)}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <IconButton
-                    icon={ChevronDown}
-                    label={
-                      expandedId === group.id
-                        ? `Fechar detalhes de ${group.name}`
-                        : `Ver detalhes de ${group.name}`
-                    }
-                    aria-expanded={expandedId === group.id}
-                    className={expandedId === group.id ? "rotate-180" : undefined}
-                    onClick={() => setExpandedId(expandedId === group.id ? null : group.id)}
-                  />
-                  <IconButton
-                    icon={Pencil}
-                    label={`Editar ${group.name}`}
-                    onClick={() => setEditing(group)}
-                  />
-                  <IconButton
-                    icon={Trash2}
-                    label={`Excluir ${group.name}`}
-                    tone="destructive"
-                    onClick={() => remove(group)}
-                  />
-                </div>
-              </div>
-              {expandedId === group.id && (
-                <>
-                  <EnrollmentPanel groupId={group.id} />
-                  <GroupAssignmentsPanel groupId={group.id} />
-                </>
-              )}
-            </li>
+                {expandedId === group.id && (
+                  <>
+                    <EnrollmentPanel groupId={group.id} />
+                    <GroupAssignmentsPanel groupId={group.id} />
+                  </>
+                )}
+              </li>
+            </Card>
           ))}
         </ul>
       )}

@@ -18,6 +18,7 @@ import { messageForError } from "@/shared/lib/api/error-message";
 import { formatPercent, formatScore } from "@/shared/lib/format";
 import { downloadCsv, toCsv } from "@/shared/lib/csv";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { DownloadIcon } from "@tailadmin/icons";
 import { ClassOverview } from "./ClassOverview";
 import { StudentsReportTable, type ReportRow } from "./StudentsReportTable";
@@ -26,7 +27,7 @@ const RISK_ABSENCE_THRESHOLD = 3;
 const ALL_GROUPS = "todas";
 
 const control =
-  "h-11 rounded-lg border border-input bg-transparent px-3 text-base text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20 sm:text-sm";
+  "h-11 md:h-9 rounded-lg border border-input bg-transparent px-3 text-base text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20 md:text-sm";
 
 export function ReportsCenter() {
   const { data: students, isLoading: isLoadingStudents } = useStudents();
@@ -176,7 +177,6 @@ export function ReportsCenter() {
           <Button
             type="button"
             variant="outline"
-            className="h-11"
             disabled={report.rows.length === 0}
             onClick={exportCsv}
           >
@@ -193,9 +193,7 @@ export function ReportsCenter() {
       )}
 
       {isLoading || !academicSummary ? (
-        <div className="rounded-xl border bg-card p-4 text-sm text-muted-foreground shadow-sm md:p-5">
-          Carregando panorama…
-        </div>
+        <Card className="text-sm text-muted-foreground">Carregando panorama…</Card>
       ) : (
         <ClassOverview
           scopeLabel={scopeLabel}
