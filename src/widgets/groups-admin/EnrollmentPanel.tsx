@@ -8,17 +8,22 @@ import {
 } from "@/entities/enrollment/queries";
 import { useStudents } from "@/entities/student/queries";
 import { UserMinus } from "lucide-react";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
 import { IconButton } from "@/shared/ui/icon-button";
 import { Label } from "@/shared/ui/label";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 
 interface Props {
   groupId: string;
 }
 
 export function EnrollmentPanel({ groupId }: Props) {
-  const { data: enrollments, isLoading: isLoadingEnrollments } = useEnrollmentsByGroup(groupId);
-  const { data: allStudents, isLoading: isLoadingStudents } = useStudents();
+  const enrollmentsQuery = useEnrollmentsByGroup(groupId);
+  const { data: enrollments, isLoading: isLoadingEnrollments } = enrollmentsQuery;
+  const studentsQuery = useStudents();
+  const { data: allStudents, isLoading: isLoadingStudents } = studentsQuery;
   const enrollStudent = useEnrollStudent();
   const unenrollStudent = useUnenrollStudent();
   const [selectedStudentId, setSelectedStudentId] = useState("");
@@ -53,7 +58,28 @@ export function EnrollmentPanel({ groupId }: Props) {
   }
 
   if (isLoadingEnrollments || isLoadingStudents) {
-    return <div className="mt-3 h-16 animate-pulse rounded-lg bg-muted" />;
+    return (
+      <div className="mt-3 rounded-lg border border-border bg-muted">
+        <RowsSkeleton rows={2} avatar={false} />
+      </div>
+    );
+  }
+
+  if (enrollmentsQuery.isError || studentsQuery.isError) {
+    return (
+      <div className="mt-3 rounded-lg border border-border bg-muted p-4">
+        <QueryErrorState
+          message={messageForError(
+            enrollmentsQuery.error ?? studentsQuery.error,
+            "Não foi possível carregar os alunos matriculados.",
+          )}
+          onRetry={() => {
+            if (enrollmentsQuery.isError) enrollmentsQuery.refetch();
+            if (studentsQuery.isError) studentsQuery.refetch();
+          }}
+        />
+      </div>
+    );
   }
 
   return (

@@ -4,13 +4,16 @@ import { useState } from "react";
 import { areaLabels, type Subject } from "@/entities/subject/model";
 import { useSubjects, useDeleteSubject } from "@/entities/subject/queries";
 import { Pencil, Trash2 } from "lucide-react";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { IconButton } from "@/shared/ui/icon-button";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import { SubjectFormModal } from "./SubjectFormModal";
 
 export function SubjectsAdmin() {
-  const { data: subjects, isLoading } = useSubjects();
+  const { data: subjects, isLoading, isError, error: subjectsError, refetch } = useSubjects();
   const deleteSubject = useDeleteSubject();
   // undefined = modal closed; null = creating; Subject = editing.
   const [editing, setEditing] = useState<Subject | null | undefined>(undefined);
@@ -42,7 +45,12 @@ export function SubjectsAdmin() {
       )}
 
       {isLoading ? (
-        <div className="h-24 animate-pulse rounded-xl bg-muted" />
+        <RowsSkeleton rows={3} avatar={false} />
+      ) : isError ? (
+        <QueryErrorState
+          message={messageForError(subjectsError, "Não foi possível carregar as matérias.")}
+          onRetry={() => refetch()}
+        />
       ) : (
         <ul className="flex flex-col gap-2">
           {(subjects ?? []).map((subject) => (

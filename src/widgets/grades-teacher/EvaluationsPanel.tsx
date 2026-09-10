@@ -4,14 +4,23 @@ import { useState } from "react";
 import { evaluationTypeLabels, type Evaluation } from "@/entities/evaluation/model";
 import { useEvaluationsByAssignment, useDeleteEvaluation } from "@/entities/evaluation/queries";
 import { Trash2 } from "lucide-react";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { IconButton } from "@/shared/ui/icon-button";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import { EvaluationFormModal } from "./EvaluationFormModal";
 import { GradeEntryPanel } from "./GradeEntryPanel";
 
 export function EvaluationsPanel({ groupId, subjectId }: { groupId: string; subjectId: string }) {
-  const { data: evaluations, isLoading } = useEvaluationsByAssignment(groupId, subjectId);
+  const {
+    data: evaluations,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useEvaluationsByAssignment(groupId, subjectId);
   const deleteEvaluation = useDeleteEvaluation();
   const [creating, setCreating] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -31,7 +40,12 @@ export function EvaluationsPanel({ groupId, subjectId }: { groupId: string; subj
       </div>
 
       {isLoading ? (
-        <div className="h-16 animate-pulse rounded-xl bg-muted" />
+        <RowsSkeleton rows={2} avatar={false} />
+      ) : isError ? (
+        <QueryErrorState
+          message={messageForError(error, "Não foi possível carregar as avaliações.")}
+          onRetry={() => refetch()}
+        />
       ) : (
         <ul className="flex flex-col gap-2">
           {(evaluations ?? []).map((evaluation: Evaluation) => (

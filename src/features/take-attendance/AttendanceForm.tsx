@@ -11,12 +11,15 @@ import {
 } from "@/entities/attendance-record/queries";
 import { useGroups } from "@/entities/group/queries";
 import { useSession } from "@/features/session/use-session";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { formatDateLong } from "@/shared/lib/format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import { Calendar } from "lucide-react";
 import { StudentRow, STATUS_OPTIONS } from "./StudentRow";
 import { groupsForTeacher } from "@/entities/group/scope";
@@ -45,14 +48,26 @@ function countByStatus(students: Student[], statusByStudent: Record<string, Atte
 
 export function AttendanceForm() {
   const { profileId } = useSession();
-  const { data: allGroups, isLoading: isLoadingGroups } = useGroups();
+  const {
+    data: allGroups,
+    isLoading: isLoadingGroups,
+    isError: hasGroupsError,
+    error: groupsError,
+    refetch: refetchGroups,
+  } = useGroups();
   const groups = groupsForTeacher(allGroups ?? [], profileId);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const groupId = selectedGroupId ?? groups?.[0]?.id ?? "";
   const today = todayISO();
   const sessionId = groupId ? `chamada-${groupId}-${today}` : "";
 
-  const { data: students, isLoading: isLoadingStudents } = useStudentsByGroup(groupId);
+  const {
+    data: students,
+    isLoading: isLoadingStudents,
+    isError: hasStudentsError,
+    error: studentsError,
+    refetch: refetchStudents,
+  } = useStudentsByGroup(groupId);
   const { data: attendanceRecords } = useAttendanceRecordsBySession(sessionId);
 
   const [statusByStudent, setStatusByStudent] = useState<Record<string, AttendanceStatus>>({});
@@ -178,28 +193,39 @@ export function AttendanceForm() {
         Marcar todos como presente
       </Button>
 
-      {!groupId && (
+      {isLoadingGroups && <RowsSkeleton rows={3} avatar={false} />}
+
+      {!isLoadingGroups && hasGroupsError && (
+        <QueryErrorState
+          message={messageForError(groupsError, "Não foi possível carregar suas aulas.")}
+          onRetry={() => refetchGroups()}
+        />
+      )}
+
+      {!isLoadingGroups && !hasGroupsError && !groupId && (
         <p className="text-sm text-muted-foreground">Selecione uma aula para iniciar a chamada.</p>
       )}
 
-      {groups.length === 0 && !isLoadingGroups && (
+      {!isLoadingGroups && !hasGroupsError && groups.length === 0 && (
         <p className="text-sm text-muted-foreground">Você não é regente de nenhuma aula.</p>
       )}
 
-      {groupId && isLoadingStudents && (
-        <div className="flex flex-col gap-2">
-          <div className="h-16 animate-pulse rounded-xl bg-muted" />
-          <div className="h-16 animate-pulse rounded-xl bg-muted" />
-          <div className="h-16 animate-pulse rounded-xl bg-muted" />
-        </div>
+      {groupId && isLoadingStudents && <RowsSkeleton rows={3} />}
+
+      {groupId && !isLoadingStudents && hasStudentsError && (
+        <QueryErrorState
+          message={messageForError(studentsError, "Não foi possível carregar os alunos.")}
+          onRetry={() => refetchStudents()}
+        />
       )}
 
-      {groupId && !isLoadingStudents && (students?.length ?? 0) === 0 && (
+      {groupId && !isLoadingStudents && !hasStudentsError && (students?.length ?? 0) === 0 && (
         <p className="text-sm text-muted-foreground">Aula sem alunos cadastrados.</p>
       )}
 
       {groupId &&
         !isLoadingStudents &&
+        !hasStudentsError &&
         (students?.length ?? 0) > 0 &&
         filteredStudents.length === 0 && (
           <p className="text-sm text-muted-foreground">
@@ -207,7 +233,7 @@ export function AttendanceForm() {
           </p>
         )}
 
-      {groupId && !isLoadingStudents && filteredStudents.length > 0 && (
+      {groupId && !isLoadingStudents && !hasStudentsError && filteredStudents.length > 0 && (
         <div className="flex flex-col gap-2">
           {filteredStudents.map((student) => (
             <StudentRow

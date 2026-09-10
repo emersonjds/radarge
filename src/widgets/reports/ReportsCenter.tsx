@@ -21,6 +21,7 @@ import { downloadCsv, toCsv } from "@/shared/lib/csv";
 import { usePageTitle } from "@/shared/providers/page-title";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
+import { QueryErrorState } from "@/shared/ui/query-error";
 import { DownloadIcon } from "@tailadmin/icons";
 import { ClassOverview } from "./ClassOverview";
 import { StudentsReportTable, type ReportRow } from "./StudentsReportTable";
@@ -34,10 +35,22 @@ const control =
 export function ReportsCenter() {
   usePageTitle("Relatórios");
 
-  const { data: students, isLoading: isLoadingStudents } = useStudents();
+  const {
+    data: students,
+    isLoading: isLoadingStudents,
+    isError: hasStudentsError,
+    error: studentsError,
+    refetch: refetchStudents,
+  } = useStudents();
   const { data: groups } = useGroups();
   const { data: enrollments } = useEnrollments();
-  const { data: grades, isLoading: isLoadingGrades } = useGrades();
+  const {
+    data: grades,
+    isLoading: isLoadingGrades,
+    isError: hasGradesError,
+    error: gradesError,
+    refetch: refetchGrades,
+  } = useGrades();
   const { data: subjects } = useSubjects();
 
   const [groupId, setGroupId] = useState(ALL_GROUPS);
@@ -48,14 +61,41 @@ export function ReportsCenter() {
     isLoading: isLoadingRisk,
     isError: hasAnalyticsError,
     error: analyticsError,
+    refetch: refetchRisk,
     // Threshold zero returns every student ever called. A student missing from the
     // list has no roll-call, and the report says so instead of faking a hundred percent.
   } = useStudentsAtRisk({ ...groupFilter, threshold: 0 });
-  const { data: attendanceRate, isLoading: isLoadingRate } = useAttendanceRate(groupFilter);
-  const { data: academicSummary, isLoading: isLoadingSummary } = useAcademicSummary(groupFilter);
+  const {
+    data: attendanceRate,
+    isLoading: isLoadingRate,
+    isError: hasRateError,
+    error: rateError,
+    refetch: refetchRate,
+  } = useAttendanceRate(groupFilter);
+  const {
+    data: academicSummary,
+    isLoading: isLoadingSummary,
+    isError: hasSummaryError,
+    error: summaryError,
+    refetch: refetchSummary,
+  } = useAcademicSummary(groupFilter);
 
   const isLoading =
     isLoadingStudents || isLoadingGrades || isLoadingRisk || isLoadingRate || isLoadingSummary;
+  const hasTableError = hasStudentsError || hasGradesError || hasAnalyticsError;
+  const tableError = studentsError ?? gradesError ?? analyticsError;
+  const hasPanoramaError = hasRateError || hasSummaryError || hasAnalyticsError;
+  const panoramaError = rateError ?? summaryError ?? analyticsError;
+  const retryTable = () => {
+    if (hasStudentsError) refetchStudents();
+    if (hasGradesError) refetchGrades();
+    if (hasAnalyticsError) refetchRisk();
+  };
+  const retryPanorama = () => {
+    if (hasRateError) refetchRate();
+    if (hasSummaryError) refetchSummary();
+    if (hasAnalyticsError) refetchRisk();
+  };
 
   const report = useMemo(() => {
     const studentList = students ?? [];
@@ -175,14 +215,18 @@ export function ReportsCenter() {
         </div>
       </header>
 
-      {hasAnalyticsError && (
-        <p role="alert" className="text-sm text-destructive">
-          {messageForError(analyticsError, "Não foi possível carregar os indicadores da aula.")}
-        </p>
-      )}
-
-      {isLoading || !academicSummary ? (
+      {isLoading ? (
         <Card className="text-sm text-muted-foreground">Carregando panorama…</Card>
+      ) : hasPanoramaError || !academicSummary ? (
+        <Card>
+          <QueryErrorState
+            message={messageForError(
+              panoramaError,
+              "Não foi possível carregar os indicadores da aula.",
+            )}
+            onRetry={retryPanorama}
+          />
+        </Card>
       ) : (
         <ClassOverview
           scopeLabel={scopeLabel}
@@ -193,7 +237,16 @@ export function ReportsCenter() {
         />
       )}
 
-      <StudentsReportTable rows={report.rows} isLoading={isLoading} />
+      <StudentsReportTable
+        rows={report.rows}
+        isLoading={isLoading}
+        errorMessage={
+          hasTableError
+            ? messageForError(tableError, "Não foi possível carregar os alunos.")
+            : undefined
+        }
+        onRetry={retryTable}
+      />
     </div>
   );
 }

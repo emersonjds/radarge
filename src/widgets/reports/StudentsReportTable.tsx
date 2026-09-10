@@ -13,6 +13,8 @@ import { Badge } from "@/shared/ui/badge";
 import { Card } from "@/shared/ui/card";
 import { EmptyValue } from "@/shared/ui/empty-value";
 import { IconButton } from "@/shared/ui/icon-button";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
 import { TablePagination } from "@/shared/ui/table-pagination";
 import { Eye } from "lucide-react";
@@ -31,9 +33,16 @@ export interface ReportRow {
 export interface StudentsReportTableProps {
   rows: ReportRow[];
   isLoading: boolean;
+  errorMessage?: string;
+  onRetry?: () => void;
 }
 
-export function StudentsReportTable({ rows, isLoading }: StudentsReportTableProps) {
+export function StudentsReportTable({
+  rows,
+  isLoading,
+  errorMessage,
+  onRetry,
+}: StudentsReportTableProps) {
   const [page, setPage] = useState(1);
   // Resetting page on a filter change during render (not an effect) avoids the
   // extra commit React flags when setState runs from useEffect.
@@ -47,11 +56,12 @@ export function StudentsReportTable({ rows, isLoading }: StudentsReportTableProp
 
   return (
     <Card className="overflow-hidden p-0">
-      {isLoading && <p className="p-4 text-center text-muted-foreground">Carregando alunos…</p>}
-      {!isLoading && rows.length === 0 && (
+      {isLoading && <RowsSkeleton rows={6} />}
+      {!isLoading && errorMessage && <QueryErrorState message={errorMessage} onRetry={onRetry} />}
+      {!isLoading && !errorMessage && rows.length === 0 && (
         <p className="p-4 text-center text-muted-foreground">Nenhum aluno encontrado</p>
       )}
-      {!isLoading && rows.length > 0 && (
+      {!isLoading && !errorMessage && rows.length > 0 && (
         <>
           {isDesktop ? (
             <Table>
@@ -129,7 +139,10 @@ export function StudentsReportTable({ rows, isLoading }: StudentsReportTableProp
                     {row.situation === "no-data" ? (
                       <EmptyValue className="shrink-0" label="sem chamadas registradas" />
                     ) : (
-                      <Badge className="shrink-0" variant={row.situation === "at-risk" ? "danger" : "success"}>
+                      <Badge
+                        className="shrink-0"
+                        variant={row.situation === "at-risk" ? "danger" : "success"}
+                      >
                         {row.situation === "at-risk" ? "Em risco" : "Regular"}
                       </Badge>
                     )}
@@ -140,7 +153,9 @@ export function StudentsReportTable({ rows, isLoading }: StudentsReportTableProp
                   <p className="text-xs text-muted-foreground">
                     Nota {formatScore(row.average)} · Frequência{" "}
                     {row.attendanceRate === null ? "—" : formatPercent(row.attendanceRate)} ·{" "}
-                    {row.absences === null ? "—" : `${row.absences} falta${row.absences === 1 ? "" : "s"}`}
+                    {row.absences === null
+                      ? "—"
+                      : `${row.absences} falta${row.absences === 1 ? "" : "s"}`}
                   </p>
                 </li>
               ))}

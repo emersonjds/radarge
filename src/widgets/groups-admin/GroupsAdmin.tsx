@@ -5,15 +5,18 @@ import { shiftLabels, type Group } from "@/entities/group/model";
 import { useGroups, useDeleteGroup } from "@/entities/group/queries";
 import { useProfiles } from "@/entities/profile/queries";
 import { ChevronDown, Pencil, Trash2 } from "lucide-react";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { IconButton } from "@/shared/ui/icon-button";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import { GroupFormModal } from "./GroupFormModal";
 import { GroupAssignmentsPanel } from "./GroupAssignmentsPanel";
 import { EnrollmentPanel } from "./EnrollmentPanel";
 
 export function GroupsAdmin() {
-  const { data: groups, isLoading } = useGroups();
+  const { data: groups, isLoading, isError, error: groupsError, refetch } = useGroups();
   const { data: profiles } = useProfiles();
   const deleteGroup = useDeleteGroup();
   const [editing, setEditing] = useState<Group | null | undefined>(undefined);
@@ -50,7 +53,12 @@ export function GroupsAdmin() {
       )}
 
       {isLoading ? (
-        <div className="h-24 animate-pulse rounded-xl bg-muted" />
+        <RowsSkeleton rows={3} avatar={false} />
+      ) : isError ? (
+        <QueryErrorState
+          message={messageForError(groupsError, "Não foi possível carregar as aulas.")}
+          onRetry={() => refetch()}
+        />
       ) : (
         <ul className="flex flex-col gap-2">
           {(groups ?? []).map((group) => (

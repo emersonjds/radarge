@@ -10,14 +10,18 @@ import {
   useDeleteAssignment,
 } from "@/entities/assignment/queries";
 import { X } from "lucide-react";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
 import { IconButton } from "@/shared/ui/icon-button";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 
 const controlClasses =
   "h-10 rounded-lg border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:outline-hidden";
 
 export function GroupAssignmentsPanel({ groupId }: { groupId: string }) {
-  const { data: assignments } = useAssignmentsByGroup(groupId);
+  const assignmentsQuery = useAssignmentsByGroup(groupId);
+  const { data: assignments } = assignmentsQuery;
   const { data: subjects } = useSubjects();
   const { data: profiles } = useProfiles();
   const createAssignment = useCreateAssignment();
@@ -54,38 +58,51 @@ export function GroupAssignmentsPanel({ groupId }: { groupId: string }) {
     <div className="mt-3 rounded-xl bg-muted p-4">
       <h5 className="mb-3 text-sm font-semibold text-foreground">Matérias desta aula</h5>
 
-      <ul className="mb-4 flex flex-col gap-2">
-        {(assignments ?? []).map((assignment) => (
-          <li key={assignment.id} className="flex flex-wrap items-center gap-2">
-            <span className="min-w-32 text-sm text-foreground">
-              {subjectName(assignment.subjectId)}
-            </span>
-            <select
-              aria-label={`Professor de ${subjectName(assignment.subjectId)}`}
-              value={assignment.teacherId}
-              onChange={(event) =>
-                updateTeacher.mutate({ id: assignment.id, teacherId: event.target.value })
-              }
-              className={controlClasses}
-            >
-              {teachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.name}
-                </option>
-              ))}
-            </select>
-            <IconButton
-              icon={X}
-              label={`Remover ${subjectName(assignment.subjectId)} desta aula`}
-              tone="destructive"
-              onClick={() => deleteAssignment.mutate(assignment.id)}
-            />
-          </li>
-        ))}
-        {(assignments ?? []).length === 0 && (
-          <li className="text-sm text-muted-foreground">Nenhuma matéria atribuída ainda.</li>
-        )}
-      </ul>
+      {assignmentsQuery.isLoading ? (
+        <RowsSkeleton rows={2} avatar={false} className="mb-4" />
+      ) : assignmentsQuery.isError ? (
+        <QueryErrorState
+          message={messageForError(
+            assignmentsQuery.error,
+            "Não foi possível carregar as matérias.",
+          )}
+          onRetry={() => assignmentsQuery.refetch()}
+          className="mb-4"
+        />
+      ) : (
+        <ul className="mb-4 flex flex-col gap-2">
+          {(assignments ?? []).map((assignment) => (
+            <li key={assignment.id} className="flex flex-wrap items-center gap-2">
+              <span className="min-w-32 text-sm text-foreground">
+                {subjectName(assignment.subjectId)}
+              </span>
+              <select
+                aria-label={`Professor de ${subjectName(assignment.subjectId)}`}
+                value={assignment.teacherId}
+                onChange={(event) =>
+                  updateTeacher.mutate({ id: assignment.id, teacherId: event.target.value })
+                }
+                className={controlClasses}
+              >
+                {teachers.map((teacher) => (
+                  <option key={teacher.id} value={teacher.id}>
+                    {teacher.name}
+                  </option>
+                ))}
+              </select>
+              <IconButton
+                icon={X}
+                label={`Remover ${subjectName(assignment.subjectId)} desta aula`}
+                tone="destructive"
+                onClick={() => deleteAssignment.mutate(assignment.id)}
+              />
+            </li>
+          ))}
+          {(assignments ?? []).length === 0 && (
+            <li className="text-sm text-muted-foreground">Nenhuma matéria atribuída ainda.</li>
+          )}
+        </ul>
+      )}
 
       {error && (
         <p role="alert" className="mb-2 text-sm text-destructive">

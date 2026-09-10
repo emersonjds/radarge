@@ -21,10 +21,13 @@ import { useStudentsByGroup } from "@/entities/student/queries";
 import type { Student } from "@/entities/student/model";
 import { buildEventNotice, whatsappLink } from "@/features/events/notice";
 import { summarizeParticipation, type EventSummary } from "@/features/events/summary";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { formatCurrency, formatDate, formatPercent } from "@/shared/lib/format";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 
 const selectClasses =
   "h-11 w-full min-w-36 rounded-lg border border-input bg-transparent px-3 text-base text-foreground focus:border-ring focus:outline-hidden md:h-9 md:text-sm";
@@ -156,8 +159,12 @@ export function EventDetail({
   onEdit,
   onDeleted,
 }: EventDetailProps) {
-  const { data: students } = useStudentsByGroup(event.groupId);
-  const { data: participations } = useParticipationsByEvent(event.id);
+  const studentsQuery = useStudentsByGroup(event.groupId);
+  const { data: students } = studentsQuery;
+  const participationsQuery = useParticipationsByEvent(event.id);
+  const { data: participations } = participationsQuery;
+  const isLoadingParticipants = studentsQuery.isLoading || participationsQuery.isLoading;
+  const hasParticipantsError = studentsQuery.isError || participationsQuery.isError;
   const setParticipation = useSetParticipation();
   const deleteEvent = useDeleteEvent();
   const [copiedStudentId, setCopiedStudentId] = useState<string | null>(null);
@@ -233,7 +240,20 @@ export function EventDetail({
 
       <Card asChild>
         <section aria-label="Indicadores do evento">
-          {summary.total === 0 ? (
+          {isLoadingParticipants ? (
+            <RowsSkeleton rows={2} avatar={false} />
+          ) : hasParticipantsError ? (
+            <QueryErrorState
+              message={messageForError(
+                studentsQuery.error ?? participationsQuery.error,
+                "Não foi possível carregar os indicadores.",
+              )}
+              onRetry={() => {
+                if (studentsQuery.isError) studentsQuery.refetch();
+                if (participationsQuery.isError) participationsQuery.refetch();
+              }}
+            />
+          ) : summary.total === 0 ? (
             <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
               Nenhum aluno matriculado nesta aula ainda. Os indicadores aparecem assim que houver
               alunos.
@@ -268,98 +288,117 @@ export function EventDetail({
       </Card>
 
       {/* Cards instead of a table: the teacher fills this in class on a phone, and a table forces sideways scrolling. */}
-      <Card asChild className="divide-y p-0">
-        <ul>
-          {(students ?? []).map((student) => {
-            const participation = participationOf(student.id);
-            const message = buildEventNotice({ event, group, student });
-            const link = whatsappLink(student.guardianPhone, message);
+      {isLoadingParticipants ? (
+        <Card className="p-0">
+          <RowsSkeleton rows={4} />
+        </Card>
+      ) : hasParticipantsError ? (
+        <Card>
+          <QueryErrorState
+            message={messageForError(
+              studentsQuery.error ?? participationsQuery.error,
+              "Não foi possível carregar os alunos.",
+            )}
+            onRetry={() => {
+              if (studentsQuery.isError) studentsQuery.refetch();
+              if (participationsQuery.isError) participationsQuery.refetch();
+            }}
+          />
+        </Card>
+      ) : (
+        <Card asChild className="divide-y p-0">
+          <ul>
+            {(students ?? []).map((student) => {
+              const participation = participationOf(student.id);
+              const message = buildEventNotice({ event, group, student });
+              const link = whatsappLink(student.guardianPhone, message);
 
-            return (
-              <li
-                key={student.id}
-                className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:gap-4"
-              >
-                <span className="font-medium text-foreground lg:flex-1">{student.name}</span>
+              return (
+                <li
+                  key={student.id}
+                  className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:gap-4"
+                >
+                  <span className="font-medium text-foreground lg:flex-1">{student.name}</span>
 
-                <div className="grid grid-cols-2 gap-2 lg:flex lg:w-auto">
-                  <select
-                    aria-label={`Autorização de ${student.name}`}
-                    value={participation.authorization}
-                    onChange={(changeEvent) =>
-                      setParticipation.mutate({
-                        eventId: event.id,
-                        studentId: student.id,
-                        authorization: changeEvent.target.value as AuthorizationStatus,
-                      })
-                    }
-                    className={selectClasses}
-                  >
-                    {Object.entries(authorizationLabels).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-
-                  {!free && (
+                  <div className="grid grid-cols-2 gap-2 lg:flex lg:w-auto">
                     <select
-                      aria-label={`Pagamento de ${student.name}`}
-                      value={participation.payment}
+                      aria-label={`Autorização de ${student.name}`}
+                      value={participation.authorization}
                       onChange={(changeEvent) =>
                         setParticipation.mutate({
                           eventId: event.id,
                           studentId: student.id,
-                          payment: changeEvent.target.value as PaymentStatus,
+                          authorization: changeEvent.target.value as AuthorizationStatus,
                         })
                       }
                       className={selectClasses}
                     >
-                      {Object.entries(paymentLabels).map(([value, label]) => (
+                      {Object.entries(authorizationLabels).map(([value, label]) => (
                         <option key={value} value={value}>
                           {label}
                         </option>
                       ))}
                     </select>
-                  )}
-                </div>
 
-                <div className="flex items-center gap-2">
-                  {link && (
+                    {!free && (
+                      <select
+                        aria-label={`Pagamento de ${student.name}`}
+                        value={participation.payment}
+                        onChange={(changeEvent) =>
+                          setParticipation.mutate({
+                            eventId: event.id,
+                            studentId: student.id,
+                            payment: changeEvent.target.value as PaymentStatus,
+                          })
+                        }
+                        className={selectClasses}
+                      >
+                        {Object.entries(paymentLabels).map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {link && (
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="h-11 flex-1 sm:h-9 lg:flex-none"
+                      >
+                        <a href={link} target="_blank" rel="noopener noreferrer">
+                          <MessageCircle className="size-4" />
+                          WhatsApp
+                        </a>
+                      </Button>
+                    )}
                     <Button
-                      asChild
-                      variant="outline"
+                      type="button"
+                      variant="ghost"
                       size="sm"
                       className="h-11 flex-1 sm:h-9 lg:flex-none"
+                      onClick={() => copyNotice(student)}
                     >
-                      <a href={link} target="_blank" rel="noopener noreferrer">
-                        <MessageCircle className="size-4" />
-                        WhatsApp
-                      </a>
+                      <Copy className="size-4" />
+                      {copiedStudentId === student.id ? "Copiado!" : "Copiar texto"}
                     </Button>
-                  )}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-11 flex-1 sm:h-9 lg:flex-none"
-                    onClick={() => copyNotice(student)}
-                  >
-                    <Copy className="size-4" />
-                    {copiedStudentId === student.id ? "Copiado!" : "Copiar texto"}
-                  </Button>
-                </div>
-              </li>
-            );
-          })}
+                  </div>
+                </li>
+              );
+            })}
 
-          {(students ?? []).length === 0 && (
-            <li className="p-4 text-sm text-muted-foreground">
-              Nenhum aluno matriculado nesta aula.
-            </li>
-          )}
-        </ul>
-      </Card>
+            {(students ?? []).length === 0 && (
+              <li className="p-4 text-sm text-muted-foreground">
+                Nenhum aluno matriculado nesta aula.
+              </li>
+            )}
+          </ul>
+        </Card>
+      )}
     </div>
   );
 }

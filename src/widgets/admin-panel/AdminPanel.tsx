@@ -17,6 +17,8 @@ import { formatPercent } from "@/shared/lib/format";
 import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
 import { Card } from "@/shared/ui/card";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -65,12 +67,30 @@ export function AdminPanel() {
   // A student missing from the list has no roll-call at all, which is not the same
   // as a perfect attendance rate.
   const studentsAtRisk = useStudentsAtRisk({ threshold: 0 });
-  const groupAttendanceRates = useAttendanceRateByGroup((groups.data ?? []).map((group) => group.id));
+  const groupAttendanceRates = useAttendanceRateByGroup(
+    (groups.data ?? []).map((group) => group.id),
+  );
 
   const totalStudents = students.data?.length ?? 0;
   const activeStudents = students.data?.filter((student) => student.active).length ?? 0;
   const totalTeachers = profiles.data?.filter((profile) => profile.role === "teacher").length ?? 0;
   const analyticsError = attendanceRate.error ?? absenteeismTrend.error ?? studentsAtRisk.error;
+  const hasAnalyticsError =
+    attendanceRate.isError || absenteeismTrend.isError || studentsAtRisk.isError;
+  const hasIdentityError =
+    students.isError || groups.isError || enrollments.isError || profiles.isError;
+  const identityError = students.error ?? groups.error ?? enrollments.error ?? profiles.error;
+  const retryIdentity = () => {
+    if (students.isError) students.refetch();
+    if (groups.isError) groups.refetch();
+    if (enrollments.isError) enrollments.refetch();
+    if (profiles.isError) profiles.refetch();
+  };
+  const retryAnalytics = () => {
+    if (attendanceRate.isError) attendanceRate.refetch();
+    if (absenteeismTrend.isError) absenteeismTrend.refetch();
+    if (studentsAtRisk.isError) studentsAtRisk.refetch();
+  };
 
   const trendPoints = absenteeismTrend.data ?? [];
   const attendanceTrendDelta =
@@ -129,29 +149,34 @@ export function AdminPanel() {
 
   return (
     <div className="flex flex-col gap-6">
-      {analyticsError && (
-        <p role="alert" className="text-sm text-destructive">
-          {messageForError(
-            analyticsError,
-            "Não foi possível carregar os indicadores de frequência.",
+      {(hasIdentityError || hasAnalyticsError) && (
+        <QueryErrorState
+          size="block"
+          message={messageForError(
+            identityError ?? analyticsError,
+            "Não foi possível carregar os indicadores do painel.",
           )}
-        </p>
+          onRetry={() => {
+            retryIdentity();
+            retryAnalytics();
+          }}
+        />
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KpiCard
           label="Total de alunos"
-          value={students.isLoading ? "…" : String(totalStudents)}
+          value={students.isLoading ? "…" : students.isError ? "—" : String(totalStudents)}
           icon={<GroupIcon />}
           badge={
-            !students.isLoading ? (
+            !students.isLoading && !students.isError ? (
               <Badge variant="success">{activeStudents} ativos</Badge>
             ) : undefined
           }
         />
         <KpiCard
           label="Total de professores"
-          value={profiles.isLoading ? "…" : String(totalTeachers)}
+          value={profiles.isLoading ? "…" : profiles.isError ? "—" : String(totalTeachers)}
           icon={<UserCircleIcon />}
         />
         <KpiCard
@@ -192,7 +217,15 @@ export function AdminPanel() {
             Alertas de baixa frequência
           </h2>
           {studentsAtRisk.isLoading ? (
-            <p className="text-sm text-muted-foreground">Carregando…</p>
+            <RowsSkeleton rows={3} />
+          ) : studentsAtRisk.isError ? (
+            <QueryErrorState
+              message={messageForError(
+                studentsAtRisk.error,
+                "Não foi possível carregar os alertas.",
+              )}
+              onRetry={() => studentsAtRisk.refetch()}
+            />
           ) : alerts.length === 0 ? (
             <p className="text-sm text-muted-foreground">Sem dados ainda.</p>
           ) : (

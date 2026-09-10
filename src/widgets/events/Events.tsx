@@ -9,16 +9,21 @@ import { visibleGroups } from "@/entities/group/scope";
 import { useStudentsByGroup } from "@/entities/student/queries";
 import { summarizeParticipation } from "@/features/events/summary";
 import { useSession } from "@/features/session/use-session";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { formatCurrency, formatDate } from "@/shared/lib/format";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import { EventDetail } from "./EventDetail";
 import { EventFormModal } from "./EventFormModal";
 
 export function Events() {
   const { role, profileId } = useSession();
-  const { data: groups } = useGroups();
-  const { data: events } = useEvents();
+  const groupsQuery = useGroups();
+  const { data: groups } = groupsQuery;
+  const eventsQuery = useEvents();
+  const { data: events } = eventsQuery;
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Event | null | undefined>(undefined);
 
@@ -73,7 +78,20 @@ export function Events() {
         )}
       </header>
 
-      {groupsWithEvents.length === 0 ? (
+      {groupsQuery.isLoading || eventsQuery.isLoading ? (
+        <RowsSkeleton rows={3} avatar={false} />
+      ) : groupsQuery.isError || eventsQuery.isError ? (
+        <QueryErrorState
+          message={messageForError(
+            groupsQuery.error ?? eventsQuery.error,
+            "Não foi possível carregar os eventos.",
+          )}
+          onRetry={() => {
+            if (groupsQuery.isError) groupsQuery.refetch();
+            if (eventsQuery.isError) eventsQuery.refetch();
+          }}
+        />
+      ) : groupsWithEvents.length === 0 ? (
         <p className="text-sm text-muted-foreground">Nenhum evento cadastrado ainda.</p>
       ) : (
         <div className="flex flex-col gap-6">

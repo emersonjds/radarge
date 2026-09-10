@@ -26,6 +26,14 @@ export function TailAdminShell({ children }: TailAdminShellProps) {
     else if (mustChangePassword) router.replace("/change-password");
   }, [status, mustChangePassword, router]);
 
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted">
+        <p className="text-sm text-muted-foreground">Carregando…</p>
+      </div>
+    );
+  }
+
   if (status !== "authenticated" || mustChangePassword || !profile) return null;
 
   const jobTitle = profile.jobTitle ?? roleLabels[profile.role];

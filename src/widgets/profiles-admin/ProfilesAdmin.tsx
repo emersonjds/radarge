@@ -26,7 +26,9 @@ import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
+import { QueryErrorState } from "@/shared/ui/query-error";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import { cn } from "@/shared/lib/utils";
 import { Pencil, Power, PowerOff, Trash2 } from "lucide-react";
 import { IconButton } from "@/shared/ui/icon-button";
@@ -41,7 +43,7 @@ const EMPTY_FORM_VALUES: ProfileFormValues = {
 
 export function ProfilesAdmin() {
   const { profileId } = useSession();
-  const { data: profiles, isLoading } = useProfiles();
+  const { data: profiles, isLoading, isError, error, refetch } = useProfiles();
   const { data: groups } = useGroups();
   const createProfile = useCreateProfile();
   const setActive = useSetProfileActive();
@@ -187,7 +189,12 @@ export function ProfilesAdmin() {
         <section>
           <h2 className="mb-5 text-lg font-semibold text-foreground">Perfis existentes</h2>
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Carregando…</p>
+            <RowsSkeleton rows={3} avatar={false} />
+          ) : isError ? (
+            <QueryErrorState
+              message={messageForError(error, "Não foi possível carregar os perfis.")}
+              onRetry={() => refetch()}
+            />
           ) : (
             <ul className="flex flex-col gap-3">
               {(profiles ?? []).map((profile) => {

@@ -17,12 +17,14 @@ import { useSubjects } from "@/entities/subject/queries";
 import { useSession } from "@/features/session/use-session";
 import { countAbsences, attendanceRate } from "@/features/analytics/model";
 import { computeAgeAt, todayIso } from "@/entities/student/age";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { formatPercent } from "@/shared/lib/format";
 import { usePageTitle } from "@/shared/providers/page-title";
 import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
+import { QueryErrorState } from "@/shared/ui/query-error";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { AttendanceCalendar, type DayEvent } from "./AttendanceCalendar";
 import { AcademicPanel } from "./AcademicPanel";
@@ -44,15 +46,7 @@ function monthWithMostRecords(dates: string[]): string | null {
  * after a hard load onto the parametrised URL, which strands anyone who refreshed or
  * opened a shared link. Driving the router by hand is what moves it.
  */
-function BackLink({
-  href,
-  label,
-  className,
-}: {
-  href: string;
-  label: string;
-  className?: string;
-}) {
+function BackLink({ href, label, className }: { href: string; label: string; className?: string }) {
   const router = useRouter();
 
   return (
@@ -78,12 +72,20 @@ export interface StudentDetailProps {
 export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailProps) {
   const { role, profileId } = useSession();
   const isTeacher = role === "teacher";
-  const { data: student, isLoading: isLoadingStudent } = useStudent(studentId);
-  const { data: groups, isLoading: isLoadingGroups } = useGroups();
-  const { data: enrollments, isLoading: isLoadingEnrollments } = useEnrollmentsByStudent(studentId);
+  const studentQuery = useStudent(studentId);
+  const { data: student, isLoading: isLoadingStudent } = studentQuery;
+  const groupsQuery = useGroups();
+  const { data: groups, isLoading: isLoadingGroups } = groupsQuery;
+  const enrollmentsQuery = useEnrollmentsByStudent(studentId);
+  const { data: enrollments, isLoading: isLoadingEnrollments } = enrollmentsQuery;
   const { data: attendanceSessions } = useAttendanceSessions();
-  const { data: attendanceRecords, isLoading: isLoadingAttendance } =
-    useAttendanceRecordsByStudent(studentId);
+  const {
+    data: attendanceRecords,
+    isLoading: isLoadingAttendance,
+    isError: isAttendanceError,
+    error: attendanceError,
+    refetch: refetchAttendance,
+  } = useAttendanceRecordsByStudent(studentId);
   const { data: schoolEvents } = useSchoolEvents();
   const { data: grades } = useGradesByStudent(studentId);
   const { data: subjects } = useSubjects();
@@ -94,6 +96,8 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
   );
   const studentGroups = studentGroupsInScope(enrollments ?? [], groups ?? [], role, profileId);
   const isLoadingAny = isLoadingStudent || isLoadingGroups || isLoadingEnrollments;
+  const hasError = studentQuery.isError || groupsQuery.isError || enrollmentsQuery.isError;
+  const firstError = studentQuery.error ?? groupsQuery.error ?? enrollmentsQuery.error;
 
   // The whole record is PII of a minor: a teacher reaches it only through the
   // students they teach. Outside that, the student does not exist — not even by direct link.
@@ -103,6 +107,20 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
 
   if (isLoadingAny) {
     return <p className="text-sm text-muted-foreground">Carregando aluno…</p>;
+  }
+
+  if (hasError) {
+    return (
+      <QueryErrorState
+        size="page"
+        message={messageForError(firstError, "Não foi possível carregar o aluno.")}
+        onRetry={() => {
+          if (studentQuery.isError) studentQuery.refetch();
+          if (groupsQuery.isError) groupsQuery.refetch();
+          if (enrollmentsQuery.isError) enrollmentsQuery.refetch();
+        }}
+      />
+    );
   }
 
   if (!student || outOfScope) {
@@ -246,7 +264,16 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
                 {isLoadingAttendance && (
                   <p className="text-sm text-muted-foreground">Carregando registros…</p>
                 )}
-                {!isLoadingAttendance && month && (
+                {!isLoadingAttendance && isAttendanceError && (
+                  <QueryErrorState
+                    message={messageForError(
+                      attendanceError,
+                      "Não foi possível carregar a presença.",
+                    )}
+                    onRetry={() => refetchAttendance()}
+                  />
+                )}
+                {!isLoadingAttendance && !isAttendanceError && month && (
                   <AttendanceCalendar
                     key={student.id}
                     month={month}
@@ -254,7 +281,7 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
                     eventsByDate={eventsByDate}
                   />
                 )}
-                {!isLoadingAttendance && !month && (
+                {!isLoadingAttendance && !isAttendanceError && !month && (
                   <p className="text-sm text-muted-foreground">Sem registros de presença.</p>
                 )}
               </section>

@@ -18,6 +18,8 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { EmptyValue } from "@/shared/ui/empty-value";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
 import { TablePagination } from "@/shared/ui/table-pagination";
 import { Eye, Pencil, Trash2 } from "lucide-react";
@@ -29,14 +31,33 @@ const RISK_ABSENCE_THRESHOLD = 3;
 
 export function StudentList() {
   const { role, profile, status: sessionStatus } = useSession();
-  const { data: students, isLoading: isLoadingStudents } = useStudents();
-  const { data: groups, isLoading: isLoadingGroups } = useGroups();
-  const { data: enrollments, isLoading: isLoadingEnrollments } = useEnrollments();
+  const {
+    data: students,
+    isLoading: isLoadingStudents,
+    isError: hasStudentsError,
+    error: studentsError,
+    refetch: refetchStudents,
+  } = useStudents();
+  const {
+    data: groups,
+    isLoading: isLoadingGroups,
+    isError: hasGroupsError,
+    error: groupsError,
+    refetch: refetchGroups,
+  } = useGroups();
+  const {
+    data: enrollments,
+    isLoading: isLoadingEnrollments,
+    isError: hasEnrollmentsError,
+    error: enrollmentsError,
+    refetch: refetchEnrollments,
+  } = useEnrollments();
   const {
     data: studentsAtRisk,
     isLoading: isLoadingRisk,
     isError: hasRiskError,
     error: riskError,
+    refetch: refetchRisk,
     // Threshold zero returns every student ever called. A student missing from the
     // list has no roll-call, which is not the same as a perfect attendance rate.
   } = useStudentsAtRisk({ threshold: 0 });
@@ -55,6 +76,14 @@ export function StudentList() {
     isLoadingGroups ||
     isLoadingEnrollments ||
     isLoadingRisk;
+  const hasError = hasStudentsError || hasGroupsError || hasEnrollmentsError || hasRiskError;
+  const firstError = studentsError ?? groupsError ?? enrollmentsError ?? riskError;
+  const retryFailed = () => {
+    if (hasStudentsError) refetchStudents();
+    if (hasGroupsError) refetchGroups();
+    if (hasEnrollmentsError) refetchEnrollments();
+    if (hasRiskError) refetchRisk();
+  };
   const isTeacher = role === "teacher";
 
   const groupById = new Map((groups ?? []).map((group) => [group.id, group]));
@@ -156,19 +185,20 @@ export function StudentList() {
       </header>
 
       <Card className="overflow-hidden p-0">
-        {isLoading && <p className="p-4 text-center text-muted-foreground">Carregando alunos…</p>}
-        {!isLoading && hasRiskError && (
-          <p role="alert" className="p-4 text-center text-destructive">
-            {messageForError(riskError, "Não foi possível carregar a frequência.")}
-          </p>
+        {isLoading && <RowsSkeleton rows={6} />}
+        {!isLoading && hasError && (
+          <QueryErrorState
+            message={messageForError(firstError, "Não foi possível carregar os alunos.")}
+            onRetry={retryFailed}
+          />
         )}
-        {!isLoading && !hasRiskError && hasNoGroups && (
+        {!isLoading && !hasError && hasNoGroups && (
           <p className="p-4 text-center text-muted-foreground">Você não tem aulas atribuídas</p>
         )}
-        {!isLoading && !hasRiskError && !hasNoGroups && rows.length === 0 && (
+        {!isLoading && !hasError && !hasNoGroups && rows.length === 0 && (
           <p className="p-4 text-center text-muted-foreground">Nenhum aluno encontrado</p>
         )}
-        {!isLoading && !hasRiskError && !hasNoGroups && rows.length > 0 && (
+        {!isLoading && !hasError && !hasNoGroups && rows.length > 0 && (
           <>
             {isDesktop ? (
               <Table>
@@ -272,7 +302,10 @@ export function StudentList() {
                         {situation === "no-data" ? (
                           <EmptyValue className="shrink-0" label="sem chamadas registradas" />
                         ) : (
-                          <Badge className="shrink-0" variant={situation === "at-risk" ? "danger" : "success"}>
+                          <Badge
+                            className="shrink-0"
+                            variant={situation === "at-risk" ? "danger" : "success"}
+                          >
                             {situation === "at-risk" ? "Em risco" : "Regular"}
                           </Badge>
                         )}

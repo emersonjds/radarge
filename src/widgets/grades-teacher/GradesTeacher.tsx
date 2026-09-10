@@ -5,11 +5,20 @@ import { useSession } from "@/features/session/use-session";
 import { useAssignmentsByTeacher } from "@/entities/assignment/queries";
 import { useGroups } from "@/entities/group/queries";
 import { useSubjects } from "@/entities/subject/queries";
+import { messageForError } from "@/shared/lib/api/error-message";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import { EvaluationsPanel } from "./EvaluationsPanel";
 
 export function GradesTeacher() {
   const { profileId } = useSession();
-  const { data: assignments, isLoading } = useAssignmentsByTeacher(profileId ?? "");
+  const {
+    data: assignments,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useAssignmentsByTeacher(profileId ?? "");
   const { data: groups } = useGroups();
   const { data: subjects } = useSubjects();
   const [selected, setSelected] = useState<string | null>(null);
@@ -28,7 +37,12 @@ export function GradesTeacher() {
       <h1 className="text-xl font-semibold text-foreground">Notas</h1>
 
       {isLoading ? (
-        <div className="h-16 animate-pulse rounded-xl bg-muted" />
+        <RowsSkeleton rows={2} avatar={false} />
+      ) : isError ? (
+        <QueryErrorState
+          message={messageForError(error, "Não foi possível carregar suas aulas.")}
+          onRetry={() => refetch()}
+        />
       ) : (assignments ?? []).length === 0 ? (
         <p className="text-sm text-muted-foreground">Você não leciona nenhuma matéria ainda.</p>
       ) : (
