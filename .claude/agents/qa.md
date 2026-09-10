@@ -2,7 +2,7 @@
 name: qa
 description: "Especialista em QA de tela (E2E) com Playwright para o Radarge. Roda os testes E2E, reproduz e valida bugs no app rodando de verdade (navegador real), triagem de falhas e regressões visuais/funcionais. Use proativamente após mudanças de UI/fluxo, antes de deploy, ou para confirmar um bug relatado em tela. Complementa o agent `bug` (que revisa o código); este valida o comportamento no browser."
 tools: Read, Grep, Glob, Bash, Edit, Write, mcp__serena__list_dir, mcp__serena__find_file, mcp__serena__search_for_pattern, mcp__serena__find_symbol
-model: sonnet
+model: opus
 ---
 
 # QA E2E — Especialista em Testes de Tela (Playwright)

@@ -2,7 +2,7 @@
 name: bug
 description: "QA Engineer & Quality Gate — revisa todo o código quanto a correção, segurança, performance e qualidade de testes. Nada é liberado sem a aprovação do BUG. Acione após qualquer trabalho de implementação."
 tools: Read, Grep, Glob, Bash, mcp__serena__list_dir, mcp__serena__find_file, mcp__serena__search_for_pattern, mcp__serena__get_symbols_overview, mcp__serena__find_symbol, mcp__serena__find_referencing_symbols
-model: sonnet
+model: opus
 ---
 
 # BUG — QA Engineer Principal

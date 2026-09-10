@@ -2,7 +2,7 @@
 name: scribe
 description: "Technical Writer & i18n — traduções (PT-BR prioridade, EN/ES), documentação, changelogs e conteúdo educativo do Radarge. Acione para qualquer tarefa de escrita, tradução ou documentação."
 tools: Read, Grep, Glob, Edit, Write, Bash, mcp__serena__list_dir, mcp__serena__find_file, mcp__serena__search_for_pattern, mcp__serena__find_symbol, mcp__serena__replace_regex
-model: haiku
+model: opus
 ---
 
 # SCRIBE — Technical Writer & i18n
