@@ -24,6 +24,7 @@ import { summarizeParticipation, type EventSummary } from "@/features/events/sum
 import { messageForError } from "@/shared/lib/api/error-message";
 import { formatCurrency, formatDate, formatPercent } from "@/shared/lib/format";
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { QueryErrorState } from "@/shared/ui/query-error";
@@ -74,13 +75,16 @@ interface StatProps {
   label: string;
   value: string;
   tone?: StatTone;
+  testId?: string;
 }
 
-function Stat({ label, value, tone = "neutral" }: StatProps) {
+function Stat({ label, value, tone = "neutral", testId }: StatProps) {
   return (
     <div className={statTileVariants({ tone })}>
       <p className={cn("mt-1", statLabelVariants({ tone }))}>{label}</p>
-      <p className={statValueVariants({ tone })}>{value}</p>
+      <p data-testid={testId} className={statValueVariants({ tone })}>
+        {value}
+      </p>
     </div>
   );
 }
@@ -95,8 +99,13 @@ function AuthorizationGroup({ summary }: AuthorizationGroupProps) {
       <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
         Autorização
       </p>
-      <div className="mt-2 grid grid-cols-3 gap-2 sm:gap-3">
-        <Stat tone="success" label="Autorizados" value={String(summary.authorized)} />
+      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+        <Stat
+          tone="success"
+          label="Autorizados"
+          value={String(summary.authorized)}
+          testId="stat-authorized"
+        />
         <Stat tone="warning" label="Aguardando" value={String(summary.pendingAuthorization)} />
         <Stat tone="danger" label="Não autorizados" value={String(summary.denied)} />
       </div>
@@ -113,26 +122,29 @@ function MoneyCard({ summary }: MoneyCardProps) {
   const percent = hasExpected ? Math.round((summary.collected / summary.expected) * 100) : 0;
 
   return (
-    <div className="grid grid-cols-[1fr_auto] items-start gap-x-2 rounded-xl border p-4 lg:items-center lg:gap-x-6">
-      <p className="text-sm font-medium text-muted-foreground lg:col-start-1 lg:row-start-1">
-        Arrecadado
-      </p>
-      {hasExpected && (
-        <span className="justify-self-end rounded-full bg-brand-100 px-2 py-0.5 text-xs font-semibold text-brand-700 lg:col-start-2 lg:row-start-1">
-          {formatPercent(percent)}
-        </span>
-      )}
-      <p className="col-span-2 mt-1 text-2xl font-bold text-brand-700 lg:col-span-1 lg:col-start-1 lg:row-start-2">
+    <div className={cn(statTileVariants({ tone: "neutral" }), "flex-col gap-1 sm:max-w-xs")}>
+      <div className="flex items-center justify-between">
+        <p className={statLabelVariants({ tone: "neutral" })}>Arrecadado</p>
+        {hasExpected && (
+          <Badge className="bg-brand-100 text-brand-700">{formatPercent(percent)}</Badge>
+        )}
+      </div>
+      <p data-testid="stat-collected" className={statValueVariants({ tone: "neutral" })}>
         {formatCurrency(summary.collected)}
       </p>
-      <p className="col-span-2 text-sm text-muted-foreground lg:col-span-1 lg:col-start-1 lg:row-start-3">
-        {hasExpected
-          ? `de ${formatCurrency(summary.expected)} esperados`
-          : "Todos os alunos estão isentos de pagamento."}
-      </p>
+      {hasExpected ? (
+        <p className="text-xs text-muted-foreground">
+          de <span className="whitespace-nowrap">{formatCurrency(summary.expected)}</span>{" "}
+          esperados
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Todos os alunos estão isentos de pagamento.
+        </p>
+      )}
       {hasExpected && (
         <div
-          className="col-span-2 mt-3 h-2 w-full overflow-hidden rounded-full bg-brand-100"
+          className="mt-1 h-2 w-full overflow-hidden rounded-full bg-brand-100"
           aria-hidden="true"
         >
           <div className="h-full rounded-full bg-brand-500" style={{ width: `${percent}%` }} />
@@ -275,8 +287,13 @@ export function EventDetail({
                   <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                     Pagamento
                   </p>
-                  <div className="mt-2 grid grid-cols-3 gap-2 sm:gap-3">
-                    <Stat tone="neutral" label="Pagos" value={String(summary.paid)} />
+                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+                    <Stat
+                      tone="neutral"
+                      label="Pagos"
+                      value={String(summary.paid)}
+                      testId="stat-paid"
+                    />
                     <Stat tone="neutral" label="Pendentes" value={String(summary.pendingPayment)} />
                     <Stat tone="neutral" label="Isentos" value={String(summary.waived)} />
                   </div>
