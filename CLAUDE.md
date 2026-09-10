@@ -59,7 +59,7 @@ src/
 ├── entities/     ← Modelos de domínio (perfil, aula/group, aluno, matrícula/enrollment, chamada, presença).
 └── shared/       ← Infra reutilizável.
     ├── ui/         ← shadcn/ui + componentes próprios (avatar-text).
-    ├── lib/        ← storage (localStorage), utils (cn), format, csv.
+    ├── lib/        ← api (cliente HTTP tipado), utils (cn), format, csv.
     ├── config/     ← navegação por papel.
     ├── providers/  ← TanStack Query.
     └── tailadmin/  ← resíduo do template: só ícones SVG e SidebarContext. Não crescer.
@@ -75,7 +75,12 @@ src/
 - **O cliente HTTP vive em `src/shared/lib/api/`.** Base URL por `NEXT_PUBLIC_API_URL`, `credentials: "include"` em toda chamada, access token só em memória (`token-store.ts`), e refresh de tentativa única no 401 — duas chamadas falhando juntas compartilham a mesma promessa, senão a segunda apresenta um token já rotacionado, a API entende como reuso e derruba a sessão.
 - **A `message` de erro da API nunca vai para a tela.** Ela responde `{ code, message }`; o código é para rotear, o texto que o usuário lê é nosso.
 - Os fetchers de `entities/*/api.ts` são **assíncronos** e têm assinatura estável — é o que permite trocar a origem dos dados sem mexer nas features. Mantenha-os assim.
-- **Migração em curso**: `localStorage` (`src/shared/lib/storage/`) ainda é a origem de várias entidades e sai conforme cada card entra. Analytics é calculado em JS sobre o store (`features/analytics/model.ts`) e passa a vir de `/analytics`, que já agrega em SQL.
+- **A migração terminou em 2026-09-10.** Não existe mais `src/shared/lib/storage/`, nem seed, nem hash de senha de demonstração. Toda entidade lê e escreve pela API. Se você encontrar `localStorage` em algum lugar de `src/`, é bug.
+- **Os tipos de payload vêm de `components["schemas"][...]`, não de zod.** O zod continua validando o que a pessoa digitou (`*FormSchema` no `model.ts` da entidade), nunca o que voltou do servidor - a API já validou, e um segundo parse só cria uma forma de discordar.
+- **Regra que o banco garante não se reescreve no cliente.** Unicidade, escopo por papel e integridade referencial são respondidas pela API com `conflict`, `not_found` ou `forbidden`. Guard de cliente duplicando isso é uma segunda fonte de verdade que vai divergir.
+- **Chamada e folha de notas salvam inteiras**, num `PUT` só, com o corpo em `entries` (nunca `records`). Meio salvo não é um estado que o banco alcança.
+- **Analytics são quatro rotas** (`/analytics/attendance-rate`, `/absenteeism-trend`, `/students-at-risk`, `/academic-summary`) e mais `/grades`. Não existe `GET /analytics`.
+- **Tela não inventa número.** Sem dado do servidor, mostre `-` ou estado vazio, nunca um valor plausível: aluno que nunca foi chamado não tem 100% de frequência.
 - **Senha provisória**: senha que o usuário não escolheu vale para um login só. A API responde `403` com `code: "password_change_required"` até a troca, e o perfil traz `mustChangePassword`.
 
 ## 7. Segurança
@@ -100,8 +105,10 @@ src/
 Toda feature/implementação que passa pelo fluxo SDD **deve** ter as três camadas — e o E2E vale mais que os mocks (já pega bug de regra de servidor que os unit não pegam):
 
 1. **Unitário** — lógica pura (libs, derivações, regras).
-2. **Integração com MSW** — fetchers e queries contra a radarge-api mockada (`src/test/msw/`).
-3. **E2E de tela (Playwright)** — fluxo real no browser, **com prints de evidência em PNG**. As evidências ficam em `e2e/<feature>/evidencias/*.png` (gere rodando o spec; não invente prints).
+2. **Integração com MSW** — fetchers e queries contra a radarge-api mockada (`src/test/msw/`). Afirme **a requisição** (caminho, verbo e corpo enviado), não só a resposta: um teste que só olha o que voltou passa enquanto manda `records` no lugar de `entries`.
+3. **E2E de tela (Playwright)** — fluxo real no browser **contra a API rodando**, com prints de evidência em PNG. As evidências ficam em `e2e/<feature>/evidencias/*.png` (gere rodando o spec; não invente prints). Suba o backend antes: `cd ../radarge-api && docker compose up -d && pnpm dev`. Os dados vêm de `e2e/seed-api.ts`, que popula pela própria API.
+
+> Mock não aplica a regra do servidor. Três bugs passaram por uma suíte MSW inteira verde e só caíram no teste contra a API viva: `Content-Type` anunciado em requisição sem corpo (logout devolvia 500 e a sessão sobrevivia), cookie de refresh descartado pelo navegador, e frequência de 100% inventada para turma sem chamada. É por isso que o E2E vale mais.
 
 ## 9. Agentes disponíveis
 

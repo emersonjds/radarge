@@ -1,6 +1,8 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useStudent } from "@/entities/student/queries";
 import { useAttendanceSessions } from "@/entities/attendance-session/queries";
 import { datesInRange } from "@/entities/school-event/model";
@@ -33,9 +35,41 @@ function mesComMaisRegistros(datas: string[]): string | null {
     const mes = data.slice(0, 7);
     contagem.set(mes, (contagem.get(mes) ?? 0) + 1);
   }
-  return [...contagem.entries()].sort(
-    (mesA, mesB) => mesB[1] - mesA[1],
-  )[0][0];
+  return [...contagem.entries()].sort((mesA, mesB) => mesB[1] - mesA[1])[0][0];
+}
+
+/**
+ * The detail view is `/students?aluno=<id>`, so going back changes only the search
+ * param. `Link` treats that as the same route and leaves the address bar untouched
+ * after a hard load onto the parametrised URL, which strands anyone who refreshed or
+ * opened a shared link. Driving the router by hand is what moves it.
+ */
+function BackLink({
+  href,
+  label,
+  className,
+  children,
+}: {
+  href: string;
+  label: string;
+  className?: string;
+  children?: ReactNode;
+}) {
+  const router = useRouter();
+
+  return (
+    <Link
+      href={href}
+      className={className}
+      onClick={(event) => {
+        event.preventDefault();
+        router.replace(href);
+      }}
+    >
+      {children}
+      {label}
+    </Link>
+  );
 }
 
 export interface StudentDetailProps {
@@ -49,8 +83,7 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
   const ehProfessor = role === "teacher";
   const { data: aluno, isLoading: carregandoAluno } = useStudent(studentId);
   const { data: turmas, isLoading: carregandoTurmas } = useGroups();
-  const { data: enrollments, isLoading: carregandoMatriculas } =
-    useEnrollmentsByStudent(studentId);
+  const { data: enrollments, isLoading: carregandoMatriculas } = useEnrollmentsByStudent(studentId);
   const { data: chamadas } = useAttendanceSessions();
   const { data: presencas, isLoading: carregandoPresencas } =
     useAttendanceRecordsByStudent(studentId);
@@ -77,7 +110,7 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
       <div className="flex flex-col items-center gap-4 py-16 text-center">
         <p className="text-sm text-muted-foreground">Aluno não encontrado.</p>
         <Button asChild variant="outline">
-          <Link href={backHref}>Voltar para {backLabel}</Link>
+          <BackLink href={backHref} label={`Voltar para ${backLabel}`} />
         </Button>
       </div>
     );
@@ -100,13 +133,13 @@ export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailP
   );
 
   const voltar = (
-    <Link
+    <BackLink
       href={backHref}
+      label={backLabel}
       className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
     >
       <ArrowLeft className="size-4" />
-      {backLabel}
-    </Link>
+    </BackLink>
   );
 
   const statusPorData = new Map<string, AttendanceStatus>();

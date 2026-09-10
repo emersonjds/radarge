@@ -1,10 +1,15 @@
-import { expect, test } from "@playwright/test";
-import { login } from "../helpers";
+import { expect, test, type BrowserContext } from "@playwright/test";
+import { newPageIn, signInContext } from "../helpers";
+import { ACCOUNTS, adminToken, findByName } from "../seed-api";
 
-test.use({ viewport: { width: 1280, height: 800 } });
+let adminContext: BrowserContext;
 
-test("central de análise: panorama, recorte por turma e export CSV", async ({ page }) => {
-  await login(page, "Administrador");
+test.beforeAll(async ({ browser }) => {
+  adminContext = await signInContext(browser, ACCOUNTS.relatoriosAdmin);
+});
+
+test("central de análise: panorama, recorte por turma e export CSV", async () => {
+  const page = await newPageIn(adminContext, { width: 1280, height: 800 });
   await page.goto("/reports");
 
   await expect(page.getByRole("heading", { name: "Relatórios", exact: true })).toBeVisible({
@@ -16,16 +21,14 @@ test("central de análise: panorama, recorte por turma e export CSV", async ({ p
   await expect(panorama.getByText("Área forte")).toBeVisible();
   await expect(panorama.getByText("Média por área")).toBeVisible();
 
-  const linhaMarcus = page.getByRole("row").filter({ hasText: "Marcus Thorne" });
-  await expect(linhaMarcus).toContainText("Exatas");
+  const linhaEnzo = page.getByRole("row").filter({ hasText: "Enzo Ferreira" });
+  await expect(linhaEnzo).toContainText("Exatas");
 
   await page.screenshot({ path: "e2e/reports/evidencias/central-relatorios.png", fullPage: true });
 
-  await page
-    .getByLabel("Selecionar aula")
-    .selectOption({ label: "Reforço de Matemática — Segunda" });
+  await page.getByLabel("Selecionar aula").selectOption({ label: "E2E Relatorios — Aula A" });
   await expect(
-    page.getByRole("heading", { name: "Panorama — Reforço de Matemática — Segunda" }),
+    page.getByRole("heading", { name: "Panorama — E2E Relatorios — Aula A" }),
   ).toBeVisible();
 
   const [download] = await Promise.all([
@@ -35,15 +38,18 @@ test("central de análise: panorama, recorte por turma e export CSV", async ({ p
   expect(download.suggestedFilename()).toContain(".csv");
 });
 
-test("ficha do aluno traz frequência e bloco acadêmico com aptidão", async ({ page }) => {
-  await login(page, "Administrador");
+test("ficha do aluno traz frequência e bloco acadêmico com aptidão", async () => {
+  const token = await adminToken();
+  const enzo = await findByName<{ id: string; name: string }>(token, "/students", "Enzo Ferreira");
+
+  const page = await newPageIn(adminContext, { width: 1280, height: 800 });
   await page.goto("/reports");
 
-  const linhaMarcus = page.getByRole("row").filter({ hasText: "Marcus Thorne" });
-  await linhaMarcus.getByRole("link", { name: "Abrir relatório de Marcus Thorne" }).click();
-  await expect(page).toHaveURL(/\/reports\?studentId=aluno-1/);
+  const linhaEnzo = page.getByRole("row").filter({ hasText: "Enzo Ferreira" });
+  await linhaEnzo.getByRole("link", { name: "Abrir relatório de Enzo Ferreira" }).click();
+  await expect(page).toHaveURL(`/reports?studentId=${enzo.id}`);
 
-  await expect(page.getByRole("heading", { name: "Marcus Thorne" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Enzo Ferreira" })).toBeVisible();
   await expect(page.getByRole("main").getByRole("link", { name: "Relatórios" })).toBeVisible();
   await expect(page.getByText("Frequência")).toBeVisible();
   await expect(page.getByText("Faltas")).toBeVisible();

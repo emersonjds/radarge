@@ -1,8 +1,10 @@
-import { expect, test, type Page } from "@playwright/test";
-import { login } from "../helpers";
+import { expect, test, type BrowserContext, type Page } from "@playwright/test";
+import { newPageIn, signInContext } from "../helpers";
+import { ACCOUNTS, adminToken, findByName } from "../seed-api";
 
 const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
 const MOBILE_VIEWPORT = { width: 375, height: 812 };
+const NONEXISTENT_STUDENT_ID = "00000000-0000-0000-0000-000000000000";
 
 async function semOverflowHorizontal(page: Page) {
   const overflow = await page.evaluate(
@@ -11,18 +13,43 @@ async function semOverflowHorizontal(page: Page) {
   expect(overflow).toBeLessThanOrEqual(0);
 }
 
-test.describe("detalhe do aluno (desktop)", () => {
-  test.use({ viewport: DESKTOP_VIEWPORT });
+interface StudentIds {
+  um: string;
+  dois: string;
+  semAula: string;
+  inativo: string;
+}
 
-  test("admin abre o detalhe a partir da tabela de relatórios", async ({ page }) => {
-    await login(page, "Administrador");
+let ids: StudentIds;
+let adminContext: BrowserContext;
+let professor1Context: BrowserContext;
+
+test.beforeAll(async ({ browser }) => {
+  const token = await adminToken();
+  const byName = async (name: string) =>
+    (await findByName<{ id: string; name: string }>(token, "/students", name)).id;
+
+  ids = {
+    um: await byName("Aluno Detalhe Um"),
+    dois: await byName("Aluno Detalhe Dois"),
+    semAula: await byName("Aluno Detalhe Sem Aula"),
+    inativo: await byName("Aluno Detalhe Inativo"),
+  };
+
+  adminContext = await signInContext(browser, ACCOUNTS.detalheAdmin);
+  professor1Context = await signInContext(browser, ACCOUNTS.detalheProfessor1);
+});
+
+test.describe("detalhe do aluno (desktop)", () => {
+  test("admin abre o detalhe a partir da tabela de relatórios", async () => {
+    const page = await newPageIn(adminContext, DESKTOP_VIEWPORT);
     await page.goto("/reports");
 
-    const linhaMarcus = page.getByRole("row").filter({ hasText: "Marcus Thorne" });
-    await linhaMarcus.getByRole("link", { name: "Ver relatório de Marcus Thorne" }).click();
+    const linha = page.getByRole("row").filter({ hasText: "Aluno Detalhe Um" });
+    await linha.getByRole("link", { name: "Ver relatório de Aluno Detalhe Um" }).click();
 
-    await expect(page).toHaveURL("/reports?studentId=aluno-1");
-    await expect(page.getByRole("heading", { name: "Marcus Thorne" })).toBeVisible();
+    await expect(page).toHaveURL(`/reports?studentId=${ids.um}`);
+    await expect(page.getByRole("heading", { name: "Aluno Detalhe Um" })).toBeVisible();
     await expect(page.getByText("404")).toHaveCount(0);
 
     await page.screenshot({
@@ -31,16 +58,16 @@ test.describe("detalhe do aluno (desktop)", () => {
     });
   });
 
-  test("professor abre o detalhe a partir da lista de alunos", async ({ page }) => {
-    await login(page, "Professor");
+  test("professor abre o detalhe a partir da lista de alunos", async () => {
+    const page = await newPageIn(professor1Context, DESKTOP_VIEWPORT);
     await page.goto("/students");
 
-    await page.getByRole("link", { name: "Ver detalhes de Marcus Thorne" }).click();
+    await page.getByRole("link", { name: "Ver detalhes de Aluno Detalhe Um" }).click();
 
-    await expect(page).toHaveURL("/students?aluno=aluno-1");
-    await expect(page.getByRole("heading", { name: "Marcus Thorne" })).toBeVisible();
-    await expect(page.getByText("Reforço de Matemática — Segunda")).toBeVisible();
-    await expect(page.getByText("Reforço de Física — Terça")).toBeVisible();
+    await expect(page).toHaveURL(`/students?aluno=${ids.um}`);
+    await expect(page.getByRole("heading", { name: "Aluno Detalhe Um" })).toBeVisible();
+    await expect(page.getByText("E2E Detalhe — Aula A")).toBeVisible();
+    await expect(page.getByText("E2E Detalhe — Aula B")).toBeVisible();
     await expect(page.getByText("404")).toHaveCount(0);
 
     await page.screenshot({
@@ -49,19 +76,18 @@ test.describe("detalhe do aluno (desktop)", () => {
     });
   });
 
-  test("escopo: professor não acessa a ficha de aluno de outro professor, nem por link direto (PII)", async ({
-    page,
-  }) => {
-    await login(page, "Professor");
-    await page.goto("/students?aluno=aluno-3");
+  test("escopo: professor não acessa a ficha de aluno de outro professor, nem por link direto (PII)", async () => {
+    const page = await newPageIn(professor1Context, DESKTOP_VIEWPORT);
+    await page.goto(`/students?aluno=${ids.dois}`);
 
-    // Julian Rossi é aluno do Bruno — pro Ricardo o aluno "não existe", ponto final.
+    // Aluno Detalhe Dois é aluno do outro professor — pra este professor o aluno
+    // "não existe", ponto final.
     await expect(page.getByText("Aluno não encontrado.")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Julian Rossi" })).toHaveCount(0);
-    await expect(page.getByText("Julian Rossi")).toHaveCount(0);
-    await expect(page.getByText("Mãe de Rossi")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Aluno Detalhe Dois" })).toHaveCount(0);
+    await expect(page.getByText("Aluno Detalhe Dois")).toHaveCount(0);
+    await expect(page.getByText("Responsável do Aluno Detalhe Dois")).toHaveCount(0);
     await expect(page.locator('a[href^="tel:"]')).toHaveCount(0);
-    await expect(page.getByText("Reforço de Ciências — Quarta")).toHaveCount(0);
+    await expect(page.getByText("E2E Detalhe — Aula C")).toHaveCount(0);
 
     await page.screenshot({
       path: "e2e/student-detail/evidencias/escopo-professor.png",
@@ -73,18 +99,16 @@ test.describe("detalhe do aluno (desktop)", () => {
     await expect(page.getByRole("heading", { name: "Meus alunos" })).toBeVisible();
   });
 
-  test("professor vê a ficha completa do próprio aluno, com PII do responsável", async ({
-    page,
-  }) => {
-    await login(page, "Professor");
-    await page.goto("/students?aluno=aluno-1");
+  test("professor vê a ficha completa do próprio aluno, com PII do responsável", async () => {
+    const page = await newPageIn(professor1Context, DESKTOP_VIEWPORT);
+    await page.goto(`/students?aluno=${ids.um}`);
 
-    await expect(page.getByRole("heading", { name: "Marcus Thorne" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Aluno Detalhe Um" })).toBeVisible();
     await expect(page.getByText("Aluno não encontrado.")).toHaveCount(0);
-    await expect(page.getByText("Mãe de Thorne")).toBeVisible();
+    await expect(page.getByText("Responsável do Aluno Detalhe Um")).toBeVisible();
     await expect(page.locator('a[href^="tel:"]')).toBeVisible();
-    await expect(page.getByText("Reforço de Matemática — Segunda")).toBeVisible();
-    await expect(page.getByText("Reforço de Física — Terça")).toBeVisible();
+    await expect(page.getByText("E2E Detalhe — Aula A")).toBeVisible();
+    await expect(page.getByText("E2E Detalhe — Aula B")).toBeVisible();
 
     await page.screenshot({
       path: "e2e/student-detail/evidencias/aluno-proprio-professor.png",
@@ -92,11 +116,11 @@ test.describe("detalhe do aluno (desktop)", () => {
     });
   });
 
-  test("aluno sem aula matriculada mostra estado vazio", async ({ page }) => {
-    await login(page, "Administrador");
-    await page.goto("/reports?studentId=aluno-sem-aula");
+  test("aluno sem aula matriculada mostra estado vazio", async () => {
+    const page = await newPageIn(adminContext, DESKTOP_VIEWPORT);
+    await page.goto(`/reports?studentId=${ids.semAula}`);
 
-    await expect(page.getByRole("heading", { name: "Otávio Prado" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Aluno Detalhe Sem Aula" })).toBeVisible();
     await expect(page.getByText("Sem aulas matriculadas.")).toBeVisible();
     await expect(page.getByText("—", { exact: true })).toHaveCount(2);
 
@@ -106,11 +130,11 @@ test.describe("detalhe do aluno (desktop)", () => {
     });
   });
 
-  test("aluno inativo mostra badge INATIVO e aviso", async ({ page }) => {
-    await login(page, "Administrador");
-    await page.goto("/reports?studentId=aluno-inativo");
+  test("aluno inativo mostra badge INATIVO e aviso", async () => {
+    const page = await newPageIn(adminContext, DESKTOP_VIEWPORT);
+    await page.goto(`/reports?studentId=${ids.inativo}`);
 
-    await expect(page.getByRole("heading", { name: "Priscila Amaral" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Aluno Detalhe Inativo" })).toBeVisible();
     await expect(page.getByText("INATIVO", { exact: true })).toBeVisible();
     await expect(
       page.getByText(
@@ -124,11 +148,9 @@ test.describe("detalhe do aluno (desktop)", () => {
     });
   });
 
-  test("aluno inexistente mostra estado de erro com botão de voltar funcional", async ({
-    page,
-  }) => {
-    await login(page, "Administrador");
-    await page.goto("/reports?studentId=nao-existe");
+  test("aluno inexistente mostra estado de erro com botão de voltar funcional", async () => {
+    const page = await newPageIn(adminContext, DESKTOP_VIEWPORT);
+    await page.goto(`/reports?studentId=${NONEXISTENT_STUDENT_ID}`);
 
     await expect(page.getByText("Aluno não encontrado.")).toBeVisible();
     await expect(page.getByText("404")).toHaveCount(0);
@@ -143,9 +165,9 @@ test.describe("detalhe do aluno (desktop)", () => {
     await expect(page.getByRole("heading", { name: "Relatórios", exact: true })).toBeVisible();
   });
 
-  test("abas Presença e Notas trocam o conteúdo", async ({ page }) => {
-    await login(page, "Administrador");
-    await page.goto("/reports?studentId=aluno-1");
+  test("abas Presença e Notas trocam o conteúdo", async () => {
+    const page = await newPageIn(adminContext, DESKTOP_VIEWPORT);
+    await page.goto(`/reports?studentId=${ids.um}`);
 
     await expect(page.getByRole("heading", { name: "Resumo de presença" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Desempenho acadêmico" })).toHaveCount(0);
@@ -162,13 +184,11 @@ test.describe("detalhe do aluno (desktop)", () => {
 });
 
 test.describe("detalhe do aluno (mobile 375px)", () => {
-  test.use({ viewport: MOBILE_VIEWPORT });
+  test("professor visualiza o detalhe do aluno com abas usáveis", async () => {
+    const page = await newPageIn(professor1Context, MOBILE_VIEWPORT);
+    await page.goto(`/students?aluno=${ids.um}`);
 
-  test("professor visualiza o detalhe do aluno com abas usáveis", async ({ page }) => {
-    await login(page, "Professor");
-    await page.goto("/students?aluno=aluno-1");
-
-    await expect(page.getByRole("heading", { name: "Marcus Thorne" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Aluno Detalhe Um" })).toBeVisible();
     await semOverflowHorizontal(page);
 
     await page.getByRole("tab", { name: "Notas" }).click();

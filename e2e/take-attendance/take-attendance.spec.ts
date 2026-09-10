@@ -1,5 +1,6 @@
-import { expect, test, type Page } from "@playwright/test";
-import { login } from "../helpers";
+import { expect, test, type BrowserContext, type Page } from "@playwright/test";
+import { newPageIn, signInContext } from "../helpers";
+import { ACCOUNTS } from "../seed-api";
 
 const MOBILE_VIEWPORT = { width: 375, height: 812 };
 const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
@@ -13,11 +14,15 @@ async function semOverflowHorizontal(page: Page) {
   expect(overflow).toBeLessThanOrEqual(0);
 }
 
-test.describe("chamada mobile (cards)", () => {
-  test.use({ viewport: MOBILE_VIEWPORT });
+let professorContext: BrowserContext;
 
-  test("título, busca, tiles e marcação de status", async ({ page }) => {
-    await login(page, "Professor");
+test.beforeAll(async ({ browser }) => {
+  professorContext = await signInContext(browser, ACCOUNTS.chamadaProfessor);
+});
+
+test.describe("chamada mobile (cards)", () => {
+  test("título, busca, tiles e marcação de status", async () => {
+    const page = await newPageIn(professorContext, MOBILE_VIEWPORT);
     await page.goto("/attendance");
 
     await expect(page.getByLabel("Selecionar aula")).toBeVisible();
@@ -53,8 +58,8 @@ test.describe("chamada mobile (cards)", () => {
     });
   });
 
-  test("toggle abre o drawer e o backdrop fecha a sidebar", async ({ page }) => {
-    await login(page, "Professor");
+  test("toggle abre o drawer e o backdrop fecha a sidebar", async () => {
+    const page = await newPageIn(professorContext, MOBILE_VIEWPORT);
     await page.goto("/attendance");
 
     const aside = page.locator("aside");
@@ -70,10 +75,8 @@ test.describe("chamada mobile (cards)", () => {
 });
 
 test.describe("chamada desktop", () => {
-  test.use({ viewport: DESKTOP_VIEWPORT });
-
-  test("sidebar com Chamada e tela renderiza", async ({ page }) => {
-    await login(page, "Professor");
+  test("sidebar com Chamada e tela renderiza", async () => {
+    const page = await newPageIn(professorContext, DESKTOP_VIEWPORT);
     await page.goto("/attendance");
 
     const nav = page.getByRole("navigation", { name: "Navegação principal" });
@@ -86,8 +89,8 @@ test.describe("chamada desktop", () => {
     });
   });
 
-  test("toggle colapsa a sidebar para os ícones e reexpande", async ({ page }) => {
-    await login(page, "Professor");
+  test("toggle colapsa a sidebar para os ícones e reexpande", async () => {
+    const page = await newPageIn(professorContext, DESKTOP_VIEWPORT);
     await page.goto("/attendance");
 
     const aside = page.locator("aside");
