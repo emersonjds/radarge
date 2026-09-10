@@ -8,7 +8,7 @@ type ErrorBody = components["schemas"]["ErrorInput"];
 const AUTH_ENDPOINTS_WITHOUT_REFRESH = new Set(["/auth/login", "/auth/refresh"]);
 
 export interface RequestOptions {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   signal?: AbortSignal;
 }
