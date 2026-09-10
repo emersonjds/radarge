@@ -15,11 +15,17 @@ import { formatDateLong } from "@/shared/lib/format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
-import { CalenderIcon } from "@tailadmin/icons";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { Calendar } from "lucide-react";
 import { StudentRow, STATUS_OPTIONS } from "./StudentRow";
 import { groupsForTeacher } from "@/entities/group/scope";
 
-const TODAY = new Date().toISOString().slice(0, 10);
+// Resolved on each render and again at save time, never cached at module load —
+// a tab left open overnight must save against the current date, not yesterday's.
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 const tileLabelColor: Record<AttendanceStatus, string> = {
   present: "text-success-600",
@@ -43,7 +49,8 @@ export function AttendanceForm() {
   const groups = groupsForTeacher(allGroups ?? [], profileId);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const groupId = selectedGroupId ?? groups?.[0]?.id ?? "";
-  const sessionId = groupId ? `chamada-${groupId}-${TODAY}` : "";
+  const today = todayISO();
+  const sessionId = groupId ? `chamada-${groupId}-${today}` : "";
 
   const { data: students, isLoading: isLoadingStudents } = useStudentsByGroup(groupId);
   const { data: attendanceRecords } = useAttendanceRecordsBySession(sessionId);
@@ -93,7 +100,7 @@ export function AttendanceForm() {
     setIsSaved(false);
     setIsSaving(true);
     try {
-      const session = await createAttendanceSession.mutateAsync({ groupId, date: TODAY });
+      const session = await createAttendanceSession.mutateAsync({ groupId, date: todayISO() });
       const entries = (students ?? [])
         .filter((student) => statusByStudent[student.id])
         .map((student) => ({ studentId: student.id, status: statusByStudent[student.id] }));
@@ -127,18 +134,20 @@ export function AttendanceForm() {
                 </option>
               ))}
             </select>
-            <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <CalenderIcon />
-              {formatDateLong(TODAY)}
-            </p>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs font-medium text-muted-foreground">Data</Label>
+              <div className="flex h-11 items-center gap-1.5 rounded-lg border border-input px-4 text-base text-foreground md:h-9 md:text-sm">
+                <Calendar className="size-4 shrink-0 text-muted-foreground" />
+                <span className="whitespace-nowrap tabular-nums">{formatDateLong(today)}</span>
+              </div>
+            </div>
           </div>
 
-          <input
+          <Input
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar aluno por nome ou matrícula..."
-            className="h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-hidden"
+            placeholder="Buscar aluno por nome..."
           />
 
           <div className="grid grid-cols-4 gap-2">
@@ -159,17 +168,15 @@ export function AttendanceForm() {
         </header>
       </Card>
 
-      <div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={markAllPresent}
-          disabled={!groupId || (students?.length ?? 0) === 0}
-        >
-          Marcar todos como presente
-        </Button>
-      </div>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={markAllPresent}
+        disabled={!groupId || (students?.length ?? 0) === 0}
+      >
+        Marcar todos como presente
+      </Button>
 
       {!groupId && (
         <p className="text-sm text-muted-foreground">Selecione uma aula para iniciar a chamada.</p>
@@ -228,7 +235,7 @@ export function AttendanceForm() {
         </div>
       )}
 
-      <div className="flex flex-col items-center gap-3">
+      <div className="sticky bottom-0 flex flex-col items-center gap-3 border-t border-border bg-card px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         {isSaved && <Badge variant="success">Chamada salva</Badge>}
         <Button
           type="button"

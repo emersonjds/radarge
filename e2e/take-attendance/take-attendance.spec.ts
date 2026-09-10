@@ -26,7 +26,7 @@ test.describe("mobile roll call (cards)", () => {
     await page.goto("/attendance");
 
     await expect(page.getByLabel("Selecionar aula")).toBeVisible();
-    await expect(page.getByPlaceholder("Buscar aluno por nome ou matrícula...")).toBeVisible();
+    await expect(page.getByPlaceholder("Buscar aluno por nome...")).toBeVisible();
 
     const rows = page.locator('[aria-label^="Status de presença de"]');
     await expect(rows.first()).toBeVisible();
@@ -38,10 +38,10 @@ test.describe("mobile roll call (cards)", () => {
       "",
     );
 
-    await page.getByPlaceholder("Buscar aluno por nome ou matrícula...").fill(primeiroNome);
+    await page.getByPlaceholder("Buscar aluno por nome...").fill(primeiroNome);
     await expect(rows).toHaveCount(1);
 
-    await page.getByPlaceholder("Buscar aluno por nome ou matrícula...").fill("");
+    await page.getByPlaceholder("Buscar aluno por nome...").fill("");
     await expect(rows).toHaveCount(totalInicial);
 
     await rows.first().getByRole("button", { name: "Ausente" }).click();
