@@ -1,0 +1,60 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [master, developer]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Anything that runs during a build inherits this, install scripts included, so it is
+# capped at reading the repository rather than left at the account default.
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version-file: package.json
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Formatting
+        run: pnpm format:check
+
+      - name: Types
+        run: pnpm type-check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Tests
+        run: pnpm test
+
+      # The contract is the source of truth for our types. Regenerating and finding a
+      # diff means openapi.json moved without the types following, or the types were
+      # edited by hand - either way the build would compile against a fiction.
+      - name: Generated types match the contract
+        run: |
+          pnpm api:types
+          git diff --exit-code -- src/shared/api/schema.d.ts
+
+      - name: Build
+        run: pnpm build
+
+# The Playwright suite is deliberately absent. It drives a live radarge-api against a
+# real Postgres, which is the whole reason it catches what the mocked tests cannot:
+# CORS, cookie flags, and the server's own scoping rules. Reproducing that here means
+# running the sibling repository, and a green CI against a mock would be worse than
+# no CI at all. It runs locally, per docs in the repository README.
