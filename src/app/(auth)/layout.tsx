@@ -39,10 +39,18 @@ const PANEL_ICON_KINDS = [
   Presentation,
 ] as const;
 
-// One cell per icon, not a shared row/column list: every (top, left) pair below is
-// unique, which is what actually guarantees no two icons land on the same spot.
-const PANEL_ICON_ROWS = [7, 21, 35, 50, 64, 78, 92];
-const PANEL_ICON_COLUMNS = [12.5, 37.5, 62.5, 87.5];
+// The grid is a collision guarantee, not the visual: each icon can drift up to 40% of its
+// own cell in any direction, which is enough to erase the column/row structure while two
+// icons still cannot meet, because neither ever leaves its own cell.
+const PANEL_ICON_GRID_ROWS = 7;
+const PANEL_ICON_GRID_COLUMNS = 5;
+const PANEL_ICON_JITTER_FRACTION = 0.4;
+const PANEL_ICON_MAX_ROTATION = 60;
+
+// A short modulo (`% 5`, `% 7`) repeats every few icons and still reads as a pattern at any
+// amplitude. A multiplicative hash breaks that: two unrelated large primes, one per axis, so
+// x and y jitter don't move together.
+const hashUnit = (index: number, multiplier: number) => ((index * multiplier) % 1000) / 1000;
 
 // The heading and paragraph sit left-of-center, vertically centered: an icon landing there
 // is forced to the background tier instead of skipped, so the panel reads as a field.
@@ -56,10 +64,10 @@ const PANEL_ICON_TIERS = [
   { name: "background", minSize: 42, sizeRange: 12, minOpacity: 0.04, opacityRange: 0.016, strokeWidth: 1.25 },
 ] as const;
 
-// Row pitch ~14% of panel height (~102px at the 1280x720 desktop breakpoint the E2E
-// suite captures), column pitch 25% (~164px). The largest tier tops out at 53px, so even
-// worst-case jitter plus the 6px drift leaves >25px of clear space between neighbours —
-// verified by hand, not assumed, because a bold field is worthless if icons touch.
+// 7x5 is the ceiling for this tier set: at 40% jitter and up to +/-60deg of rotation (which
+// inflates a square icon's bounding box toward its diagonal), an 8x5 or 7x6 grid starts
+// producing touching bounding boxes for the largest (background) tier — measured with the
+// same overlap check as the render, not assumed. Denser needs smaller icons, not just more cells.
 interface PanelIcon {
   readonly id: string;
   readonly Icon: (typeof PANEL_ICON_KINDS)[number];
@@ -72,37 +80,45 @@ interface PanelIcon {
   readonly delay: string;
 }
 
-const PANEL_ICONS: readonly PanelIcon[] = PANEL_ICON_ROWS.flatMap((row, rowIndex) =>
-  PANEL_ICON_COLUMNS.map((column, columnIndex) => {
-    const index = rowIndex * PANEL_ICON_COLUMNS.length + columnIndex;
+const PANEL_ICONS: readonly PanelIcon[] = Array.from({ length: PANEL_ICON_GRID_ROWS }).flatMap(
+  (_, row) =>
+    Array.from({ length: PANEL_ICON_GRID_COLUMNS }).map((_unused, column) => {
+      const index = row * PANEL_ICON_GRID_COLUMNS + column;
+      const rowPitch = 100 / PANEL_ICON_GRID_ROWS;
+      const columnPitch = 100 / PANEL_ICON_GRID_COLUMNS;
+      const cellTop = rowPitch * (row + 0.5);
+      const cellLeft = columnPitch * (column + 0.5);
 
-    // Small deterministic jitter so the grid doesn't read as a lattice, kept well inside
-    // the per-cell margin computed above.
-    const top = row + ((((index * 29) % 5) - 2) * 0.6);
-    const left = column + ((((index * 13) % 7) - 3) * 0.7);
+      const jitterTop = (hashUnit(index, 2654435761) - 0.5) * 2 * PANEL_ICON_JITTER_FRACTION;
+      const jitterLeft = (hashUnit(index, 2246822519) - 0.5) * 2 * PANEL_ICON_JITTER_FRACTION;
+      const top = cellTop + jitterTop * rowPitch;
+      const left = cellLeft + jitterLeft * columnPitch;
 
-    const inTextZone =
-      left >= TEXT_ZONE.minLeft &&
-      left <= TEXT_ZONE.maxLeft &&
-      top >= TEXT_ZONE.minTop &&
-      top <= TEXT_ZONE.maxTop;
+      const inTextZone =
+        left >= TEXT_ZONE.minLeft &&
+        left <= TEXT_ZONE.maxLeft &&
+        top >= TEXT_ZONE.minTop &&
+        top <= TEXT_ZONE.maxTop;
 
-    // Only foreground/middle icons outside the text zone compete for the eye;
-    // anything over the wordmark or paragraph is forced into the quiet background tier.
-    const tier = inTextZone ? PANEL_ICON_TIERS[2] : PANEL_ICON_TIERS[index % 3];
+      // Only foreground/middle icons outside the text zone compete for the eye;
+      // anything over the wordmark or paragraph is forced into the quiet background tier.
+      const tier = inTextZone ? PANEL_ICON_TIERS[2] : PANEL_ICON_TIERS[index % 3];
 
-    return {
-      id: `panel-icon-${index}`,
-      Icon: PANEL_ICON_KINDS[index % PANEL_ICON_KINDS.length],
-      top,
-      left,
-      size: tier.minSize + ((index * 7) % tier.sizeRange),
-      rotation: (((index * 47) % 7) - 3) * 12,
-      opacity: tier.minOpacity + ((index * 3) % 5) * (tier.opacityRange / 5),
-      strokeWidth: tier.strokeWidth,
-      delay: `${(index % 6) * 1.4}s`,
-    };
-  }),
+      const rotationHash = hashUnit(index, 3266489917);
+      const rotation = (rotationHash - 0.5) * 2 * PANEL_ICON_MAX_ROTATION;
+
+      return {
+        id: `panel-icon-${index}`,
+        Icon: PANEL_ICON_KINDS[index % PANEL_ICON_KINDS.length],
+        top,
+        left,
+        size: tier.minSize + ((index * 7) % tier.sizeRange),
+        rotation,
+        opacity: tier.minOpacity + ((index * 3) % 5) * (tier.opacityRange / 5),
+        strokeWidth: tier.strokeWidth,
+        delay: `${(index % 6) * 1.4}s`,
+      };
+    }),
 );
 
 export default function AuthLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -149,9 +165,11 @@ export default function AuthLayout({ children }: Readonly<{ children: React.Reac
         </div>
 
         <div className="relative max-w-md">
-          <span className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Radarge</span>
-          <p className="mt-1 text-sm font-medium text-brand-200">Gestão Escolar</p>
-          <p className="mt-5 hidden text-sm leading-relaxed text-white/60 lg:block">
+          <span className="text-2xl font-semibold tracking-tight text-white sm:text-3xl lg:text-5xl">
+            Radarge
+          </span>
+          <p className="mt-1 text-sm font-medium text-brand-200 lg:text-base">Gestão Escolar</p>
+          <p className="mt-5 hidden text-sm leading-relaxed text-white/60 lg:block lg:text-base">
             Chamada rápida no celular para os professores. Frequência, absenteísmo e desempenho em
             painéis para a coordenação.
           </p>

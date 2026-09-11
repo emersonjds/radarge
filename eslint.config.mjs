@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Vendored TailAdmin template — kept verbatim as the base, not adapted.
     "src/shared/tailadmin/**",
+    // Lagune ships its own hooks; they are the tool's, not ours to lint.
+    ".lagune/**",
   ]),
 ]);
 
