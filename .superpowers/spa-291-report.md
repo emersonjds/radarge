@@ -15,7 +15,7 @@ Branch `feature/spa-291-typed-api-client`. Four commits, one per task.
 - Copied `../radarge-api/openapi.json` to the root and versioned it (175,963 bytes).
 - The `api:types` script generates `src/shared/api/schema.d.ts` (3759 lines).
 - Proof: created `src/shared/api/_type-check-proof.ts` importing
-  `components["schemas"]["Profile"]`, ran `pnpm type-check` clean, deleted the file before the
+  `components["schemas"]["Profile"]`, ran `npm run type-check` clean, deleted the file before the
   commit.
 
 ## Task 2: the client
@@ -42,7 +42,7 @@ Steps executed:
 
 1. `docker exec radarge-api-postgres-1 psql -U radarge -d postgres -c "CREATE DATABASE radarge_spa291_proof;"`,
    a throwaway database on the Postgres already running at `localhost:55432`.
-2. `cd ../radarge-api && pnpm build`, which is `tsc --project tsconfig.build.json`, no errors.
+2. `cd ../radarge-api && npm run build`, which is `tsc --project tsconfig.build.json`, no errors.
 3. Started the server with `DATABASE_URL` pointing at the throwaway database,
    `CORS_ORIGIN=http://localhost:3000`, a 42-character `JWT_SECRET`, `PORT=8099` and the four
    `BOOTSTRAP_ADMIN_*`. Boot log:
@@ -53,7 +53,7 @@ Steps executed:
 4. Added `tsx` as a devDependency on the front end (the same role it already plays in
    `radarge-api`) to run `scripts/prove-client.ts`: extensionless imports (`./errors`,
    `./token-store`) resolve under Next's bundler but not under Node's native ESM resolver.
-5. Script `scripts/prove-client.ts` (runs via `pnpm api:prove` or
+5. Script `scripts/prove-client.ts` (runs via `npm run api:prove` or
    `npx tsx scripts/prove-client.ts`), using nothing but `createApiClient` from this repository:
    login with the bootstrap admin, read `mustChangePassword`, change the password, log in again,
    create a teacher, create a student, list students.
@@ -110,10 +110,10 @@ token cleared.
 ## Final gate
 
 ```
-pnpm type-check   -> clean
-pnpm lint         -> clean
-pnpm test -- --reporter=dot -> 30 files, 105 tests, all passing
-pnpm build        -> production build finished, 11 static routes
+npm run type-check   -> clean
+npm run lint         -> clean
+npm test -- --reporter=dot -> 30 files, 105 tests, all passing
+npm run build        -> production build finished, 11 static routes
 ```
 
 ## What did not work first time

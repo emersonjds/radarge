@@ -107,8 +107,8 @@ badge sit on one baseline and neither wraps.
 
 ## Verification
 
-- `pnpm type-check`, `pnpm lint`, `pnpm test` — all clean before reporting.
-- `pnpm exec playwright test e2e/dashboard` green, with the two evidence PNGs
+- `npm run type-check`, `npm run lint`, `npm test` — all clean before reporting.
+- `npx playwright test e2e/dashboard` green, with the two evidence PNGs
   regenerated and **opened and looked at** before claiming they are good.
 - Confirm by grep that `MOCK_TOTAL_TEACHERS`, `MOCK_TEACHERS_THRESHOLD` and
   `ADMIN_TASKS` no longer appear anywhere in `src/`.

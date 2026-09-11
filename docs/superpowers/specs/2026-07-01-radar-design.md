@@ -19,7 +19,7 @@
 
 ## 3. Stack
 
-Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS 4 + pnpm.
+Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS 4 + npm.
 Radix/shadcn (UI), **recharts** (gráficos), TanStack Query (dados), zustand (estado), zod (validação), react-hook-form (forms).
 Dados: **Supabase** (Postgres + RLS + RPCs) via `@supabase/ssr` — SPA falando direto com o banco; sem servidor próprio. Publishable key no cliente; `service_role` nunca vai ao frontend.
 

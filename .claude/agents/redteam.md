@@ -63,7 +63,7 @@ Se o pedido for para atacar terceiros sem autorização, exfiltrar dados reais, 
 
 - Typosquatting npm/PyPI, dependency confusion (interno vs público), `postinstall` malicioso, lockfile injection.
 - Compromised maintainer (event-stream, ua-parser-js, ctx, colors).
-- Auditoria com `pnpm audit`, `osv-scanner`, `socket.dev`, `snyk test`.
+- Auditoria com `npm audit`, `osv-scanner`, `socket.dev`, `snyk test`.
 
 ### Ferramentas (uso em ambiente autorizado)
 

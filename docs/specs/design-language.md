@@ -456,11 +456,11 @@ reintroducing a bug that is already catalogued.
 
 Only what is missing, with the reason. Nothing hand-rolled that the registry already delivers.
 
-| Component    | `pnpm dlx shadcn@latest add …` | Why                                                                                                                                                               |
-| ------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `card`       | `card`                         | The `rounded-xl border bg-card p-4 shadow-sm` pattern is copied across ~10 files. Centralizing it is what makes §6 hold by construction instead of by discipline. |
-| `pagination` | `pagination`                   | Required by §7. Brings `aria-current` and navigation semantics ready-made.                                                                                        |
-| `skeleton`   | `skeleton`                     | Table and list loading (§5). For that only.                                                                                                                       |
+| Component    | `npx shadcn@latest add …` | Why                                                                                                                                                               |
+| ------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `card`       | `card`                    | The `rounded-xl border bg-card p-4 shadow-sm` pattern is copied across ~10 files. Centralizing it is what makes §6 hold by construction instead of by discipline. |
+| `pagination` | `pagination`              | Required by §7. Brings `aria-current` and navigation semantics ready-made.                                                                                        |
+| `skeleton`   | `skeleton`                | Table and list loading (§5). For that only.                                                                                                                       |
 
 **Do not** add now: `progress` (the bar is static and decorative, two `div`s cover it),
 `sheet`/`drawer` (no screen asks for one), `tooltip` (the native `title` covers the truncation

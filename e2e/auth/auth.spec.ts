@@ -25,7 +25,7 @@ test.describe("role-based view", () => {
     const page = await newPageIn(teacherContext, MOBILE_VIEWPORT);
     await page.goto("/");
 
-    await expect(page.getByText("Meus alunos")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Meus alunos" })).toBeVisible();
 
     const nav = sidebar(page);
     await expect(nav.getByRole("link")).toHaveCount(4);
@@ -101,7 +101,7 @@ test.describe("auth guard", () => {
     const page = await newPageIn(teacherContext);
     await page.goto("/reports");
     await expect(page).toHaveURL("/");
-    await expect(page.getByText("Meus alunos")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Meus alunos" })).toBeVisible();
   });
 
   test("coordinator cannot reach /attendance (redirects home)", async () => {

@@ -14,7 +14,7 @@
 - FSD: import só para camadas abaixo (`app → widgets → features → entities → shared`).
 - Sem `any`; interfaces de props nomeadas; sem identificadores de 1 letra; comentário só para porquê não óbvio.
 - Sem barrel imports; `"use client"` só onde há hook/estado/evento; derivar no render (eslint `react-hooks/set-state-in-effect` rejeita setState em efeito); `next/link` para navegação.
-- Comandos pnpm/node prefixados com `rtk proxy` (senão a saída é engolida).
+- Comandos npm/node prefixados com `rtk proxy` (senão a saída é engolida).
 - Commits: `git -c user.name="Emerson Silva" -c user.email="emerson_jdss@hotmail.com" commit -m "..."` — inglês, minúsculo, sem ponto final, sem traço de LLM.
 - Gate por task: `rtk proxy ./node_modules/.bin/tsc --noEmit` + `rtk proxy ./node_modules/.bin/eslint src` + `rtk proxy ./node_modules/.bin/vitest run` verdes.
 
@@ -223,12 +223,12 @@ Comportamento (espelhar `features/fazer-chamada/ChamadaForm.tsx` — ler antes):
 
 - [ ] **Step 1 (integração):** com `renderHookComQuery` + `resetDb`: `criarAvaliacao` (turma-mat-b, "Prova E2E", hoje, peso 2) → `definirNota` aluno-1 = 6.5 → depois 8.0 → `useNotasPorAvaliacao` reflete 1 registro valor 8.0; `criarAvaliacao` 2x → `useAvaliacoesPorTurma` sem duplicata. Rodar verde.
 - [ ] **Step 2 (E2E):** spec com: professor → `/avaliacoes` → cria "Prova Final" (peso 2) → lança nota 8.5 no primeiro aluno → salva → espera "Notas salvas" → screenshot `notas-salvas.png`; recarrega → prefill 8.5 → screenshot `notas-prefill.png`; troca para Coordenação (topbar) → navega ao relatório do primeiro aluno (via `/alunos`, "Ver relatório") → espera "Prova Final" visível na tabela e mini-stat "Média" → screenshot `relatorio-com-notas.png`; guarda: como Coordenação, `/avaliacoes` redireciona a `/`. Seletores por role/text (`getByRole`, `getByLabel`); free port 3000 antes (`pkill -f "next dev"` etc.).
-- [ ] **Step 3:** `rtk proxy pnpm test:e2e` verde; PNGs existem.
+- [ ] **Step 3:** `rtk proxy npm run test:e2e` verde; PNGs existem.
 - [ ] **Step 4: Commit** — `test: cover grade entry flow with integration and e2e evidence`
 
 ### Task 8: Fecho
 
-- [ ] Gate completo: `tsc`, `eslint src e2e playwright.config.ts`, `vitest run`, `rtk proxy pnpm build` (atenção: página nova não usa `useSearchParams`, não precisa de Suspense), `pnpm test:e2e`.
+- [ ] Gate completo: `tsc`, `eslint src e2e playwright.config.ts`, `vitest run`, `rtk proxy npm run build` (atenção: página nova não usa `useSearchParams`, não precisa de Suspense), `npm run test:e2e`.
 - [ ] README: adicionar "Avaliações & Notas" à seção de domínio/testes (1–2 linhas).
 - [ ] Merge `feat/avaliacoes-notas` → master (ff-only), deletar branch, sem push.
 - [ ] Commit README — `docs: mention avaliacoes and notas`

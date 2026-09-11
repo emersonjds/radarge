@@ -37,7 +37,7 @@ Branch: `feat/events-area`
 
 ### T6 — Gate
 
-- `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm test:e2e`, review do agent `bug`.
+- `npm run type-check`, `npm run lint`, `npm test`, `npm run test:e2e`, review do agent `bug`.
 
 ## Ordem
 

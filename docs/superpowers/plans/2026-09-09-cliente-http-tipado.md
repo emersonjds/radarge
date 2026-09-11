@@ -10,7 +10,7 @@ Branch `feature/spa-291-typed-api-client`, cortada de `developer`.
 - Sem `any`, sem `as unknown as`, sem asserção de não-nulo. Named exports, arrow functions, early return, sem abreviação em nome.
 - Comentário só para fato que o código não mostra. Racional mora na spec.
 - Nada de tela, nada de fetcher migrado, nada de `localStorage` removido. Só a camada e a prova.
-- Gate: `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build`. Saída sempre com `tail`.
+- Gate: `npm run type-check`, `npm run lint`, `npm test`, `npm run build`. Saída sempre com `tail`.
 
 ---
 
@@ -21,11 +21,11 @@ Branch `feature/spa-291-typed-api-client`, cortada de `developer`.
 1. Instalar `openapi-typescript` como devDependency.
 2. Copiar `../radarge-api/openapi.json` para a raiz do repositório e versionar. É snapshot do contrato: sem ele o projeto não compila em máquina limpa nem em CI.
 3. Script `"api:types"` no `package.json` gerando `src/shared/api/schema.d.ts` a partir do `openapi.json`.
-4. Rodar, commitar o gerado, e conferir que `pnpm type-check` passa.
+4. Rodar, commitar o gerado, e conferir que `npm run type-check` passa.
 
 O gerado é versionado de propósito — quem clona não precisa rodar geração para o projeto compilar.
 
-**Prova:** um arquivo temporário que importe um tipo do schema e o use; `pnpm type-check` limpo; apagar o arquivo antes do commit.
+**Prova:** um arquivo temporário que importe um tipo do schema e o use; `npm run type-check` limpo; apagar o arquivo antes do commit.
 
 ---
 
@@ -53,7 +53,7 @@ Refresh que falha significa sessão encerrada, e quem chamou precisa distinguir 
 
 Não é teste com mock. É a API de verdade.
 
-1. Subir a `radarge-api` local: `cd ../radarge-api && pnpm build`, banco descartável, variáveis de bootstrap, `node dist/server.js`.
+1. Subir a `radarge-api` local: `cd ../radarge-api && npm run build`, banco descartável, variáveis de bootstrap, `node dist/server.js`.
 2. Um script em `scripts/` que use **o cliente deste repositório** para: logar com o admin de bootstrap, ler `mustChangePassword` do payload, trocar a senha, relogar, criar um professor, criar um aluno e listar alunos.
 3. Rodar e colar a saída real no relatório.
 4. Derrubar a API e rodar de novo: as chamadas precisam devolver erro tipado, não travar.

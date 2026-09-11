@@ -6,7 +6,7 @@ import { defineConfig, devices } from "@playwright/test";
  * refresh cookie, the role scoping, or the field names the API actually reads.
  *
  * Bring it up first:
- *   cd ../radarge-api && docker compose up -d && pnpm dev
+ *   cd ../radarge-api && docker compose up -d && npm run dev
  */
 export default defineConfig({
   testDir: "e2e",
@@ -19,7 +19,7 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
   },
   webServer: {
-    command: "pnpm dev",
+    command: "npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: true,
     timeout: 120000,

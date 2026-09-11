@@ -19,7 +19,7 @@ student list. It does not touch the header or the list.
    icon per tile is decoration nobody asked for (YAGNI). Revisit only if user testing shows color
    alone is not enough.
 7. The progress bar is two `div`s with color tokens, not a new component: it is static and not
-   interactive, which does not justify `pnpm dlx shadcn add progress`.
+   interactive, which does not justify `npx shadcn add progress`.
 
 ## Data mapping (`EventSummary`)
 

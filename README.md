@@ -14,7 +14,7 @@ desempenho (média ponderada) em dashboards (mobile + desktop).
 - **react-hook-form + zod** em todo formulário (ver `docs/specs/form-pattern.md`)
 - Backend: a **`radarge-api`** (Node, Fastify, Postgres), no repositório irmão
   `personal-projects/radarge-api`. O contrato publicado em `openapi.json` gera os tipos
-  do front, então divergência vira erro de `pnpm type-check` e não `undefined` em tela.
+  do front, então divergência vira erro de `npm run type-check` e não `undefined` em tela.
 
 ## Arquitetura — Feature-Sliced Design
 
@@ -39,12 +39,12 @@ assíncronos validados com Zod; `entities/*/queries.ts` expõem os hooks TanStac
 ## Scripts
 
 ```bash
-pnpm dev          # desenvolvimento
-pnpm build        # build de produção
-pnpm type-check   # tsc --noEmit
-pnpm lint         # eslint
-pnpm test         # vitest run (unit + integração)
-pnpm test:e2e     # playwright (E2E)
+npm run dev          # desenvolvimento
+npm run build        # build de produção
+npm run type-check   # tsc --noEmit
+npm run lint         # eslint
+npm test         # vitest run (unit + integração)
+npm run test:e2e     # playwright (E2E)
 ```
 
 ## Testes (SDD)
@@ -56,7 +56,7 @@ Três camadas, conforme o CLAUDE.md §8:
   `src/**/*.integration.test.tsx` e `src/test/`.
 - **E2E (Playwright)** — fluxos reais no browser com evidências PNG em
   `e2e/<feature>/evidencias/`: personas, troca de persona, guardas de rota e
-  chamada. Rode com `pnpm test:e2e` (na 1ª vez: `npx playwright install chromium`).
+  chamada. Rode com `npm run test:e2e` (na 1ª vez: `npx playwright install chromium`).
 
 Spec e plano da feature em `docs/superpowers/`.
 

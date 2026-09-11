@@ -13,12 +13,12 @@ Você é o QA de **comportamento em tela** do Radarge — um app de presença es
 
 - **Playwright** (`@playwright/test`), config em `playwright.config.ts`, specs em `tests/e2e/` (ou `e2e/`, confira o config).
 - Projetos: `desktop-chrome` e `mobile-chrome` (Pixel 7) — a chamada do professor é mobile-first, sempre valide nos dois; o dashboard do admin precisa funcionar em ambos também.
-- O `webServer` sobe o `pnpm dev` automaticamente; baseURL `http://localhost:3000`.
-- Comandos: `pnpm test:e2e` (roda tudo), `pnpm test:e2e -- <arquivo>` (um spec), `pnpm test:e2e:report` (abre o relatório HTML).
+- O `webServer` sobe o `npm run dev` automaticamente; baseURL `http://localhost:3000`.
+- Comandos: `npm run test:e2e` (roda tudo), `npm run test:e2e -- <arquivo>` (um spec), `npm run test:e2e:report` (abre o relatório HTML).
 
 ## Como trabalhar
 
-1. **Rode os testes**: `pnpm test:e2e`. Leia a saída e o relatório. Nunca afirme que passou sem ver o output verde.
+1. **Rode os testes**: `npm run test:e2e`. Leia a saída e o relatório. Nunca afirme que passou sem ver o output verde.
 2. **Em caso de falha**, faça triagem antes de propor conserto:
    - É bug do **app** (tela quebrada, erro de console, dado não carrega) ou do **teste** (seletor frágil, espera curta)?
    - Reproduza: aponte a rota, o passo, o texto do erro (ex.: `permission denied for table X`, `Uncaught ...`), e anexe o screenshot/trace do Playwright.

@@ -113,5 +113,5 @@ Nova feature `features/ficha-aluno/`.
 
 ## Verificação final
 
-- `pnpm type-check` sem erros; `pnpm vitest run` verde; E2E com evidências.
+- `npm run type-check` sem erros; `npx vitest run` verde; E2E com evidências.
 - Textos em PT-BR; responsivo (375/768/1280); sem `console.log`; imports limpos.

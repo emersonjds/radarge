@@ -15,7 +15,7 @@ O cliente HTTP tipado já existe em `src/shared/lib/api/`, com token em memória
 - Sem `any`, sem `as unknown as`, sem asserção de não-nulo. Named exports, arrow functions, early return.
 - Comentário só para fato que o código não mostra.
 - **A mensagem de erro do servidor nunca vai para a tela.** O texto é nosso, escolhido a partir do `code`.
-- Gate: `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build`, saída com `tail`.
+- Gate: `npm run type-check`, `npm run lint`, `npm test`, `npm run build`, saída com `tail`.
 
 ---
 

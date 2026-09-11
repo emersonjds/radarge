@@ -134,7 +134,7 @@ mudam** (mesmo shape `Grade[]`). Só a fonte muda.
 - [ ] Excluir avaliação remove suas notas (cascade).
 - [ ] Relatórios/`AcademicPanel`/CSV passam a refletir a média **derivada** das avaliações; a
       coleção `grades` do seed foi removida e nada quebra.
-- [ ] `pnpm type-check`, 3 camadas de teste e `pnpm build` verdes; UI 100% PT-BR; sem `console.log`.
+- [ ] `npm run type-check`, 3 camadas de teste e `npm run build` verdes; UI 100% PT-BR; sem `console.log`.
 
 ## Fora de escopo
 

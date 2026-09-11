@@ -16,9 +16,9 @@
 - FSD: import só para camadas abaixo (`app → widgets → features → entities → shared`).
 - Sem `any` (use `unknown` + narrowing); toda função/componente público com interface de props nomeada; sem identificadores de uma letra; comentário só para "porquê" não óbvio.
 - Regras de perf (vercel-react-best-practices): sem barrel imports; `"use client"` só onde há hook/estado/evento; derivar no render (sem efeito para estado derivado); `next/link` para navegação.
-- Comandos neste ambiente: prefixar pnpm/node com `rtk proxy` (ex.: `rtk proxy pnpm build`) senão a saída é engolida.
+- Comandos neste ambiente: prefixar npm/node com `rtk proxy` (ex.: `rtk proxy npm run build`) senão a saída é engolida.
 - Commits: `git -c user.name="Emerson Silva" -c user.email="emerson_jdss@hotmail.com" commit`; conventional-commit em inglês, minúsculo, sem ponto final; **sem nenhum traço de LLM**.
-- Gate por entrega: `rtk proxy ./node_modules/.bin/tsc --noEmit`, `rtk proxy ./node_modules/.bin/eslint src`, `rtk proxy ./node_modules/.bin/vitest run`, `rtk proxy pnpm build` verdes.
+- Gate por entrega: `rtk proxy ./node_modules/.bin/tsc --noEmit`, `rtk proxy ./node_modules/.bin/eslint src`, `rtk proxy ./node_modules/.bin/vitest run`, `rtk proxy npm run build` verdes.
 
 ---
 
@@ -135,12 +135,12 @@
 **Files:**
 
 - Add dep (dev): `@playwright/test`
-- Create: `playwright.config.ts` (webServer = `pnpm dev`, baseURL, screenshot dir)
+- Create: `playwright.config.ts` (webServer = `npm run dev`, baseURL, screenshot dir)
 - Modify: `package.json` (script `test:e2e`)
 - Modify: `.gitignore` (`/test-results`, `/playwright-report` já ignorados; garantir)
 
-- [ ] **Step 1:** `rtk proxy pnpm add -D @playwright/test`; `rtk proxy npx playwright install chromium` (download fora de script npm; se falhar, reportar honestamente).
-- [ ] **Step 2:** `playwright.config.ts`: `testDir: 'e2e'`, `use.baseURL: 'http://localhost:3000'`, `webServer: { command: 'pnpm dev', url: 'http://localhost:3000', reuseExistingServer: true }`, `projects: [{ name: 'chromium' }]`. Screenshots manuais via `page.screenshot`.
+- [ ] **Step 1:** `rtk proxy npm install -D @playwright/test`; `rtk proxy npx playwright install chromium` (download fora de script npm; se falhar, reportar honestamente).
+- [ ] **Step 2:** `playwright.config.ts`: `testDir: 'e2e'`, `use.baseURL: 'http://localhost:3000'`, `webServer: { command: 'npm run dev', url: 'http://localhost:3000', reuseExistingServer: true }`, `projects: [{ name: 'chromium' }]`. Screenshots manuais via `page.screenshot`.
 - [ ] **Step 3:** Script `"test:e2e": "playwright test"`. Commit: `build: add playwright e2e harness`.
 
 ### Task C2: Specs E2E + evidências PNG
@@ -160,7 +160,7 @@
 - [ ] **Step 2:** `chamada.spec.ts`:
   - Como professor, abrir `/chamada`, marcar todos presente, salvar → banner "Chamada salva"; screenshot `chamada-salva.png`.
   - Reabrir `/chamada` mesma turma → status prefilled.
-- [ ] **Step 3:** `rtk proxy pnpm test:e2e` verde; confirmar PNGs gerados. Commit: `test(e2e): add persona and chamada flows with evidence`.
+- [ ] **Step 3:** `rtk proxy npm run test:e2e` verde; confirmar PNGs gerados. Commit: `test(e2e): add persona and chamada flows with evidence`.
 
 ---
 
@@ -168,7 +168,7 @@
 
 ### Task D1: Gate final + merge
 
-- [ ] `tsc`, `eslint`, `vitest run`, `pnpm build`, `pnpm test:e2e` verdes.
+- [ ] `tsc`, `eslint`, `vitest run`, `npm run build`, `npm run test:e2e` verdes.
 - [ ] Atualizar README (seção Testes: unit/integração/E2E + como rodar).
 - [ ] Merge `feat/sdd-tests-hardening` → master (ff), sem push.
 

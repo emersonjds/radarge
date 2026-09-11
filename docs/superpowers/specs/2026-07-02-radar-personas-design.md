@@ -69,8 +69,8 @@ Premissa: auth real (Supabase) fica fora desta rodada — a persona é escolhida
 | Integração (MSW) | `src/test/msw/` + `*.integration.test.ts` | hooks TanStack + fetchers ponta a ponta sobre o store; handlers MSW prontos para o Supabase futuro |
 | E2E (Playwright) | `e2e/` + evidências PNG                   | fluxos reais no browser: personas, chamada, guardas                                                |
 
-Gate por implementação: `pnpm type-check`, `pnpm lint`, `pnpm test`,
-`pnpm build` e os E2E verdes antes de concluir.
+Gate por implementação: `npm run type-check`, `npm run lint`, `npm test`,
+`npm run build` e os E2E verdes antes de concluir.
 
 ## 6. Arquitetura (inalterada, referência)
 
