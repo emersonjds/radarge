@@ -1,4 +1,4 @@
-# CLAUDE.md — Radar
+# CLAUDE.md — Radarge
 
 Regras de ouro para todo desenvolvimento assistido por IA neste projeto. Leia e siga integralmente antes de qualquer tarefa.
 
@@ -6,7 +6,7 @@ Regras de ouro para todo desenvolvimento assistido por IA neste projeto. Leia e 
 
 ## 1. Identidade do Produto
 
-- **Nome**: Radar
+- **Nome**: Radarge
 - **Domínio**: sistema de presença e acompanhamento para **ONG de reforço escolar no contra-turno**. Professores marcam presença nas **aulas** (mobile); admins acompanham frequência, absenteísmo e desempenho em dashboards (mobile + desktop).
 - **Modelo**: alunos têm uma **ficha** independente (nome, data de nascimento, responsável, telefone) e podem estar matriculados em **múltiplas aulas** simultaneamente (relação N:N). Não há conceito de série/ano escolar — cada aula é uma oficina temática (ex: Reforço de Matemática — Segunda).
 - **Stack**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, pnpm. shadcn/ui (Radix + cva) em `src/shared/ui`. TanStack Query, zod, ApexCharts.
@@ -59,7 +59,7 @@ src/
 ├── entities/     ← Modelos de domínio (perfil, aula/group, aluno, matrícula/enrollment, chamada, presença).
 └── shared/       ← Infra reutilizável.
     ├── ui/         ← shadcn/ui + componentes próprios (avatar-text).
-    ├── lib/        ← storage (localStorage), utils (cn), format, csv.
+    ├── lib/        ← api (cliente HTTP tipado), utils (cn), format, csv.
     ├── config/     ← navegação por papel.
     ├── providers/  ← TanStack Query.
     └── tailadmin/  ← resíduo do template: só ícones SVG e SidebarContext. Não crescer.
@@ -69,21 +69,28 @@ src/
 
 ## 6. Dados / API
 
-> **Estado atual: front-only, sem backend.** Não existe cliente Supabase no repo — `@supabase/ssr` não está instalado e não há `supabase/migrations/`. Tudo abaixo de "backend-alvo" é plano, não código.
+> **O backend é a `radarge-api`** — Node, Fastify, Postgres, no repositório irmão `personal-projects/radarge-api`. O plano de Supabase foi descartado em 2026-09-05: o front é static export e não tem servidor, então toda proteção mora na API e não em RLS.
 
-- Os dados vivem em **localStorage** (`src/shared/lib/storage/`, chave `radar.db.v2`), com seed de demonstração em `seed.ts`.
-- Os fetchers de `entities/*/api.ts` são **assíncronos** e têm assinatura estável — é isso que deixa o Supabase entrar depois como adapter, sem mexer nas features. Mantenha-os assim.
-- Login é **por cargo, sem senha** (`features/auth/authenticate.ts` → primeiro perfil ativo do cargo). É demo; trocar por Supabase Auth.
-- Analytics hoje é calculado em JS sobre o store (`features/analytics/model.ts`) — temporário.
-- **Backend-alvo (ainda não implementado)**: Supabase (Postgres + RLS + RPCs), acessado direto pelo browser com a **publishable key** (a proteção real é a RLS). A `service_role` NUNCA vai para o frontend. Ao migrar: analytics vira view/RPC no Postgres, não recálculo no cliente.
+- **O contrato é a fonte da verdade dos tipos.** `openapi.json` na raiz é o snapshot publicado pela API; `pnpm api:types` gera `src/shared/api/schema.d.ts` a partir dele. Divergência de contrato vira erro de `pnpm type-check`, não `undefined` em tela.
+- **O cliente HTTP vive em `src/shared/lib/api/`.** Base URL por `NEXT_PUBLIC_API_URL`, `credentials: "include"` em toda chamada, access token só em memória (`token-store.ts`), e refresh de tentativa única no 401 — duas chamadas falhando juntas compartilham a mesma promessa, senão a segunda apresenta um token já rotacionado, a API entende como reuso e derruba a sessão.
+- **A `message` de erro da API nunca vai para a tela.** Ela responde `{ code, message }`; o código é para rotear, o texto que o usuário lê é nosso.
+- Os fetchers de `entities/*/api.ts` são **assíncronos** e têm assinatura estável — é o que permite trocar a origem dos dados sem mexer nas features. Mantenha-os assim.
+- **A migração terminou em 2026-09-10.** Não existe mais `src/shared/lib/storage/`, nem seed, nem hash de senha de demonstração. Toda entidade lê e escreve pela API. Se você encontrar `localStorage` em algum lugar de `src/`, é bug.
+- **Os tipos de payload vêm de `components["schemas"][...]`, não de zod.** O zod continua validando o que a pessoa digitou (`*FormSchema` no `model.ts` da entidade), nunca o que voltou do servidor - a API já validou, e um segundo parse só cria uma forma de discordar.
+- **Regra que o banco garante não se reescreve no cliente.** Unicidade, escopo por papel e integridade referencial são respondidas pela API com `conflict`, `not_found` ou `forbidden`. Guard de cliente duplicando isso é uma segunda fonte de verdade que vai divergir.
+- **Chamada e folha de notas salvam inteiras**, num `PUT` só, com o corpo em `entries` (nunca `records`). Meio salvo não é um estado que o banco alcança.
+- **Analytics são quatro rotas** (`/analytics/attendance-rate`, `/absenteeism-trend`, `/students-at-risk`, `/academic-summary`) e mais `/grades`. Não existe `GET /analytics`.
+- **Tela não inventa número.** Sem dado do servidor, mostre `-` ou estado vazio, nunca um valor plausível: aluno que nunca foi chamado não tem 100% de frequência.
+- **Senha provisória**: senha que o usuário não escolheu vale para um login só. A API responde `403` com `code: "password_change_required"` até a troca, e o perfil traz `mustChangePassword`.
 
 ## 7. Segurança
 
 - Nunca commitar secrets/tokens/chaves de API
-- RLS é a proteção real: professor só lê/escreve as próprias turmas (`professor_id = auth.uid()`); admin lê e gere tudo
-- Coluna `papel` em `perfis` nunca gravável por `authenticated` (evita autopromoção a admin)
-- Dados de aluno são PII (frequentemente menor de idade) — nunca logar nome/matrícula completos, mascarar em telemetria
-- Validar status de presença e unicidade de chamada no servidor (constraints), nunca confiar só no cliente
+- **A API é a proteção real**, não o cliente: o escopo do professor é `WHERE` no SQL dela, e uma tela que esconde um botão não protege nada. Esconder é UX; a recusa vem do servidor
+- O access token vive **só em memória**. Nunca em `localStorage`, nunca em cookie legível — um XSS não pode levar a sessão. O refresh é cookie httpOnly que o front não toca
+- Papel nunca é gravável por auto-atualização — a API recusa, e o front não tenta
+- Dados de aluno são PII (frequentemente menor de idade) — nunca logar nome/telefone completos, mascarar em telemetria
+- Unicidade de chamada e faixa de nota são constraints no banco. O cliente valida para dar erro rápido, nunca como se fosse a garantia
 
 ## 8. Review (antes de concluir)
 
@@ -98,17 +105,19 @@ src/
 Toda feature/implementação que passa pelo fluxo SDD **deve** ter as três camadas — e o E2E vale mais que os mocks (já pega bug de regra de servidor que os unit não pegam):
 
 1. **Unitário** — lógica pura (libs, derivações, regras).
-2. **Integração com MSW** — fetchers/queries contra o Supabase mockado (`src/test/msw/`).
-3. **E2E de tela (Playwright)** — fluxo real no browser, **com prints de evidência em PNG**. As evidências ficam em `e2e/<feature>/evidencias/*.png` (gere rodando o spec; não invente prints).
+2. **Integração com MSW** — fetchers e queries contra a radarge-api mockada (`src/test/msw/`). Afirme **a requisição** (caminho, verbo e corpo enviado), não só a resposta: um teste que só olha o que voltou passa enquanto manda `records` no lugar de `entries`.
+3. **E2E de tela (Playwright)** — fluxo real no browser **contra a API rodando**, com prints de evidência em PNG. As evidências ficam em `e2e/<feature>/evidencias/*.png` (gere rodando o spec; não invente prints). Suba o backend antes: `cd ../radarge-api && docker compose up -d && pnpm dev`. Os dados vêm de `e2e/seed-api.ts`, que popula pela própria API.
+
+> Mock não aplica a regra do servidor. Três bugs passaram por uma suíte MSW inteira verde e só caíram no teste contra a API viva: `Content-Type` anunciado em requisição sem corpo (logout devolvia 500 e a sessão sobrevivia), cookie de refresh descartado pelo navegador, e frequência de 100% inventada para turma sem chamada. É por isso que o E2E vale mais.
 
 ## 9. Agentes disponíveis
 
-Especialistas de domínio: `arq` (arquitetura FSD + Supabase), `back` (schema/RLS/RPCs de presença e analytics), `front` (frontend, performance e segurança client-side), `pixel` (UX/UI: chamada mobile do professor, dashboard responsivo do admin), `redteam` (segurança ofensiva e threat modeling da RLS).
+Especialistas de domínio: `front` (frontend, performance e segurança client-side), `pixel` (UX/UI: chamada mobile do professor, dashboard responsivo do admin), `redteam` (segurança ofensiva e threat modeling da fronteira com a API).
 Execução e qualidade: `bug` (QA/quality gate de código), `qa` (E2E em tela com Playwright), `scribe` (i18n PT-BR, docs).
 
 Regra: **um agent por função, sem duplicação**.
 
-## 10. Domínio: Radar (ONG de Reforço Escolar)
+## 10. Domínio: Radarge (ONG de Reforço Escolar)
 
 - **Perfil**: usuário do sistema, com papel `teacher` (Professor), `coordinator` (Coordenador) ou `admin` (Administrador). A navegação por papel vive em `shared/config/navigation.ts`.
 - **Aula** (entidade `Group`): oficina temática com um professor regente (ex: Reforço de Matemática — Segunda). Atributos: nome, turno (manhã/tarde/noite). **Não há série/ano** — cada aula é independente.

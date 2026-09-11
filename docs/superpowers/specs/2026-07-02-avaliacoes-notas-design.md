@@ -1,10 +1,10 @@
-# Radar — Avaliações & Notas · Design (spec)
+# Radarge — Avaliações & Notas · Design (spec)
 
 Data: 2026-07-02 · Status: aprovado pelo usuário
 
 ## 1. Contexto
 
-Radar (presença escolar, duas personas) ganha o domínio acadêmico de
+Radarge (presença escolar, duas personas) ganha o domínio acadêmico de
 **avaliações** (provas/trabalhos) e **notas** por aluno. Hoje o relatório do
 aluno exibe uma tabela mock "Desempenho por atividade"; esta feature a torna
 real. Stack e padrões inalterados: FSD, dados em `localStorage` atrás de
@@ -41,7 +41,7 @@ store) / `queries.ts` (hooks TanStack com query-key factory e invalidação).
 - `Collection` ganha `"avaliacoes"` e `"notas"`; seed ganha 2 avaliações por
   turma com notas para a maioria dos alunos (determinístico, alguns pendentes).
 - **Migração leve**: `readCollection` retorna `[]` quando a coleção não existe
-  no blob salvo (usuários com `radar.db.v1` antigo não quebram nem precisam de
+  no blob salvo (usuários com `radarge.db.v1` antigo não quebram nem precisam de
   reseed).
 
 ### Analytics (`features/analytics/model.ts`)

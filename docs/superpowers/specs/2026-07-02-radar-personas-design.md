@@ -1,13 +1,13 @@
-# Radar — Sistema de presença com duas personas · Design (spec)
+# Radarge — Sistema de presença com duas personas · Design (spec)
 
 Data: 2026-07-02 · Status: aprovado por delegação (usuário ausente; premissas
 marcadas abaixo, revisáveis)
 
 ## 1. Contexto
 
-Radar é um app de presença escolar (Next.js 16 App Router, React 19, TS, FSD,
+Radarge é um app de presença escolar (Next.js 16 App Router, React 19, TS, FSD,
 CSS Modules + tokens, TanStack Query, Zod). Os dados vivem hoje em `localStorage`
-(`radar.db.v1`) atrás de fetchers assíncronos — adapter para Supabase depois. O
+(`radarge.db.v1`) atrás de fetchers assíncronos — adapter para Supabase depois. O
 front já está construído: design system, app-shell, telas (painel professor,
 chamada, painel admin, detalhe do aluno, alunos, login) e a camada de sessão que
 distingue as duas personas.
@@ -27,7 +27,7 @@ são mock/no-op — sem inventar novas entidades nem telas de gestão.
   aluno). Peso informacional concentrado aqui.
 
 Sessão mock em `features/sessao` (`useSyncExternalStore` sobre `localStorage`
-`radar.sessao`, default `professor`). Nav, home (`/` role-aware com code-split) e
+`radarge.sessao`, default `professor`). Nav, home (`/` role-aware com code-split) e
 guardas de rota derivam do papel. Troca de persona no topbar e no login.
 Premissa: auth real (Supabase) fica fora desta rodada — a persona é escolhida.
 

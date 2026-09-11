@@ -20,3 +20,7 @@ export function formatPercent(value: number): string {
 export function formatScore(value: number): string {
   return value.toFixed(1).replace(".", ",");
 }
+
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+}

@@ -4,7 +4,7 @@
 
 **Goal:** Let the admin build the school structure (turmas, matérias, lecionamentos) and fix the roll-call so a professor only sees the turmas they are regente of.
 
-**Architecture:** Feature-Sliced Design over a localStorage store (`radar.db`, async fetchers mirroring a future Supabase adapter). New entity `assignment` (turma × matéria × professor) joins the existing `group`/`subject`. Admin CRUD reuses the list+form-modal pattern already used by `ProfilesAdmin`/`StudentList`. Attendance stays one-per-(turma, date), scoped by the group's regente.
+**Architecture:** Feature-Sliced Design over a localStorage store (`radarge.db`, async fetchers mirroring a future Supabase adapter). New entity `assignment` (turma × matéria × professor) joins the existing `group`/`subject`. Admin CRUD reuses the list+form-modal pattern already used by `ProfilesAdmin`/`StudentList`. Attendance stays one-per-(turma, date), scoped by the group's regente.
 
 **Tech Stack:** Next.js 16 (App Router, static export), React 19, TypeScript, Tailwind CSS 4, TanStack Query, zod, Vitest, Playwright, TailAdmin UI components.
 
@@ -17,8 +17,8 @@
 - **Authorship:** every commit's author AND committer is `Emerson Silva <emerson_jdss@hotmail.com>`. No co-author, no AI trace anywhere. Commit with `git -c user.name="Emerson Silva" -c user.email="emerson_jdss@hotmail.com" commit -m "…"`. Never `git push` (human-only).
 - **Commit messages:** English, short imperative (`add …`, `fix …`).
 - **Styling:** design tokens only (`var(--color-*)`, `text-brand-*`, etc.) — never raw hex. Mobile-first; verify 375/768/1280.
-- **White-label:** keep new code tenant-agnostic — no `organizationId`, no hardcoded school/ONG/"Radar" name in domain logic (branding stays only in `AppSidebar`).
-- **Store:** bump `STORAGE_KEY` to `radar.db.v6` (adds the `assignments` collection); add `radar.db.v5` to `LEGACY_KEYS`.
+- **White-label:** keep new code tenant-agnostic — no `organizationId`, no hardcoded school/ONG/"Radarge" name in domain logic (branding stays only in `AppSidebar`).
+- **Store:** bump `STORAGE_KEY` to `radarge.db.v6` (adds the `assignments` collection); add `radarge.db.v5` to `LEGACY_KEYS`.
 - **Commands:** `pnpm test` (Vitest), `pnpm type-check`, `pnpm build`, `pnpm test:e2e` (Playwright). If the `rtk` hook interferes, prefix with `rtk proxy` (e.g. `rtk proxy pnpm test`).
 
 ---
@@ -53,8 +53,8 @@
 In `src/shared/lib/storage/db.ts`, add `"assignments"` to the `Collection` union and bump the key:
 
 ```ts
-const STORAGE_KEY = "radar.db.v6";
-const LEGACY_KEYS = ["radar.db.v1", "radar.db.v2", "radar.db.v3", "radar.db.v4", "radar.db.v5"];
+const STORAGE_KEY = "radarge.db.v6";
+const LEGACY_KEYS = ["radarge.db.v1", "radarge.db.v2", "radarge.db.v3", "radarge.db.v4", "radarge.db.v5"];
 
 export type Collection =
   | "profiles"
@@ -301,7 +301,7 @@ const TEACHER_TWO_ID = "perfil-bruno";
 In `seedDb()`, add Bruno to `perfis` (reuse the `prof123` hash — demo only):
 
 ```ts
-    { id: TEACHER_TWO_ID, name: "Bruno Farias", email: "bruno@radar.escola", role: "teacher", jobTitle: "Professor", username: "bruno", passwordHash: "00624b02e1f9b996a3278f559d5d55313552ad2c0bafc82adfd975c12df61eaf", active: true },
+    { id: TEACHER_TWO_ID, name: "Bruno Farias", email: "bruno@radarge.escola", role: "teacher", jobTitle: "Professor", username: "bruno", passwordHash: "00624b02e1f9b996a3278f559d5d55313552ad2c0bafc82adfd975c12df61eaf", active: true },
 ```
 
 Replace the `const turmas = …` line so each turma has an explicit regente (Bruno is regente of Ciências):

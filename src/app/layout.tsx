@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/shared/providers/query-provider";
 import { SidebarProvider } from "@tailadmin/context/SidebarContext";
 
-const inter = Inter({
+const outfit = Outfit({
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Radar — presença escolar",
+  title: "Radarge — presença escolar",
   description: "Chamada e acompanhamento de frequência escolar para professores e coordenação.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body className={inter.className}>
+      <body className={outfit.className}>
         <QueryProvider>
           <SidebarProvider>{children}</SidebarProvider>
         </QueryProvider>

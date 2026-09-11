@@ -1,70 +1,74 @@
-import { expect, test } from "@playwright/test";
-import { login, sidebar } from "../helpers";
+import { expect, test, type BrowserContext } from "@playwright/test";
+import { newPageIn, signInContext, sidebar, captureScreen, captureEvidence } from "../helpers";
+import { ACCOUNTS } from "../seed-api";
 
 test.describe("academic structure admin", () => {
-  test("admin creates a subject", async ({ page }) => {
-    await login(page, "Administrador");
-    await sidebar(page).getByRole("link", { name: "Matérias", exact: true }).click();
-    await page.getByRole("button", { name: "Adicionar matéria" }).click();
-    await page.getByLabel("Nome").fill("Filosofia");
-    await page.getByRole("button", { name: "Salvar" }).click();
-    await expect(page.getByText("Filosofia")).toBeVisible();
-    await page.screenshot({
-      path: "e2e/academic-structure/evidencias/materia-criada.png",
-      fullPage: true,
-    });
+  let adminContext: BrowserContext;
+
+  test.beforeAll(async ({ browser }) => {
+    adminContext = await signInContext(browser, ACCOUNTS.academicAdmin);
   });
 
-  test("admin creates a turma and assigns a matéria to a teacher", async ({ page }) => {
-    await login(page, "Administrador");
-    await sidebar(page).getByRole("link", { name: "Aulas", exact: true }).click();
+  test("admin creates a subject", async () => {
+    const page = await newPageIn(adminContext);
+    await page.goto("/subjects");
 
-    await page.getByRole("button", { name: "Adicionar aula" }).click();
-    await page.getByLabel("Nome").fill("Redação I");
+    const name = `Filosofia E2E ${String(Date.now())}`;
+    await page.getByRole("button", { name: "Adicionar matéria" }).click();
+    await page.getByLabel("Nome").fill(name);
     await page.getByRole("button", { name: "Salvar" }).click();
-    await expect(page.getByText("Redação I")).toBeVisible();
+    await expect(page.getByText(name)).toBeVisible();
 
-    const card = page.locator("li", { hasText: "Redação I" });
+    // Frames the new row, not the whole (ever-growing) matérias list.
+    const item = page.locator("li", { hasText: name });
+    await captureEvidence(item, "e2e/academic-structure/evidence/subject-created.png");
+  });
+
+  test("admin creates a group and assigns a subject to a teacher", async () => {
+    const page = await newPageIn(adminContext);
+    await page.goto("/groups");
+
+    const name = `Redação E2E ${String(Date.now())}`;
+    await page.getByRole("button", { name: "Adicionar aula" }).click();
+    await page.getByLabel("Nome").fill(name);
+    await page.getByLabel("Professor regente").click();
+    await page.getByRole("option", { name: ACCOUNTS.academicaProfessor2.name }).click();
+    await page.getByRole("button", { name: "Salvar" }).click();
+    await expect(page.getByText(name)).toBeVisible();
+
+    const card = page.locator("li", { hasText: name });
     await card.getByRole("button", { name: "Ver detalhes" }).click();
     await card.getByRole("button", { name: "Adicionar matéria à aula" }).click();
     await expect(card.getByText("Nenhuma matéria atribuída ainda.")).toHaveCount(0);
 
-    await page.screenshot({
-      path: "e2e/academic-structure/evidencias/turma-com-lecionamento.png",
-      fullPage: true,
-    });
+    // Frames the turma card, not the whole (ever-growing) aulas list.
+    await captureEvidence(card, "e2e/academic-structure/evidence/group-with-assignment.png");
   });
 });
 
 test.describe("roll-call scoping", () => {
-  test("ricardo sees only his regência turmas in the roll-call select", async ({ page }) => {
-    await login(page, "Professor");
+  test("ricardo sees only the groups he teaches in the roll-call select", async ({ browser }) => {
+    const context = await signInContext(browser, ACCOUNTS.academicaProfessor1);
+    const page = await newPageIn(context);
+    await page.goto("/");
     await sidebar(page).getByRole("link", { name: "Chamada", exact: true }).click();
 
     const select = page.getByLabel("Selecionar aula");
     await expect(select).toBeEnabled();
     const options = await select.locator("option").allTextContents();
     expect(options.join(" ")).toContain("Reforço de Matemática — Segunda");
-    expect(options.join(" ")).toContain("Reforço de Física — Terça");
+    expect(options.join(" ")).toContain("Reforço de Português — Quarta");
     expect(options.join(" ")).not.toContain("Reforço de Ciências — Quarta");
 
-    await page.screenshot({
-      path: "e2e/academic-structure/evidencias/chamada-ricardo.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/academic-structure/evidence/roll-call-ricardo.png");
   });
 
-  test("bruno sees only Reforço de Ciências — Quarta in the roll-call select", async ({ page }) => {
-    // loginAsRole devolve o primeiro professor ativo (Ricardo); pra logar como
-    // Bruno via cargo, desativa o Ricardo antes (mesma tática do auth.spec.ts).
-    await login(page, "Administrador");
-    await page.goto("/users");
-    const ricardo = page.getByRole("listitem").filter({ hasText: "Ricardo Alves" });
-    await ricardo.getByRole("button", { name: "Desativar" }).click();
-    await expect(ricardo.getByText("Inativo")).toBeVisible();
-    await page.getByRole("button", { name: "Sair" }).click();
-
-    await login(page, "Professor");
+  test("bruno sees only Reforço de Ciências — Quarta in the roll-call select", async ({
+    browser,
+  }) => {
+    const context = await signInContext(browser, ACCOUNTS.academicaProfessor2);
+    const page = await newPageIn(context);
+    await page.goto("/");
     await sidebar(page).getByRole("link", { name: "Chamada", exact: true }).click();
 
     const select = page.getByLabel("Selecionar aula");
@@ -73,9 +77,6 @@ test.describe("roll-call scoping", () => {
     expect(options.join(" ")).toContain("Reforço de Ciências — Quarta");
     expect(options.join(" ")).not.toContain("Reforço de Matemática — Segunda");
 
-    await page.screenshot({
-      path: "e2e/academic-structure/evidencias/chamada-bruno.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/academic-structure/evidence/roll-call-bruno.png");
   });
 });

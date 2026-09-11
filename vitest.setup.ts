@@ -24,8 +24,8 @@ if (typeof window !== "undefined" && !window.localStorage) {
   });
 }
 
-// No HTTP happens today (data lives in localStorage) — "bypass" instead of
-// "error" so unmocked requests don't fail tests unrelated to MSW.
+// Most tests never touch HTTP (data lives in localStorage) — "bypass" instead
+// of "error" so those stay unaffected by handlers they don't set up.
 beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());

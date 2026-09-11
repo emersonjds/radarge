@@ -4,24 +4,28 @@ import { useState } from "react";
 import { areaLabels, type Subject } from "@/entities/subject/model";
 import { useSubjects, useDeleteSubject } from "@/entities/subject/queries";
 import { Pencil, Trash2 } from "lucide-react";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { IconButton } from "@/shared/ui/icon-button";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import { SubjectFormModal } from "./SubjectFormModal";
 
 export function SubjectsAdmin() {
-  const { data: subjects, isLoading } = useSubjects();
+  const { data: subjects, isLoading, isError, error: subjectsError, refetch } = useSubjects();
   const deleteSubject = useDeleteSubject();
   // undefined = modal closed; null = creating; Subject = editing.
   const [editing, setEditing] = useState<Subject | null | undefined>(undefined);
-  const [erro, setErro] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  async function remover(subject: Subject) {
+  async function remove(subject: Subject) {
     if (!window.confirm(`Excluir a matéria ${subject.name}?`)) return;
-    setErro(null);
+    setError(null);
     try {
       await deleteSubject.mutateAsync(subject.id);
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível remover.");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Não foi possível remover.");
     }
   }
 
@@ -34,39 +38,43 @@ export function SubjectsAdmin() {
         </Button>
       </header>
 
-      {erro && (
+      {error && (
         <p role="alert" className="text-sm text-destructive">
-          {erro}
+          {error}
         </p>
       )}
 
       {isLoading ? (
-        <div className="h-24 animate-pulse rounded-xl bg-muted" />
+        <RowsSkeleton rows={3} avatar={false} />
+      ) : isError ? (
+        <QueryErrorState
+          message={messageForError(subjectsError, "Não foi possível carregar as matérias.")}
+          onRetry={() => refetch()}
+        />
       ) : (
         <ul className="flex flex-col gap-2">
           {(subjects ?? []).map((subject) => (
-            <li
-              key={subject.id}
-              className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm"
-            >
-              <div>
-                <p className="font-medium text-foreground">{subject.name}</p>
-                <p className="text-xs text-muted-foreground">{areaLabels[subject.area]}</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <IconButton
-                  icon={Pencil}
-                  label={`Editar ${subject.name}`}
-                  onClick={() => setEditing(subject)}
-                />
-                <IconButton
-                  icon={Trash2}
-                  label={`Excluir ${subject.name}`}
-                  tone="destructive"
-                  onClick={() => remover(subject)}
-                />
-              </div>
-            </li>
+            <Card asChild key={subject.id} className="flex items-center justify-between px-4 py-3">
+              <li>
+                <div>
+                  <p className="font-medium text-foreground">{subject.name}</p>
+                  <p className="text-xs text-muted-foreground">{areaLabels[subject.area]}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <IconButton
+                    icon={Pencil}
+                    label={`Editar ${subject.name}`}
+                    onClick={() => setEditing(subject)}
+                  />
+                  <IconButton
+                    icon={Trash2}
+                    label={`Excluir ${subject.name}`}
+                    tone="destructive"
+                    onClick={() => remove(subject)}
+                  />
+                </div>
+              </li>
+            </Card>
           ))}
         </ul>
       )}

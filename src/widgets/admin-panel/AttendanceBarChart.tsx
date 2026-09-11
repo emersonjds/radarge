@@ -6,27 +6,34 @@ import type { ApexOptions } from "apexcharts";
 const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 export interface AttendanceBarChartProps {
-  dados: { groupId: string; label: string; attendance: number }[];
+  data: { groupId: string; label: string; attendance: number }[];
 }
 
-export function AttendanceBarChart({ dados }: AttendanceBarChartProps) {
+export function AttendanceBarChart({ data }: AttendanceBarChartProps) {
   const options: ApexOptions = {
-    chart: { type: "bar", fontFamily: "Outfit, sans-serif", toolbar: { show: false } },
+    chart: { type: "bar", fontFamily: "var(--font-outfit)",
+      toolbar: { show: false },
+      // The bars grow from zero on every render, and a screenshot taken during
+      // that grow reads as a near-empty chart.
+      animations: { enabled: false },
+    },
     colors: ["#465fff"],
     plotOptions: { bar: { borderRadius: 5, columnWidth: "45%" } },
     dataLabels: { enabled: false },
     legend: { show: false },
     xaxis: {
-      categories: dados.map((ponto) => ponto.label),
+      categories: data.map((point) => point.label),
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
-    yaxis: { max: 100, labels: { formatter: (valor) => `${Math.round(valor)}%` } },
+    // min pinned alongside max: a flat series (every bar equal) makes ApexCharts
+    // pick its own range and overshoot past 100%, which attendance never does.
+    yaxis: { min: 0, max: 100, labels: { formatter: (value) => `${Math.round(value)}%` } },
     grid: { borderColor: "#f2f4f7", yaxis: { lines: { show: true } } },
-    tooltip: { y: { formatter: (valor) => `${Math.round(valor)}%` } },
+    tooltip: { y: { formatter: (value) => `${Math.round(value)}%` } },
   };
 
-  const series = [{ name: "Frequência", data: dados.map((ponto) => Math.round(ponto.attendance)) }];
+  const series = [{ name: "Frequência", data: data.map((point) => Math.round(point.attendance)) }];
 
   return <ReactApexChart options={options} series={series} type="bar" height={230} />;
 }

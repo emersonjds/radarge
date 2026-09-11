@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { roleLabels } from "@/entities/profile/model";
 import { useSession } from "@/features/session/use-session";
+import { PageTitleProvider } from "@/shared/providers/page-title";
 import { useSidebar } from "@tailadmin/context/SidebarContext";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
@@ -14,30 +15,26 @@ export interface TailAdminShellProps {
   children: ReactNode;
 }
 
-const noopSubscribe = () => () => {};
-
-function useHydrated(): boolean {
-  return useSyncExternalStore(
-    noopSubscribe,
-    () => true,
-    () => false,
-  );
-}
-
 export function TailAdminShell({ children }: TailAdminShellProps) {
   const router = useRouter();
-  const { profile, profileId, loading, logout } = useSession();
+  const { status, profile, mustChangePassword, logout } = useSession();
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
-  // Only redirect once hydrated — the persisted session reads null on the
-  // server pass, so acting earlier would bounce a logged-in user on refresh.
-  const hydrated = useHydrated();
-
   useEffect(() => {
-    if (hydrated && profileId === null) router.replace("/login");
-  }, [hydrated, profileId, router]);
+    if (status === "loading") return;
+    if (status === "anonymous") router.replace("/login");
+    else if (mustChangePassword) router.replace("/change-password");
+  }, [status, mustChangePassword, router]);
 
-  if (!hydrated || profileId === null || loading || !profile) return null;
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted">
+        <p className="text-sm text-muted-foreground">Carregando…</p>
+      </div>
+    );
+  }
+
+  if (status !== "authenticated" || mustChangePassword || !profile) return null;
 
   const jobTitle = profile.jobTitle ?? roleLabels[profile.role];
   const mainMargin = isMobileOpen
@@ -55,8 +52,10 @@ export function TailAdminShell({ children }: TailAdminShellProps) {
       >
         <AppHeader name={profile.name} jobTitle={jobTitle} onLogout={logout} />
         <main className="mx-auto w-full max-w-(--breakpoint-2xl) flex-1 p-4 md:p-6">
-          <AppBreadcrumb />
-          {children}
+          <PageTitleProvider>
+            <AppBreadcrumb />
+            {children}
+          </PageTitleProvider>
         </main>
       </div>
     </div>

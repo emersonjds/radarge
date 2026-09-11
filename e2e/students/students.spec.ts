@@ -1,33 +1,35 @@
 import { expect, test } from "@playwright/test";
-import { login } from "../helpers";
+import { newPageIn, signInContext, captureScreen, captureEvidence } from "../helpers";
+import { ACCOUNTS } from "../seed-api";
 
-test.use({ viewport: { width: 1280, height: 800 } });
-
-test("admin adiciona, edita e exclui um aluno", async ({ page }) => {
+test("admin adds, edits and deletes a student", async ({ browser }) => {
+  const context = await signInContext(browser, ACCOUNTS.studentsAdmin);
+  const page = await newPageIn(context, { width: 1280, height: 800 });
   page.on("dialog", (dialog) => dialog.accept());
-  await login(page, "Administrador");
   await page.goto("/students");
 
+  const name = `Aluno Teste E2E ${String(Date.now())}`;
   await page.getByRole("button", { name: "Adicionar aluno" }).click();
   await expect(page.getByRole("heading", { name: "Adicionar aluno" })).toBeVisible();
-  await page.locator("#aluno-nome").fill("Aluno Teste E2E");
-  await page.locator("#aluno-nascimento").fill("2011-05-20");
-  await page.locator("#aluno-responsavel").fill("Responsável Teste");
-  await page.locator("#aluno-telefone").fill("(11) 91234-5678");
+  await page.getByLabel("Nome", { exact: true }).fill(name);
+  await page.getByLabel("Data de nascimento").fill("2011-05-20");
+  await page.getByLabel("Nome do responsável").fill("Responsável Teste");
+  await page.getByLabel("Telefone do responsável").fill("(11) 91234-5678");
   await page.getByRole("button", { name: "Salvar" }).click();
-  await expect(page.getByText("Aluno Teste E2E")).toBeVisible();
+  await expect(page.getByText(name)).toBeVisible();
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await page.screenshot({ path: "e2e/students/evidencias/aluno-criado.png", fullPage: true });
+  const row = page.getByRole("row").filter({ hasText: name });
+  await captureEvidence(row, "e2e/students/evidence/student-created.png");
 
-  const linha = page.getByRole("row").filter({ hasText: "Aluno Teste E2E" });
-  await linha.getByRole("button", { name: "Editar" }).click();
+  const editedName = `${name} Editado`;
+  await row.getByRole("button", { name: "Editar" }).click();
   await expect(page.getByRole("heading", { name: "Editar aluno" })).toBeVisible();
-  await page.locator("#aluno-nome").fill("Aluno Editado E2E");
+  await page.getByLabel("Nome", { exact: true }).fill(editedName);
   await page.getByRole("button", { name: "Salvar" }).click();
-  await expect(page.getByText("Aluno Editado E2E")).toBeVisible();
+  await expect(page.getByText(editedName)).toBeVisible();
 
-  const linhaEditada = page.getByRole("row").filter({ hasText: "Aluno Editado E2E" });
-  await linhaEditada.getByRole("button", { name: "Excluir" }).click();
-  await expect(page.getByText("Aluno Editado E2E")).toHaveCount(0);
-  await page.screenshot({ path: "e2e/students/evidencias/aluno-excluido.png", fullPage: true });
+  const editedRow = page.getByRole("row").filter({ hasText: editedName });
+  await editedRow.getByRole("button", { name: "Excluir" }).click();
+  await expect(page.getByText(editedName)).toHaveCount(0);
+  await captureScreen(page, "e2e/students/evidence/student-deleted.png");
 });

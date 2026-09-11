@@ -3,8 +3,8 @@
 import { AttendanceForm } from "@/features/take-attendance/AttendanceForm";
 import { useRequireRole } from "@/features/session/use-require-role";
 
-export default function ChamadaPage() {
-  const permitido = useRequireRole(["teacher"]);
-  if (!permitido) return null;
+export default function AttendancePage() {
+  const isAllowed = useRequireRole(["teacher"]);
+  if (!isAllowed) return null;
   return <AttendanceForm />;
 }

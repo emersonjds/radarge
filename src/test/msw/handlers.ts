@@ -1,10 +1,26 @@
 import { http, HttpResponse } from "msw";
 
+const defaultProfile = {
+  id: "profile-default",
+  name: "Ana Professora",
+  username: "ana",
+  role: "teacher",
+  email: null,
+  jobTitle: null,
+  mustChangePassword: false,
+};
+
 /**
- * Dormant today: data comes from the localStorage store (see
- * src/shared/lib/storage/db.ts), not HTTP. This handler documents the REST
- * shape the future Supabase adapter will use, so it's ready when the
- * fetchers in entities/*\/api.ts swap to real requests. `onUnhandledRequest`
- * is set to "bypass" in vitest.setup.ts because nothing calls fetch yet.
+ * Happy-path defaults for the radarge-api contract. A test that needs a
+ * different response — an error, a failed refresh, a counted 401 — overrides
+ * it with server.use() rather than growing this list.
  */
-export const handlers = [http.get("*/rest/v1/turmas", () => HttpResponse.json([]))];
+export const handlers = [
+  http.post("*/auth/login", () =>
+    HttpResponse.json({
+      accessToken: "default-access-token",
+      expiresInSeconds: 900,
+      profile: defaultProfile,
+    }),
+  ),
+];

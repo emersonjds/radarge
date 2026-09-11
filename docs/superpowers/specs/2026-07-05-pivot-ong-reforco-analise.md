@@ -1,11 +1,11 @@
-# Pivô Radar: de "presença escolar" para "gestão de reforço em ONG"
+# Pivô Radarge: de "presença escolar" para "gestão de reforço em ONG"
 
 > Documento de análise (charter). Precede spec formal e plano de implementação.
 > **Status:** aguardando validação das decisões-chave marcadas com ❓.
 
 ## 1. Por que estamos mudando
 
-O Radar foi desenhado com hipóteses de escola tradicional: turmas rígidas (série, turno,
+O Radarge foi desenhado com hipóteses de escola tradicional: turmas rígidas (série, turno,
 regente), alunos ligados 1:1 a uma turma-mãe, matrícula por aluno, matérias fechadas em áreas
 canônicas. Na prática o produto vai atender uma **ONG de reforço escolar** no contra-turno,
 onde:
@@ -130,7 +130,7 @@ Impacto direto:
 | `widgets/groups-admin`                      | painel de "Alunos da aula" (add/remove)                              | médio   |
 | `widgets/student-detail` / `reports`        | passa a mostrar N aulas em vez de 1 turma                            | médio   |
 | Chamada (`take-attendance`)                 | fonte de alunos passa a ser enrollment                               | pequeno |
-| Seed + bump `radar.db.v8`                   | nova coleção `enrollments`, novo shape de student, remove gradeLevel | pequeno |
+| Seed + bump `radarge.db.v8`                   | nova coleção `enrollments`, novo shape de student, remove gradeLevel | pequeno |
 | Copy PT-BR + `CLAUDE.md`                    | reflete identidade ONG                                               | pequeno |
 | E2E                                         | ajustar specs que confiam em "turma X do aluno Y"                    | pequeno |
 
@@ -143,7 +143,7 @@ Nada disso é grande sozinho, mas o encadeamento é substancial. Vamos por fases
 - Novos campos no `Student` (birthDate, guardian). Remove `enrollment` e `groupId`
   (compatibilidade: durante a migração, o groupId antigo vira o primeiro `Enrollment`).
 - Novo `StudentFormModal` (sem "Turma"). Nova coluna "Idade" / "Responsável" na lista.
-- Bump `radar.db.v8` + migração do seed.
+- Bump `radarge.db.v8` + migração do seed.
 - Cobertura: unit dos schemas + integração dos writers + E2E do fluxo "admin cadastra aluno".
 
 **Fase B — Matrícula N:N.**

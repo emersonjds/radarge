@@ -1,14 +1,22 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { evaluationTypeLabels, type EvaluationType } from "@/entities/evaluation/model";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  EVALUATION_TYPES,
+  evaluationFormSchema,
+  evaluationTypeLabels,
+  type EvaluationFormValues,
+} from "@/entities/evaluation/model";
 import { useCreateEvaluation } from "@/entities/evaluation/queries";
-import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
-import { Label } from "@/shared/ui/label";
+import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 
-const controlClasses =
-  "h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20";
+const WEIGHTS = [1, 2, 3] as const;
 
 export interface EvaluationFormModalProps {
   open: boolean;
@@ -23,115 +31,152 @@ export function EvaluationFormModal({
   subjectId,
   onClose,
 }: EvaluationFormModalProps) {
-  const createEvaluation = useCreateEvaluation();
-  const [name, setName] = useState("");
-  const [type, setType] = useState<EvaluationType>("exam");
-  const [date, setDate] = useState("");
-  const [weight, setWeight] = useState(1);
-  const [erro, setErro] = useState<string | null>(null);
-
-  async function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (createEvaluation.isPending) return;
-    setErro(null);
-    try {
-      await createEvaluation.mutateAsync({ groupId, subjectId, name, type, date, weight });
-      setName("");
-      setDate("");
-      setWeight(1);
-      setType("exam");
-      onClose();
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível salvar a avaliação.");
-    }
-  }
-
   return (
     <Dialog
       open={open}
-      onOpenChange={(aberto) => {
-        if (!aberto) onClose();
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onClose();
       }}
     >
       <DialogContent className="max-w-lg">
-        <form onSubmit={save}>
-          <DialogTitle className="mb-6 text-foreground">Nova avaliação</DialogTitle>
-
-          <div className="mb-5">
-            <Label className="mb-1.5" htmlFor="aval-nome">
-              Nome
-            </Label>
-            <input
-              id="aval-nome"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              autoFocus
-              className={controlClasses}
-            />
-          </div>
-
-          <div className="mb-5">
-            <Label className="mb-1.5" htmlFor="aval-tipo">
-              Tipo
-            </Label>
-            <select
-              id="aval-tipo"
-              value={type}
-              onChange={(e) => setType(e.target.value as EvaluationType)}
-              className={controlClasses}
-            >
-              <option value="exam">{evaluationTypeLabels.exam}</option>
-              <option value="homework">{evaluationTypeLabels.homework}</option>
-            </select>
-          </div>
-
-          <div className="mb-5">
-            <Label className="mb-1.5" htmlFor="aval-data">
-              Data
-            </Label>
-            <input
-              id="aval-data"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              className={controlClasses}
-            />
-          </div>
-
-          <div className="mb-5">
-            <Label className="mb-1.5" htmlFor="aval-peso">
-              Peso
-            </Label>
-            <select
-              id="aval-peso"
-              value={weight}
-              onChange={(e) => setWeight(Number(e.target.value))}
-              className={controlClasses}
-            >
-              <option value={1}>1</option>
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-            </select>
-          </div>
-
-          {erro && (
-            <p role="alert" className="mb-5 text-sm text-destructive">
-              {erro}
-            </p>
-          )}
-
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button disabled={createEvaluation.isPending}>
-              {createEvaluation.isPending ? "Salvando…" : "Salvar"}
-            </Button>
-          </div>
-        </form>
+        {open && <EvaluationFormBody groupId={groupId} subjectId={subjectId} onClose={onClose} />}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function EvaluationFormBody({
+  groupId,
+  subjectId,
+  onClose,
+}: {
+  groupId: string;
+  subjectId: string;
+  onClose: () => void;
+}) {
+  const createEvaluation = useCreateEvaluation();
+
+  const form = useForm<EvaluationFormValues>({
+    resolver: zodResolver(evaluationFormSchema),
+    defaultValues: {
+      name: "",
+      type: "exam",
+      date: "",
+      weight: 1,
+    },
+  });
+
+  const submit = async (values: EvaluationFormValues) => {
+    try {
+      await createEvaluation.mutateAsync({ groupId, subjectId, ...values });
+      onClose();
+    } catch (error) {
+      form.setError("root", {
+        message: messageForError(error, "Não foi possível salvar a avaliação."),
+      });
+    }
+  };
+
+  const { isSubmitting, errors } = form.formState;
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(submit)} noValidate>
+        <DialogTitle className="mb-6 text-foreground">Nova avaliação</DialogTitle>
+
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Nome</FormLabel>
+              <FormControl>
+                <Input autoFocus {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Tipo</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {EVALUATION_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {evaluationTypeLabels[type]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Data</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="weight"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Peso</FormLabel>
+              <Select value={String(field.value)} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {WEIGHTS.map((weight) => (
+                    <SelectItem key={weight} value={String(weight)}>
+                      {weight}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {errors.root && (
+          <p role="alert" className="mb-5 text-sm text-destructive">
+            {errors.root.message}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-3">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando…" : "Salvar"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

@@ -1,5 +1,6 @@
-import { expect, test, type Page } from "@playwright/test";
-import { login } from "../helpers";
+import { expect, test, type BrowserContext, type Page } from "@playwright/test";
+import { newPageIn, signInContext, captureScreen } from "../helpers";
+import { ACCOUNTS } from "../seed-api";
 
 const MOBILE_VIEWPORT = { width: 375, height: 812 };
 const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
@@ -13,48 +14,49 @@ async function semOverflowHorizontal(page: Page) {
   expect(overflow).toBeLessThanOrEqual(0);
 }
 
-test.describe("chamada mobile (cards)", () => {
-  test.use({ viewport: MOBILE_VIEWPORT });
+let teacherContext: BrowserContext;
 
-  test("título, busca, tiles e marcação de status", async ({ page }) => {
-    await login(page, "Professor");
+test.beforeAll(async ({ browser }) => {
+  teacherContext = await signInContext(browser, ACCOUNTS.rollCallTeacher);
+});
+
+test.describe("mobile roll call (cards)", () => {
+  test("title, search, tiles and status marking", async () => {
+    const page = await newPageIn(teacherContext, MOBILE_VIEWPORT);
     await page.goto("/attendance");
 
     await expect(page.getByLabel("Selecionar aula")).toBeVisible();
-    await expect(page.getByPlaceholder("Buscar aluno por nome ou matrícula...")).toBeVisible();
+    await expect(page.getByPlaceholder("Buscar aluno por nome...")).toBeVisible();
 
-    const linhas = page.locator('[aria-label^="Status de presença de"]');
-    await expect(linhas.first()).toBeVisible();
-    const totalInicial = await linhas.count();
-    expect(totalInicial).toBeGreaterThan(0);
+    const rows = page.locator('[aria-label^="Status de presença de"]');
+    await expect(rows.first()).toBeVisible();
+    const initialTotal = await rows.count();
+    expect(initialTotal).toBeGreaterThan(0);
 
-    const primeiroNome = (await linhas.first().getAttribute("aria-label"))!.replace(
+    const firstStudentName = (await rows.first().getAttribute("aria-label"))!.replace(
       "Status de presença de ",
       "",
     );
 
-    await page.getByPlaceholder("Buscar aluno por nome ou matrícula...").fill(primeiroNome);
-    await expect(linhas).toHaveCount(1);
+    await page.getByPlaceholder("Buscar aluno por nome...").fill(firstStudentName);
+    await expect(rows).toHaveCount(1);
 
-    await page.getByPlaceholder("Buscar aluno por nome ou matrícula...").fill("");
-    await expect(linhas).toHaveCount(totalInicial);
+    await page.getByPlaceholder("Buscar aluno por nome...").fill("");
+    await expect(rows).toHaveCount(initialTotal);
 
-    await linhas.first().getByRole("button", { name: "Ausente" }).click();
-    await expect(linhas.first().getByRole("button", { name: "Ausente" })).toHaveAttribute(
+    await rows.first().getByRole("button", { name: "Ausente" }).click();
+    await expect(rows.first().getByRole("button", { name: "Ausente" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
 
     await semOverflowHorizontal(page);
 
-    await page.screenshot({
-      path: "e2e/take-attendance/evidencias/chamada-mobile.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/take-attendance/evidence/roll-call-mobile.png");
   });
 
-  test("toggle abre o drawer e o backdrop fecha a sidebar", async ({ page }) => {
-    await login(page, "Professor");
+  test("the toggle opens the drawer and the backdrop closes the sidebar", async () => {
+    const page = await newPageIn(teacherContext, MOBILE_VIEWPORT);
     await page.goto("/attendance");
 
     const aside = page.locator("aside");
@@ -69,25 +71,20 @@ test.describe("chamada mobile (cards)", () => {
   });
 });
 
-test.describe("chamada desktop", () => {
-  test.use({ viewport: DESKTOP_VIEWPORT });
-
-  test("sidebar com Chamada e tela renderiza", async ({ page }) => {
-    await login(page, "Professor");
+test.describe("desktop roll call", () => {
+  test("the sidebar shows roll call and the screen renders", async () => {
+    const page = await newPageIn(teacherContext, DESKTOP_VIEWPORT);
     await page.goto("/attendance");
 
     const nav = page.getByRole("navigation", { name: "Navegação principal" });
     await expect(nav.getByRole("link", { name: "Chamada", exact: true })).toBeVisible();
     await expect(page.getByLabel("Selecionar aula")).toBeVisible();
 
-    await page.screenshot({
-      path: "e2e/take-attendance/evidencias/chamada-desktop.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/take-attendance/evidence/roll-call-desktop.png");
   });
 
-  test("toggle colapsa a sidebar para os ícones e reexpande", async ({ page }) => {
-    await login(page, "Professor");
+  test("the toggle collapses the sidebar to icons and expands it again", async () => {
+    const page = await newPageIn(teacherContext, DESKTOP_VIEWPORT);
     await page.goto("/attendance");
 
     const aside = page.locator("aside");
@@ -96,10 +93,7 @@ test.describe("chamada desktop", () => {
     await page.getByRole("button", { name: "Alternar menu" }).click();
     await expect.poll(async () => (await aside.boundingBox())?.width).toBe(90);
 
-    await page.screenshot({
-      path: "e2e/take-attendance/evidencias/sidebar-colapsada.png",
-      fullPage: true,
-    });
+    await captureScreen(page, "e2e/take-attendance/evidence/sidebar-collapsed.png");
 
     await page.getByRole("button", { name: "Alternar menu" }).click();
     await expect.poll(async () => (await aside.boundingBox())?.width).toBe(290);

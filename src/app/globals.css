@@ -5,7 +5,7 @@
 
 @theme {
   --font-*: initial;
-  --font-sans: Inter, sans-serif;
+  --font-outfit: Outfit, sans-serif;
 
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;
@@ -16,23 +16,6 @@
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
-
-  --text-title-2xl: 72px;
-  --text-title-2xl--line-height: 90px;
-  --text-title-xl: 60px;
-  --text-title-xl--line-height: 72px;
-  --text-title-lg: 48px;
-  --text-title-lg--line-height: 60px;
-  --text-title-md: 36px;
-  --text-title-md--line-height: 44px;
-  --text-title-sm: 30px;
-  --text-title-sm--line-height: 38px;
-  --text-theme-xl: 20px;
-  --text-theme-xl--line-height: 30px;
-  --text-theme-sm: 14px;
-  --text-theme-sm--line-height: 20px;
-  --text-theme-xs: 12px;
-  --text-theme-xs--line-height: 18px;
 
   --color-current: currentColor;
   --color-transparent: transparent;
@@ -162,7 +145,7 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.5rem;
 
   --background: var(--color-white);
   --foreground: var(--color-gray-900);
@@ -225,12 +208,12 @@
     cursor: pointer;
   }
   body {
-    @apply relative z-1 bg-background font-sans font-normal text-foreground;
+    @apply relative z-1 bg-background font-outfit font-normal text-foreground;
   }
 }
 
 @utility menu-item {
-  @apply relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-theme-sm font-medium;
+  @apply relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium;
 }
 
 @utility menu-item-active {
@@ -284,7 +267,7 @@
   @apply !mb-0 !border-b-0 !bg-transparent !p-0 !text-[10px] !leading-4 !text-foreground;
 }
 .apexcharts-tooltip-text {
-  @apply !text-theme-xs !text-foreground;
+  @apply !text-xs !text-foreground;
 }
 .apexcharts-tooltip-text-y-value {
   @apply !font-medium;

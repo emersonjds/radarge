@@ -5,31 +5,35 @@ import { shiftLabels, type Group } from "@/entities/group/model";
 import { useGroups, useDeleteGroup } from "@/entities/group/queries";
 import { useProfiles } from "@/entities/profile/queries";
 import { ChevronDown, Pencil, Trash2 } from "lucide-react";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
 import { IconButton } from "@/shared/ui/icon-button";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import { GroupFormModal } from "./GroupFormModal";
 import { GroupAssignmentsPanel } from "./GroupAssignmentsPanel";
 import { EnrollmentPanel } from "./EnrollmentPanel";
 
 export function GroupsAdmin() {
-  const { data: groups, isLoading } = useGroups();
+  const { data: groups, isLoading, isError, error: groupsError, refetch } = useGroups();
   const { data: profiles } = useProfiles();
   const deleteGroup = useDeleteGroup();
   const [editing, setEditing] = useState<Group | null | undefined>(undefined);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  function regenteName(teacherId: string) {
-    return (profiles ?? []).find((p) => p.id === teacherId)?.name ?? "—";
+  function teacherName(teacherId: string) {
+    return (profiles ?? []).find((profile) => profile.id === teacherId)?.name ?? "—";
   }
 
-  async function remover(group: Group) {
+  async function remove(group: Group) {
     if (!window.confirm(`Excluir a aula ${group.name}?`)) return;
-    setErro(null);
+    setError(null);
     try {
       await deleteGroup.mutateAsync(group.id);
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível remover.");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Não foi possível remover.");
     }
   }
 
@@ -42,57 +46,64 @@ export function GroupsAdmin() {
         </Button>
       </header>
 
-      {erro && (
+      {error && (
         <p role="alert" className="text-sm text-destructive">
-          {erro}
+          {error}
         </p>
       )}
 
       {isLoading ? (
-        <div className="h-24 animate-pulse rounded-xl bg-muted" />
+        <RowsSkeleton rows={3} avatar={false} />
+      ) : isError ? (
+        <QueryErrorState
+          message={messageForError(groupsError, "Não foi possível carregar as aulas.")}
+          onRetry={() => refetch()}
+        />
       ) : (
         <ul className="flex flex-col gap-2">
           {(groups ?? []).map((group) => (
-            <li key={group.id} className="rounded-xl border bg-card px-4 py-3 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="font-medium text-foreground">{group.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {shiftLabels[group.shift]} · Regente: {regenteName(group.teacherId)}
-                  </p>
+            <Card asChild key={group.id} className="px-4 py-3">
+              <li>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="font-medium text-foreground">{group.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {shiftLabels[group.shift]} · Regente: {teacherName(group.teacherId)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <IconButton
+                      icon={ChevronDown}
+                      label={
+                        expandedId === group.id
+                          ? `Fechar detalhes de ${group.name}`
+                          : `Ver detalhes de ${group.name}`
+                      }
+                      aria-expanded={expandedId === group.id}
+                      className={expandedId === group.id ? "rotate-180" : undefined}
+                      onClick={() => setExpandedId(expandedId === group.id ? null : group.id)}
+                    />
+                    <IconButton
+                      icon={Pencil}
+                      label={`Editar ${group.name}`}
+                      onClick={() => setEditing(group)}
+                    />
+                    <IconButton
+                      icon={Trash2}
+                      label={`Excluir ${group.name}`}
+                      tone="destructive"
+                      onClick={() => remove(group)}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <IconButton
-                    icon={ChevronDown}
-                    label={
-                      expandedId === group.id
-                        ? `Fechar detalhes de ${group.name}`
-                        : `Ver detalhes de ${group.name}`
-                    }
-                    aria-expanded={expandedId === group.id}
-                    className={expandedId === group.id ? "rotate-180" : undefined}
-                    onClick={() => setExpandedId(expandedId === group.id ? null : group.id)}
-                  />
-                  <IconButton
-                    icon={Pencil}
-                    label={`Editar ${group.name}`}
-                    onClick={() => setEditing(group)}
-                  />
-                  <IconButton
-                    icon={Trash2}
-                    label={`Excluir ${group.name}`}
-                    tone="destructive"
-                    onClick={() => remover(group)}
-                  />
-                </div>
-              </div>
-              {expandedId === group.id && (
-                <>
-                  <EnrollmentPanel groupId={group.id} />
-                  <GroupAssignmentsPanel groupId={group.id} />
-                </>
-              )}
-            </li>
+                {expandedId === group.id && (
+                  <>
+                    <EnrollmentPanel groupId={group.id} />
+                    <GroupAssignmentsPanel groupId={group.id} />
+                  </>
+                )}
+              </li>
+            </Card>
           ))}
         </ul>
       )}

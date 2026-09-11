@@ -1,50 +1,55 @@
-import { test, expect } from "@playwright/test";
-import { login, sidebar } from "../helpers";
+import { test, expect, type BrowserContext } from "@playwright/test";
+import { newPageIn, signInContext, sidebar, captureScreen, captureEvidence } from "../helpers";
+import { ACCOUNTS } from "../seed-api";
 
-test.describe("ong reforço pivot: ficha cadastral e matrícula N:N", () => {
-  test("admin cria ficha do aluno, matricula em aula, e professor vê na chamada", async ({
-    page,
-  }) => {
-    await login(page, "Administrador");
+let adminContext: BrowserContext;
+let teacherContext: BrowserContext;
 
-    await sidebar(page).getByRole("link", { name: "Alunos", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "Alunos" })).toBeVisible({ timeout: 10000 });
+test.beforeAll(async ({ browser }) => {
+  adminContext = await signInContext(browser, ACCOUNTS.pivotAdmin);
+  teacherContext = await signInContext(browser, ACCOUNTS.pivotTeacher);
+});
 
-    await page.getByRole("button", { name: "Adicionar aluno" }).click();
-    await page.locator("#aluno-nome").fill("João Pedro Silva");
-    await page.locator("#aluno-nascimento").fill("2010-03-15");
-    await page.locator("#aluno-responsavel").fill("Maria Silva");
-    await page.locator("#aluno-telefone").fill("(11) 98765-4321");
-    await page.getByRole("button", { name: "Salvar" }).click();
+test.describe("tutoring pivot: student record and N:N enrollment", () => {
+  test("admin creates a student record, enrolls them in a group, and the teacher sees them in the roll call", async () => {
+    const admin = await newPageIn(adminContext);
 
-    await expect(page.getByText("João Pedro Silva")).toBeVisible({ timeout: 5000 });
-    await expect(page.getByRole("dialog")).toHaveCount(0);
-    await page.screenshot({ path: "e2e/pivot/evidencias/aluno-criado.png", fullPage: true });
+    await admin.goto("/");
+    await sidebar(admin).getByRole("link", { name: "Alunos", exact: true }).click();
+    await expect(admin.getByRole("heading", { name: "Alunos" })).toBeVisible({ timeout: 10000 });
 
-    await sidebar(page).getByRole("link", { name: "Aulas", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "Aulas" })).toBeVisible();
+    await admin.getByRole("button", { name: "Adicionar aluno" }).click();
+    await admin.getByLabel("Nome", { exact: true }).fill("João Pedro Silva");
+    await admin.getByLabel("Data de nascimento").fill("2010-03-15");
+    await admin.getByLabel("Nome do responsável").fill("Maria Silva");
+    await admin.getByLabel("Telefone do responsável").fill("(11) 98765-4321");
+    await admin.getByRole("button", { name: "Salvar" }).click();
 
-    const aulaCard = page.locator("li", { hasText: "Reforço de Matemática — Segunda" });
-    await aulaCard.getByRole("button", { name: "Ver detalhes" }).click();
+    await expect(admin.getByText("João Pedro Silva")).toBeVisible({ timeout: 5000 });
+    await expect(admin.getByRole("dialog")).toHaveCount(0);
+    await captureScreen(admin, "e2e/pivot/evidence/student-created.png");
 
-    await expect(aulaCard.getByText("Alunos matriculados")).toBeVisible();
+    await sidebar(admin).getByRole("link", { name: "Aulas", exact: true }).click();
+    await expect(admin.getByRole("heading", { name: "Aulas" })).toBeVisible();
 
-    await aulaCard.getByLabel("Adicionar aluno").selectOption({ label: "João Pedro Silva" });
-    await aulaCard.getByRole("button", { name: "Matricular" }).click();
+    const groupCard = admin.locator("li", { hasText: "E2E Pivot — Aula" });
+    await groupCard.getByRole("button", { name: "Ver detalhes" }).click();
 
-    await expect(aulaCard.getByText("João Pedro Silva")).toBeVisible({ timeout: 5000 });
-    await page.screenshot({ path: "e2e/pivot/evidencias/aluno-matriculado.png", fullPage: true });
+    await expect(groupCard.getByText("Alunos matriculados")).toBeVisible();
 
-    await page.getByRole("button", { name: "Sair" }).click();
+    await groupCard.getByLabel("Adicionar aluno").selectOption({ label: "João Pedro Silva" });
+    await groupCard.getByRole("button", { name: "Matricular" }).click();
 
-    await login(page, "Professor");
-    await sidebar(page).getByRole("link", { name: "Chamada", exact: true }).click();
+    await expect(groupCard.getByText("João Pedro Silva")).toBeVisible({ timeout: 5000 });
+    await captureEvidence(groupCard, "e2e/pivot/evidence/student-enrolled.png");
 
-    await page
-      .getByLabel("Selecionar aula")
-      .selectOption({ label: "Reforço de Matemática — Segunda" });
+    const teacher = await newPageIn(teacherContext);
+    await teacher.goto("/");
+    await sidebar(teacher).getByRole("link", { name: "Chamada", exact: true }).click();
 
-    await expect(page.getByText("João Pedro Silva")).toBeVisible({ timeout: 5000 });
-    await page.screenshot({ path: "e2e/pivot/evidencias/aluno-na-chamada.png", fullPage: true });
+    await teacher.getByLabel("Selecionar aula").selectOption({ label: "E2E Pivot — Aula" });
+
+    await expect(teacher.getByText("João Pedro Silva")).toBeVisible({ timeout: 5000 });
+    await captureScreen(teacher, "e2e/pivot/evidence/student-in-roll-call.png");
   });
 });

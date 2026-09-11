@@ -1,15 +1,22 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { shiftSchema, shiftLabels, type Group, type Shift } from "@/entities/group/model";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  SHIFTS,
+  shiftLabels,
+  groupFormSchema,
+  type Group,
+  type GroupFormValues,
+} from "@/entities/group/model";
 import { useCreateGroup, useUpdateGroup } from "@/entities/group/queries";
 import { useProfiles } from "@/entities/profile/queries";
-import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
-import { Label } from "@/shared/ui/label";
-
-const controlClasses =
-  "h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20";
+import { Dialog, DialogContent, DialogTitle } from "@/shared/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 
 export interface GroupFormModalProps {
   group: Group | null | undefined;
@@ -20,8 +27,8 @@ export function GroupFormModal({ group, onClose }: GroupFormModalProps) {
   return (
     <Dialog
       open={group !== undefined}
-      onOpenChange={(aberto) => {
-        if (!aberto) onClose();
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
     >
       <DialogContent className="max-w-lg">
@@ -39,105 +46,118 @@ function GroupFormBody({ group, onClose }: { group: Group | null; onClose: () =>
   const { data: profiles } = useProfiles();
   const teachers = (profiles ?? []).filter((profile) => profile.role === "teacher");
 
-  const [name, setName] = useState(group?.name ?? "");
-  const [shift, setShift] = useState<Shift>(group?.shift ?? "afternoon");
-  const [teacherId, setTeacherId] = useState(group?.teacherId ?? "");
-  const [erro, setErro] = useState<string | null>(null);
-  const saving = createGroup.isPending || updateGroup.isPending;
+  const form = useForm<GroupFormValues>({
+    resolver: zodResolver(groupFormSchema),
+    defaultValues: {
+      name: group?.name ?? "",
+      shift: group?.shift ?? "afternoon",
+      teacherId: group?.teacherId ?? "",
+    },
+  });
 
-  async function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (saving) return;
-    setErro(null);
-    const regente = teacherId || teachers[0]?.id || "";
+  const submit = async (values: GroupFormValues) => {
     try {
       if (group) {
-        await updateGroup.mutateAsync({
-          id: group.id,
-          patch: { name: name.trim(), shift, teacherId: regente },
-        });
+        await updateGroup.mutateAsync({ id: group.id, patch: values });
       } else {
-        await createGroup.mutateAsync({
-          name,
-          shift,
-          teacherId: regente,
-        });
+        await createGroup.mutateAsync(values);
       }
       onClose();
-    } catch {
-      setErro("Não foi possível salvar a aula.");
+    } catch (error) {
+      form.setError("root", {
+        message: messageForError(error, "Não foi possível salvar a aula."),
+      });
     }
-  }
+  };
+
+  const { isSubmitting, errors } = form.formState;
 
   return (
-    <form onSubmit={save}>
-      <DialogTitle className="mb-6 text-foreground">
-        {group ? "Editar aula" : "Adicionar aula"}
-      </DialogTitle>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(submit)} noValidate>
+        <DialogTitle className="mb-6 text-foreground">
+          {group ? "Editar aula" : "Adicionar aula"}
+        </DialogTitle>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="turma-nome">
-          Nome
-        </Label>
-        <input
-          id="turma-nome"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          autoFocus
-          className={controlClasses}
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Nome</FormLabel>
+              <FormControl>
+                <Input autoFocus {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="turma-turno">
-          Turno
-        </Label>
-        <select
-          id="turma-turno"
-          value={shift}
-          onChange={(e) => setShift(e.target.value as Shift)}
-          className={controlClasses}
-        >
-          {shiftSchema.options.map((value) => (
-            <option key={value} value={value}>
-              {shiftLabels[value]}
-            </option>
-          ))}
-        </select>
-      </div>
+        <FormField
+          control={form.control}
+          name="shift"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Turno</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {SHIFTS.map((shift) => (
+                    <SelectItem key={shift} value={shift}>
+                      {shiftLabels[shift]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <div className="mb-5">
-        <Label className="mb-1.5" htmlFor="turma-regente">
-          Professor regente
-        </Label>
-        <select
-          id="turma-regente"
-          value={teacherId}
-          onChange={(e) => setTeacherId(e.target.value)}
-          required
-          className={controlClasses}
-        >
-          {teachers.map((teacher) => (
-            <option key={teacher.id} value={teacher.id}>
-              {teacher.name}
-            </option>
-          ))}
-        </select>
-      </div>
+        <FormField
+          control={form.control}
+          name="teacherId"
+          render={({ field }) => (
+            <FormItem className="mb-5">
+              <FormLabel>Professor regente</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione o professor" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {teachers.map((teacher) => (
+                    <SelectItem key={teacher.id} value={teacher.id}>
+                      {teacher.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      {erro && (
-        <p role="alert" className="mb-5 text-sm text-destructive">
-          {erro}
-        </p>
-      )}
+        {errors.root && (
+          <p role="alert" className="mb-5 text-sm text-destructive">
+            {errors.root.message}
+          </p>
+        )}
 
-      <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancelar
-        </Button>
-        <Button disabled={saving}>{saving ? "Salvando…" : "Salvar"}</Button>
-      </div>
-    </form>
+        <div className="flex justify-end gap-3">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando…" : "Salvar"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

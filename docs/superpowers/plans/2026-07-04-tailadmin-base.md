@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebuild every Radar screen on top of the TailAdmin template (Tailwind 4 + its UI kit + sidebar/header shell), preserving all domain logic and PT-BR content.
+**Goal:** Rebuild every Radarge screen on top of the TailAdmin template (Tailwind 4 + its UI kit + sidebar/header shell), preserving all domain logic and PT-BR content.
 
-**Architecture:** Hybrid — keep Radar's `entities/features/shared-lib/queries` (localStorage front-only), replace the presentation layer (CSS Modules → Tailwind, custom shell → TailAdmin shell). Incremental on branch `feat/tailadmin-base`, `pnpm type-check` green after every task.
+**Architecture:** Hybrid — keep Radarge's `entities/features/shared-lib/queries` (localStorage front-only), replace the presentation layer (CSS Modules → Tailwind, custom shell → TailAdmin shell). Incremental on branch `feat/tailadmin-base`, `pnpm type-check` green after every task.
 
 **Tech Stack:** Next 16 (App Router, static export), React 19, TypeScript, Tailwind CSS 4 (`@tailwindcss/postcss`), TanStack Query, Zod, ApexCharts, Playwright, Vitest, pnpm.
 
@@ -16,7 +16,7 @@
 - Static export stays: `next.config` keeps `output: "export"`. No server code.
 - UI text: **PT-BR** in 100% of visible strings.
 - **Light mode only** — do NOT bring `ThemeContext`; `<html>` has no `dark` class; strip the theme toggle from `AppHeader`.
-- Preserve domain contracts: `entities/*/api.ts` + `queries.ts` signatures, `features/session`, `features/auth`, `features/analytics`, `shared/lib/storage` (`radar.db.v4`).
+- Preserve domain contracts: `entities/*/api.ts` + `queries.ts` signatures, `features/session`, `features/auth`, `features/analytics`, `shared/lib/storage` (`radarge.db.v4`).
 - Roles `teacher | coordinator | admin`; nav & guards per role unchanged in behavior.
 - Commits: micro, English imperative, author **Emerson Silva <emerson_jdss@hotmail.com>**, ZERO LLM traces (no `Co-Authored-By`, no 🤖, no AI mention). Never `git push`.
 - Gate per phase: `pnpm type-check`, `pnpm lint`, `pnpm vitest run`, Playwright (affected specs), `pnpm build`.
@@ -29,7 +29,7 @@
 
 **Files:** Modify `package.json`, generate `pnpm-lock.yaml`.
 
-- [ ] Add deps with pnpm (only what Radar needs now — ApexCharts yes; skip fullcalendar/jvectormap/swiper/flatpickr/dnd/dropzone):
+- [ ] Add deps with pnpm (only what Radarge needs now — ApexCharts yes; skip fullcalendar/jvectormap/swiper/flatpickr/dnd/dropzone):
       `rtk proxy pnpm add tailwindcss@^4.1.17 @tailwindcss/postcss@^4.1.17 @tailwindcss/forms@^0.5.10 tailwind-merge@^2.6.0 apexcharts@^4.7.0 react-apexcharts@^1.8.0`
 - [ ] `rtk proxy pnpm add -D postcss@^8.5.6 autoprefixer@^10.4.22` (autoprefixer only if a plugin needs it; `@tailwindcss/postcss` is the main one).
 - [ ] Verify install: `rtk proxy pnpm ls tailwindcss` shows 4.x.
@@ -75,7 +75,7 @@ module.exports = {
 
 **Files:** Copy `$TPL/src/icons` → `src/shared/icons`; copy `$TPL/src/hooks/useModal.ts` → `src/shared/hooks/useModal.ts`.
 
-- [ ] Copy the whole `src/icons` dir (SVGs + `index.ts`) to `src/shared/icons`. Confirm `next.config` + `@svgr/webpack` handles `?url`/SVG-as-component the same way the template's `next.config.ts` does — diff `$TPL/next.config.ts` against Radar's `next.config` and port the SVGR webpack rule if missing.
+- [ ] Copy the whole `src/icons` dir (SVGs + `index.ts`) to `src/shared/icons`. Confirm `next.config` + `@svgr/webpack` handles `?url`/SVG-as-component the same way the template's `next.config.ts` does — diff `$TPL/next.config.ts` against Radarge's `next.config` and port the SVGR webpack rule if missing.
 - [ ] Copy `useModal.ts` to `src/shared/hooks/`.
 - [ ] `rtk proxy pnpm type-check`.
 - [ ] Commit: `add template icons and use-modal hook`.
@@ -84,7 +84,7 @@ module.exports = {
 
 **Files:** Copy from `$TPL/src/components/ui/*` and `$TPL/src/components/form/*` into `src/shared/ui/tailadmin/*` (namespaced to avoid clashing with the old primitives during migration). Fix internal import paths (`@/icons` → `@/shared/icons`, `@/hooks` → `@/shared/hooks`).
 
-- [ ] Copy: `ui/button/Button.tsx`, `ui/badge/Badge.tsx`, `ui/table/index.tsx`, `ui/modal/index.tsx`, `ui/avatar/AvatarText.tsx` (initials — Radar has no photos), `ui/dropdown/*`, `ui/alert/Alert.tsx`, `form/input/InputField.tsx`, `form/Label.tsx`, `form/select/Select.tsx` (or `form/Select.tsx`), `form/input/Checkbox.tsx`.
+- [ ] Copy: `ui/button/Button.tsx`, `ui/badge/Badge.tsx`, `ui/table/index.tsx`, `ui/modal/index.tsx`, `ui/avatar/AvatarText.tsx` (initials — Radarge has no photos), `ui/dropdown/*`, `ui/alert/Alert.tsx`, `form/input/InputField.tsx`, `form/Label.tsx`, `form/select/Select.tsx` (or `form/Select.tsx`), `form/input/Checkbox.tsx`.
 - [ ] Rewrite import paths inside copied files.
 - [ ] `rtk proxy pnpm type-check` (unused for now is fine; just must compile).
 - [ ] Commit: `add tailadmin ui kit`.
@@ -95,7 +95,7 @@ module.exports = {
 - `Badge`: `{ variant?: "light"|"solid", color?: "primary"|"success"|"error"|"warning"|"info"|"light"|"dark", size?, children }`.
 - `Table, TableHeader, TableBody, TableRow, TableCell` (named). `TableCell` has `isHeader?`.
 - `Modal`: `{ isOpen, onClose, className?, children, showCloseButton?, isFullscreen? }`.
-- `InputField` (default `Input`): controlled-unfriendly (`defaultValue` only). **For controlled Radar forms, use a plain `<input>` with these classes:** `h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden`.
+- `InputField` (default `Input`): controlled-unfriendly (`defaultValue` only). **For controlled Radarge forms, use a plain `<input>` with these classes:** `h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden`.
 - `Label`: `{ htmlFor?, children, className? }`.
 
 ### Task 0.7: App shell — AppSidebar/AppHeader/Backdrop with role-based nav
@@ -103,7 +103,7 @@ module.exports = {
 **Files:** Create `src/widgets/app-shell/AppSidebar.tsx`, `AppHeader.tsx`, `Backdrop.tsx`. Read current nav config `src/shared/config/navigation.ts` and current `AppShell` to preserve nav-by-role.
 
 - [ ] Copy `$TPL/src/layout/{AppSidebar,AppHeader,Backdrop}.tsx` into `src/widgets/app-shell/`. Fix imports (`@/context` → `@/shared/context`, `@/icons` → `@/shared/icons`).
-- [ ] **AppSidebar:** replace the template's hard-coded `navItems` with Radar's role-based nav. Read `role` from `useSession()`; build items from `navTeacher`/`navCoordinator`/`navAdmin` (labels PT-BR: Painel, Alunos, Chamada, Relatórios, Perfis) mapping each `NavIcon` to a `@/shared/icons` component. Remove the template's submenu/"Others"/promo `SidebarWidget` sections. Brand: replace logo with a text "Radar" wordmark.
+- [ ] **AppSidebar:** replace the template's hard-coded `navItems` with Radarge's role-based nav. Read `role` from `useSession()`; build items from `navTeacher`/`navCoordinator`/`navAdmin` (labels PT-BR: Painel, Alunos, Chamada, Relatórios, Perfis) mapping each `NavIcon` to a `@/shared/icons` component. Remove the template's submenu/"Others"/promo `SidebarWidget` sections. Brand: replace logo with a text "Radarge" wordmark.
 - [ ] **AppHeader:** strip the theme toggle, search, notifications, and the user dropdown's template links; keep a simple right-side user block (name + role via `useSession()`) and a "Sair" (logout) action calling `session.logout()`. Keep the mobile hamburger (`toggleMobileSidebar`).
 - [ ] `rtk proxy pnpm type-check`.
 - [ ] Commit: `add app shell with role based navigation`.
@@ -207,5 +207,5 @@ module.exports = {
 
 - **Spec coverage:** Phases map 1:1 to spec §4 screens; Phase 0 = spec §5 Fase 0; testing = spec §6; risks (light-only, deps pruned, no FullCalendar) enforced in Global Constraints + Task 0.3 + Task 0.1.
 - **Controlled inputs:** template `InputField` is `defaultValue`-only; plan mandates plain `<input>` + documented Tailwind classes for controlled forms (Login/StudentForm/Profiles) — avoids fighting the component.
-- **Avatar:** template `Avatar` needs an image `src`; Radar has no photos → use `AvatarText` (initials) instead. Noted in Task 0.6 + Phase 6.
+- **Avatar:** template `Avatar` needs an image `src`; Radarge has no photos → use `AvatarText` (initials) instead. Noted in Task 0.6 + Phase 6.
 - **E2E survival:** each phase keeps accessible names/ids the specs rely on (`getByLabel("Usuário"/"Senha")`, button names, `#aluno-nome`); nav specs move from bottom-nav to sidebar in Phase 0/1.

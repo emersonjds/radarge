@@ -5,129 +5,178 @@ import { useSearchParams } from "next/navigation";
 import { useStudents, useDeleteStudent } from "@/entities/student/queries";
 import { useEnrollments } from "@/entities/enrollment/queries";
 import type { Student } from "@/entities/student/model";
-import type { AttendanceRecord } from "@/entities/attendance-record/model";
-import { useAttendanceRecords } from "@/entities/attendance-record/queries";
+import { useStudentsAtRisk } from "@/features/analytics/queries";
+import { studentSituation } from "@/features/analytics/model";
 import { useGroups } from "@/entities/group/queries";
 import { useSession } from "@/features/session/use-session";
-import { countAbsences, attendanceRate } from "@/features/analytics/model";
-import { computeAgeAt, todayIso } from "@/entities/student/age";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { formatPercent } from "@/shared/lib/format";
+import { paginate } from "@/shared/lib/pagination";
+import { useIsDesktop } from "@/shared/lib/use-is-desktop";
 import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
+import { EmptyValue } from "@/shared/ui/empty-value";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { RowsSkeleton } from "@/shared/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
+import { TablePagination } from "@/shared/ui/table-pagination";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PlusIcon } from "@tailadmin/icons";
 import { IconButton } from "@/shared/ui/icon-button";
 import { StudentFormModal } from "./StudentFormModal";
 
-const LIMITE_FALTAS_RISCO = 3;
+const RISK_ABSENCE_THRESHOLD = 3;
 
-const th = "px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground";
-const td = "px-5 py-4 text-sm text-foreground";
 export function StudentList() {
-  const { role, profile, loading: carregandoSessao } = useSession();
-  const { data: alunos, isLoading: carregandoAlunos } = useStudents();
-  const { data: turmas, isLoading: carregandoTurmas } = useGroups();
-  const { data: enrollments, isLoading: carregandoMatriculas } = useEnrollments();
-  const { data: presencas, isLoading: carregandoPresencas } = useAttendanceRecords();
+  const { role, profile, status: sessionStatus } = useSession();
+  const {
+    data: students,
+    isLoading: isLoadingStudents,
+    isError: hasStudentsError,
+    error: studentsError,
+    refetch: refetchStudents,
+  } = useStudents();
+  const {
+    data: groups,
+    isLoading: isLoadingGroups,
+    isError: hasGroupsError,
+    error: groupsError,
+    refetch: refetchGroups,
+  } = useGroups();
+  const {
+    data: enrollments,
+    isLoading: isLoadingEnrollments,
+    isError: hasEnrollmentsError,
+    error: enrollmentsError,
+    refetch: refetchEnrollments,
+  } = useEnrollments();
+  const {
+    data: studentsAtRisk,
+    isLoading: isLoadingRisk,
+    isError: hasRiskError,
+    error: riskError,
+    refetch: refetchRisk,
+    // Threshold zero returns every student ever called. A student missing from the
+    // list has no roll-call, which is not the same as a perfect attendance rate.
+  } = useStudentsAtRisk({ threshold: 0 });
   const searchParams = useSearchParams();
-  const [busca, setBusca] = useState(() => searchParams.get("q") ?? "");
-  const filtroRisco = searchParams.get("filtro") === "risco";
+  const [search, setSearch] = useState(() => searchParams.get("q") ?? "");
+  const riskFilter = searchParams.get("filtro") === "risco";
+  const [page, setPage] = useState(1);
 
-  const [formAluno, setFormAluno] = useState<Student | null | undefined>(undefined);
+  const [formStudent, setFormStudent] = useState<Student | null | undefined>(undefined);
   const deleteStudent = useDeleteStudent();
+  const isDesktop = useIsDesktop();
 
-  const carregando =
-    carregandoSessao ||
-    carregandoAlunos ||
-    carregandoTurmas ||
-    carregandoMatriculas ||
-    carregandoPresencas;
-  const isProfessor = role === "teacher";
+  const isLoading =
+    sessionStatus === "loading" ||
+    isLoadingStudents ||
+    isLoadingGroups ||
+    isLoadingEnrollments ||
+    isLoadingRisk;
+  const hasError = hasStudentsError || hasGroupsError || hasEnrollmentsError || hasRiskError;
+  const firstError = studentsError ?? groupsError ?? enrollmentsError ?? riskError;
+  const retryFailed = () => {
+    if (hasStudentsError) refetchStudents();
+    if (hasGroupsError) refetchGroups();
+    if (hasEnrollmentsError) refetchEnrollments();
+    if (hasRiskError) refetchRisk();
+  };
+  const isTeacher = role === "teacher";
 
-  const turmaPorId = new Map((turmas ?? []).map((turma) => [turma.id, turma]));
+  const groupById = new Map((groups ?? []).map((group) => [group.id, group]));
 
-  const recordsByStudent = new Map<string, AttendanceRecord[]>();
-  for (const presenca of presencas ?? []) {
-    recordsByStudent.set(presenca.studentId, [
-      ...(recordsByStudent.get(presenca.studentId) ?? []),
-      presenca,
-    ]);
-  }
+  // Off the risk list, the only reading available is "no absences recorded".
+  const attendanceRateByStudent = new Map(
+    (studentsAtRisk ?? []).map((risk) => [risk.studentId, risk.attendance]),
+  );
+  const absencesByStudent = new Map(
+    (studentsAtRisk ?? []).map((risk) => [risk.studentId, risk.absences]),
+  );
 
-  const aulasDoAluno = new Map<string, string[]>();
+  const groupIdsByStudent = new Map<string, string[]>();
   for (const enrollment of enrollments ?? []) {
     if (!enrollment.active) continue;
-    aulasDoAluno.set(enrollment.studentId, [
-      ...(aulasDoAluno.get(enrollment.studentId) ?? []),
+    groupIdsByStudent.set(enrollment.studentId, [
+      ...(groupIdsByStudent.get(enrollment.studentId) ?? []),
       enrollment.groupId,
     ]);
   }
 
-  const turmasDoProfessor = isProfessor
-    ? (turmas ?? []).filter((turma) => turma.teacherId === profile?.id)
+  const teacherGroups = isTeacher
+    ? (groups ?? []).filter((group) => group.teacherId === profile?.id)
     : [];
-  const turmaIdsDoProfessor = new Set(turmasDoProfessor.map((turma) => turma.id));
+  const teacherGroupIds = new Set(teacherGroups.map((group) => group.id));
 
-  const alunosDoEscopo = isProfessor
-    ? (alunos ?? []).filter((aluno) =>
-        (aulasDoAluno.get(aluno.id) ?? []).some((groupId) => turmaIdsDoProfessor.has(groupId)),
+  const scopedStudents = isTeacher
+    ? (students ?? []).filter((student) =>
+        (groupIdsByStudent.get(student.id) ?? []).some((groupId) => teacherGroupIds.has(groupId)),
       )
-    : (alunos ?? []);
+    : (students ?? []);
 
-  const alunosEscopo = filtroRisco
-    ? alunosDoEscopo.filter(
-        (aluno) => countAbsences(recordsByStudent.get(aluno.id) ?? []) >= LIMITE_FALTAS_RISCO,
+  const visibleStudents = riskFilter
+    ? scopedStudents.filter(
+        (student) => (absencesByStudent.get(student.id) ?? 0) >= RISK_ABSENCE_THRESHOLD,
       )
-    : alunosDoEscopo;
+    : scopedStudents;
 
-  const termo = busca.trim().toLowerCase();
-  const alunosFiltrados = termo
-    ? alunosEscopo.filter((aluno) => aluno.name.toLowerCase().includes(termo))
-    : alunosEscopo;
+  const searchTerm = search.trim().toLowerCase();
+  const filteredStudents = searchTerm
+    ? visibleStudents.filter((student) => student.name.toLowerCase().includes(searchTerm))
+    : visibleStudents;
 
-  const hoje = todayIso();
-  const linhas = alunosFiltrados.map((aluno) => {
-    const presencasDoAluno = recordsByStudent.get(aluno.id) ?? [];
-    const nomesAulas = (aulasDoAluno.get(aluno.id) ?? [])
-      .map((groupId) => turmaPorId.get(groupId)?.name)
+  // Resetting page on a filter change during render (not an effect) avoids the
+  // extra commit React flags when setState runs from useEffect.
+  const filterKey = `${searchTerm}|${riskFilter}`;
+  const [appliedFilterKey, setAppliedFilterKey] = useState(filterKey);
+  if (filterKey !== appliedFilterKey) {
+    setAppliedFilterKey(filterKey);
+    setPage(1);
+  }
+
+  const rows = filteredStudents.map((student) => {
+    const groupNames = (groupIdsByStudent.get(student.id) ?? [])
+      .map((groupId) => groupById.get(groupId)?.name)
       .filter((name): name is string => Boolean(name));
+    const hasAttendanceData = attendanceRateByStudent.has(student.id);
     return {
-      aluno,
-      idade: computeAgeAt(aluno.birthDate, hoje),
-      aulas: nomesAulas.join(", ") || "—",
-      attendance: attendanceRate(presencasDoAluno),
-      absences: countAbsences(presencasDoAluno),
+      student,
+      groupNames: groupNames.join(", ") || "—",
+      attendance: attendanceRateByStudent.get(student.id) ?? null,
+      absences: hasAttendanceData ? (absencesByStudent.get(student.id) ?? 0) : null,
     };
   });
+  const pageRows = paginate(rows, page);
 
-  const semTurmas = isProfessor && turmasDoProfessor.length === 0;
-  const colunas = isProfessor ? 6 : 8;
-  const titulo = filtroRisco ? "Alunos em risco" : isProfessor ? "Meus alunos" : "Alunos";
-  const subtitulo = filtroRisco
-    ? `${alunosEscopo.length} aluno${alunosEscopo.length === 1 ? "" : "s"} com ${LIMITE_FALTAS_RISCO} ou mais faltas`
-    : isProfessor
+  const hasNoGroups = isTeacher && teacherGroups.length === 0;
+  const detailHref = (studentId: string) =>
+    isTeacher ? `/students?aluno=${studentId}` : `/reports?studentId=${studentId}`;
+  const title = riskFilter ? "Alunos em risco" : isTeacher ? "Meus alunos" : "Alunos";
+  const subtitle = riskFilter
+    ? `${visibleStudents.length} aluno${visibleStudents.length === 1 ? "" : "s"} com ${RISK_ABSENCE_THRESHOLD} ou mais faltas`
+    : isTeacher
       ? "Alunos das suas aulas"
-      : `${alunosEscopo.length} aluno${alunosEscopo.length === 1 ? "" : "s"} cadastrados`;
+      : `${visibleStudents.length} aluno${visibleStudents.length === 1 ? "" : "s"} cadastrados`;
 
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{titulo}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{subtitulo}</p>
+          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-3">
           <input
             type="search"
-            value={busca}
-            onChange={(event) => setBusca(event.target.value)}
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Buscar por nome"
-            className="h-11 w-full rounded-lg border border-input bg-transparent px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-hidden sm:w-80"
+            className="h-11 w-full rounded-lg border border-input bg-transparent px-4 text-base text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-hidden sm:w-80 md:text-sm"
           />
-          {!isProfessor && (
-            <Button className="h-11" onClick={() => setFormAluno(null)}>
+          {!isTeacher && (
+            <Button onClick={() => setFormStudent(null)}>
               <PlusIcon />
               Adicionar aluno
             </Button>
@@ -135,118 +184,178 @@ export function StudentList() {
         </div>
       </header>
 
-      <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader className="border-b border-border bg-muted">
-              <TableRow>
-                <TableHead className={th}>Aluno</TableHead>
-                {!isProfessor && <TableHead className={th}>Idade</TableHead>}
-                {!isProfessor && <TableHead className={th}>Responsável</TableHead>}
-                <TableHead className={th}>Aulas</TableHead>
-                <TableHead className={th}>Frequência</TableHead>
-                <TableHead className={th}>Faltas</TableHead>
-                <TableHead className={th}>Situação</TableHead>
-                {!isProfessor && <TableHead className={th}>Ação</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {carregando && (
-                <TableRow>
-                  <TableCell
-                    className={`${td} text-center text-muted-foreground`}
-                    colSpan={colunas}
-                  >
-                    Carregando alunos…
-                  </TableCell>
-                </TableRow>
-              )}
-              {!carregando && semTurmas && (
-                <TableRow>
-                  <TableCell
-                    className={`${td} text-center text-muted-foreground`}
-                    colSpan={colunas}
-                  >
-                    Você não tem aulas atribuídas
-                  </TableCell>
-                </TableRow>
-              )}
-              {!carregando && !semTurmas && linhas.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    className={`${td} text-center text-muted-foreground`}
-                    colSpan={colunas}
-                  >
-                    Nenhum aluno encontrado
-                  </TableCell>
-                </TableRow>
-              )}
-              {!carregando &&
-                linhas.map(({ aluno, idade, aulas, attendance, absences }) => {
-                  const emRisco = absences >= LIMITE_FALTAS_RISCO;
-                  return (
-                    <TableRow key={aluno.id} className="border-t border-border">
-                      <TableCell className={td}>
-                        <div className="flex items-center gap-3">
-                          <AvatarText name={aluno.name} />
-                          <span className="font-medium text-foreground">{aluno.name}</span>
-                        </div>
-                      </TableCell>
-                      {!isProfessor && <TableCell className={td}>{idade} anos</TableCell>}
-                      {!isProfessor && (
-                        <TableCell className={td}>
-                          <div className="flex flex-col">
-                            <span className="text-foreground">{aluno.guardianName}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {aluno.guardianPhone}
-                            </span>
+      <Card className="overflow-hidden p-0">
+        {isLoading && <RowsSkeleton rows={6} />}
+        {!isLoading && hasError && (
+          <QueryErrorState
+            message={messageForError(firstError, "Não foi possível carregar os alunos.")}
+            onRetry={retryFailed}
+          />
+        )}
+        {!isLoading && !hasError && hasNoGroups && (
+          <p className="p-4 text-center text-muted-foreground">Você não tem aulas atribuídas</p>
+        )}
+        {!isLoading && !hasError && !hasNoGroups && rows.length === 0 && (
+          <p className="p-4 text-center text-muted-foreground">Nenhum aluno encontrado</p>
+        )}
+        {!isLoading && !hasError && !hasNoGroups && rows.length > 0 && (
+          <>
+            {isDesktop ? (
+              <Table>
+                <TableHeader className="border-b border-border bg-muted">
+                  <TableRow>
+                    <TableHead className="min-w-48">Aluno</TableHead>
+                    {!isTeacher && <TableHead>Responsável</TableHead>}
+                    <TableHead>Aulas</TableHead>
+                    <TableHead className="w-24 text-right">Frequência</TableHead>
+                    <TableHead className="w-24 text-right">Faltas</TableHead>
+                    <TableHead>Situação</TableHead>
+                    <TableHead className="text-right">Ação</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pageRows.map(({ student, groupNames, attendance, absences }) => {
+                    const situation = studentSituation(absences, RISK_ABSENCE_THRESHOLD);
+                    return (
+                      <TableRow key={student.id} className="border-t border-border">
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <AvatarText name={student.name} />
+                            <span className="font-medium text-foreground">{student.name}</span>
                           </div>
                         </TableCell>
-                      )}
-                      <TableCell className={td}>{aulas}</TableCell>
-                      <TableCell className={td}>{formatPercent(attendance)}</TableCell>
-                      <TableCell className={td}>{absences}</TableCell>
-                      <TableCell className={td}>
-                        <Badge variant={emRisco ? "danger" : "success"}>
-                          {emRisco ? "Em risco" : "Regular"}
-                        </Badge>
-                      </TableCell>
-                      {!isProfessor && (
-                        <TableCell className={td}>
-                          <div className="flex items-center gap-1">
+                        {!isTeacher && (
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="text-foreground">{student.guardianName}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {student.guardianPhone}
+                              </span>
+                            </div>
+                          </TableCell>
+                        )}
+                        <TableCell className="max-w-48 truncate" title={groupNames}>
+                          {groupNames}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {attendance === null ? "—" : formatPercent(attendance)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {absences === null ? <EmptyValue /> : absences}
+                        </TableCell>
+                        <TableCell>
+                          {situation === "no-data" ? (
+                            <EmptyValue label="sem chamadas registradas" />
+                          ) : (
+                            <Badge variant={situation === "at-risk" ? "danger" : "success"}>
+                              {situation === "at-risk" ? "Em risco" : "Regular"}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-end gap-1">
                             <IconButton
                               icon={Eye}
-                              label={`Ver relatório de ${aluno.name}`}
-                              href={"/reports?studentId=" + aluno.id}
+                              label={`Ver detalhes de ${student.name}`}
+                              href={detailHref(student.id)}
                             />
+                            {!isTeacher && (
+                              <>
+                                <IconButton
+                                  icon={Pencil}
+                                  label={`Editar ${student.name}`}
+                                  onClick={() => setFormStudent(student)}
+                                />
+                                <IconButton
+                                  icon={Trash2}
+                                  label={`Excluir ${student.name}`}
+                                  tone="destructive"
+                                  disabled={deleteStudent.isPending}
+                                  onClick={() => {
+                                    if (window.confirm(`Excluir o aluno ${student.name}?`)) {
+                                      deleteStudent.mutate(student.id);
+                                    }
+                                  }}
+                                />
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            ) : (
+              <ul className="flex flex-col divide-y divide-border">
+                {pageRows.map(({ student, groupNames, attendance, absences }) => {
+                  const situation = studentSituation(absences, RISK_ABSENCE_THRESHOLD);
+                  return (
+                    <li key={student.id} className="flex flex-col gap-3 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <AvatarText name={student.name} />
+                          <span className="line-clamp-2 text-sm font-medium break-words text-foreground">
+                            {student.name}
+                          </span>
+                        </div>
+                        {situation === "no-data" ? (
+                          <EmptyValue className="shrink-0" label="sem chamadas registradas" />
+                        ) : (
+                          <Badge
+                            className="shrink-0"
+                            variant={situation === "at-risk" ? "danger" : "success"}
+                          >
+                            {situation === "at-risk" ? "Em risco" : "Regular"}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="truncate text-xs text-muted-foreground" title={groupNames}>
+                        {groupNames}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Frequência {attendance === null ? "—" : formatPercent(attendance)} ·{" "}
+                        {absences === null ? "—" : `${absences} falta${absences === 1 ? "" : "s"}`}
+                      </p>
+                      <div className="flex items-center justify-end gap-1">
+                        <IconButton
+                          icon={Eye}
+                          label={`Ver detalhes de ${student.name}`}
+                          href={detailHref(student.id)}
+                        />
+                        {!isTeacher && (
+                          <>
                             <IconButton
                               icon={Pencil}
-                              label={`Editar ${aluno.name}`}
-                              onClick={() => setFormAluno(aluno)}
+                              label={`Editar ${student.name}`}
+                              onClick={() => setFormStudent(student)}
                             />
                             <IconButton
                               icon={Trash2}
-                              label={`Excluir ${aluno.name}`}
+                              label={`Excluir ${student.name}`}
                               tone="destructive"
                               disabled={deleteStudent.isPending}
                               onClick={() => {
-                                if (window.confirm(`Excluir o aluno ${aluno.name}?`)) {
-                                  deleteStudent.mutate(aluno.id);
+                                if (window.confirm(`Excluir o aluno ${student.name}?`)) {
+                                  deleteStudent.mutate(student.id);
                                 }
                               }}
                             />
-                          </div>
-                        </TableCell>
-                      )}
-                    </TableRow>
+                          </>
+                        )}
+                      </div>
+                    </li>
                   );
                 })}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+              </ul>
+            )}
 
-      <StudentFormModal student={formAluno} onClose={() => setFormAluno(undefined)} />
+            <TablePagination page={page} totalRows={rows.length} onPageChange={setPage} />
+          </>
+        )}
+      </Card>
+
+      <StudentFormModal student={formStudent} onClose={() => setFormStudent(undefined)} />
     </div>
   );
 }

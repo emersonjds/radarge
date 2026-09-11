@@ -4,7 +4,7 @@ export const gradeSchema = z.object({
   id: z.string(),
   studentId: z.string(),
   subjectId: z.string(),
-  // Média já agregada por matéria (0–10, uma casa). Único por (studentId, subjectId).
+  // Already aggregated per subject by the API; unique per (studentId, subjectId).
   score: z.number().min(0).max(10),
 });
 

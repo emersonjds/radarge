@@ -6,10 +6,10 @@
 
 ## Contexto
 
-Hoje o Radar é, na prática, um produto de **presença + analytics**: login com papéis
+Hoje o Radarge é, na prática, um produto de **presença + analytics**: login com papéis
 (`teacher` / `coordinator` / `admin`), chamada por turma, dashboards de frequência/
 absenteísmo/risco e relatório acadêmico. Isso fecha ponta a ponta sobre o store local
-(`localStorage`, `radar.db.v5`).
+(`localStorage`, `radarge.db.v5`).
 
 O que **não existe** ainda: montar a estrutura da escola pelo admin (criar turmas e
 matérias, dizer quem dá o quê) e, mais adiante, provas/trabalhos e lançamento de notas.
@@ -92,7 +92,7 @@ Papéis seguem `teacher` / `coordinator` / `admin`.
 `src/shared/lib/storage/db.ts`
 
 - Adicionar `"assignments"` ao union `Collection` e ao tipo `Db`.
-- Bump `STORAGE_KEY` `radar.db.v5 → radar.db.v6`; adicionar `radar.db.v5` a `LEGACY_KEYS`.
+- Bump `STORAGE_KEY` `radarge.db.v5 → radarge.db.v6`; adicionar `radarge.db.v5` a `LEGACY_KEYS`.
 
 `src/shared/lib/storage/seed.ts`
 
@@ -220,7 +220,7 @@ Seams que já existem (ou custam ~0) e devem ser preservados:
   `organization_id` + RLS), **sem** mexer nas features. Por isso as entidades novas
   (`group`, `subject`, `assignment`) **não** ganham `organizationId` nesta fase
   (front-only, single-tenant); a coluna nasce junto com o Supabase.
-- **Zero hardcode de identidade**: nenhum código novo cita "Radar"/"ONG"/nome da escola em
+- **Zero hardcode de identidade**: nenhum código novo cita "Radarge"/"ONG"/nome da escola em
   lógica de domínio. Nome/logo do produto ficam num único ponto de branding (o
   `TailAdminShell`/header) — uma futura config de tenant lê dali.
 

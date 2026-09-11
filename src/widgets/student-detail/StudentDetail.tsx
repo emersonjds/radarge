@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useStudent } from "@/entities/student/queries";
 import { useAttendanceSessions } from "@/entities/attendance-session/queries";
 import { datesInRange } from "@/entities/school-event/model";
@@ -7,188 +9,290 @@ import { useSchoolEvents } from "@/entities/school-event/queries";
 import type { AttendanceStatus } from "@/entities/attendance-record/model";
 import { useAttendanceRecordsByStudent } from "@/entities/attendance-record/queries";
 import { useGroups } from "@/entities/group/queries";
+import { visibleGroups } from "@/entities/group/scope";
+import { useAssignmentsByTeacher } from "@/entities/assignment/queries";
 import { useEnrollmentsByStudent } from "@/entities/enrollment/queries";
 import { useGradesByStudent } from "@/entities/grade/queries";
 import { useSubjects } from "@/entities/subject/queries";
+import { useSession } from "@/features/session/use-session";
 import { countAbsences, attendanceRate } from "@/features/analytics/model";
 import { computeAgeAt, todayIso } from "@/entities/student/age";
+import { messageForError } from "@/shared/lib/api/error-message";
 import { formatPercent } from "@/shared/lib/format";
+import { usePageTitle } from "@/shared/providers/page-title";
 import { AvatarText } from "@/shared/ui/avatar-text";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { DownloadIcon } from "@tailadmin/icons";
+import { Card } from "@/shared/ui/card";
+import { QueryErrorState } from "@/shared/ui/query-error";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { AttendanceCalendar, type DayEvent } from "./AttendanceCalendar";
 import { AcademicPanel } from "./AcademicPanel";
+import { studentGradesInScope, studentGroupsInScope } from "./scope";
 
-const control =
-  "h-11 w-full rounded-lg border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:outline-hidden focus:ring-3 focus:ring-ring/20";
-
-function mesComMaisRegistros(datas: string[]): string | null {
-  if (datas.length === 0) return null;
-  const contagem = new Map<string, number>();
-  for (const data of datas) {
-    const mes = data.slice(0, 7);
-    contagem.set(mes, (contagem.get(mes) ?? 0) + 1);
+function monthWithMostRecords(dates: string[]): string | null {
+  if (dates.length === 0) return null;
+  const counts = new Map<string, number>();
+  for (const date of dates) {
+    const month = date.slice(0, 7);
+    counts.set(month, (counts.get(month) ?? 0) + 1);
   }
-  return [...contagem.entries()].sort((mesA, mesB) => mesB[1] - mesA[1])[0][0];
+  return [...counts.entries()].sort((first, second) => second[1] - first[1])[0][0];
+}
+
+/**
+ * The detail view is `/students?aluno=<id>`, so going back changes only the search
+ * param. `Link` treats that as the same route and leaves the address bar untouched
+ * after a hard load onto the parametrised URL, which strands anyone who refreshed or
+ * opened a shared link. Driving the router by hand is what moves it.
+ */
+function BackLink({ href, label, className }: { href: string; label: string; className?: string }) {
+  const router = useRouter();
+
+  return (
+    <Link
+      href={href}
+      className={className}
+      onClick={(event) => {
+        event.preventDefault();
+        router.replace(href);
+      }}
+    >
+      {label}
+    </Link>
+  );
 }
 
 export interface StudentDetailProps {
   studentId: string;
+  backHref: string;
+  backLabel: string;
 }
 
-export function StudentDetail({ studentId }: StudentDetailProps) {
-  const { data: aluno, isLoading: carregandoAluno } = useStudent(studentId);
-  const { data: turmas } = useGroups();
-  const { data: enrollments } = useEnrollmentsByStudent(studentId);
-  const { data: chamadas } = useAttendanceSessions();
-  const { data: presencas, isLoading: carregandoPresencas } =
-    useAttendanceRecordsByStudent(studentId);
-  const { data: eventosEscolares } = useSchoolEvents();
-  const { data: notas } = useGradesByStudent(studentId);
-  const { data: materias } = useSubjects();
+export function StudentDetail({ studentId, backHref, backLabel }: StudentDetailProps) {
+  const { role, profileId } = useSession();
+  const isTeacher = role === "teacher";
+  const studentQuery = useStudent(studentId);
+  const { data: student, isLoading: isLoadingStudent } = studentQuery;
+  const groupsQuery = useGroups();
+  const { data: groups, isLoading: isLoadingGroups } = groupsQuery;
+  const enrollmentsQuery = useEnrollmentsByStudent(studentId);
+  const { data: enrollments, isLoading: isLoadingEnrollments } = enrollmentsQuery;
+  const { data: attendanceSessions } = useAttendanceSessions();
+  const {
+    data: attendanceRecords,
+    isLoading: isLoadingAttendance,
+    isError: isAttendanceError,
+    error: attendanceError,
+    refetch: refetchAttendance,
+  } = useAttendanceRecordsByStudent(studentId);
+  const { data: schoolEvents } = useSchoolEvents();
+  const { data: grades } = useGradesByStudent(studentId);
+  const { data: subjects } = useSubjects();
+  const { data: teacherAssignments } = useAssignmentsByTeacher(isTeacher ? (profileId ?? "") : "");
 
-  if (carregandoAluno) {
+  const visibleGroupIds = new Set(
+    visibleGroups(groups ?? [], role, profileId).map((group) => group.id),
+  );
+  const studentGroups = studentGroupsInScope(enrollments ?? [], groups ?? [], role, profileId);
+  const isLoadingAny = isLoadingStudent || isLoadingGroups || isLoadingEnrollments;
+  const hasError = studentQuery.isError || groupsQuery.isError || enrollmentsQuery.isError;
+  const firstError = studentQuery.error ?? groupsQuery.error ?? enrollmentsQuery.error;
+
+  // The whole record is PII of a minor: a teacher reaches it only through the
+  // students they teach. Outside that, the student does not exist — not even by direct link.
+  const outOfScope = isTeacher && studentGroups.length === 0;
+
+  usePageTitle(!isLoadingAny && student && !outOfScope ? student.name : null);
+
+  if (isLoadingAny) {
     return <p className="text-sm text-muted-foreground">Carregando aluno…</p>;
   }
 
-  if (!aluno) {
-    return <p className="text-sm text-muted-foreground">Aluno não encontrado</p>;
+  if (hasError) {
+    return (
+      <QueryErrorState
+        size="page"
+        message={messageForError(firstError, "Não foi possível carregar o aluno.")}
+        onRetry={() => {
+          if (studentQuery.isError) studentQuery.refetch();
+          if (groupsQuery.isError) groupsQuery.refetch();
+          if (enrollmentsQuery.isError) enrollmentsQuery.refetch();
+        }}
+      />
+    );
   }
 
-  const aulasDoAluno = (enrollments ?? [])
-    .filter((enrollment) => enrollment.active)
-    .map((enrollment) => turmas?.find((turma) => turma.id === enrollment.groupId))
-    .filter((turma): turma is NonNullable<typeof turma> => Boolean(turma));
-  const chamadaPorId = new Map((chamadas ?? []).map((chamada) => [chamada.id, chamada]));
-
-  const statusPorData = new Map<string, AttendanceStatus>();
-  for (const presenca of presencas ?? []) {
-    const chamada = chamadaPorId.get(presenca.sessionId);
-    if (chamada) statusPorData.set(chamada.date, presenca.status);
+  if (!student || outOfScope) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-16 text-center">
+        <p className="text-sm text-muted-foreground">Aluno não encontrado.</p>
+        <Button asChild variant="outline">
+          <BackLink href={backHref} label={`Voltar para ${backLabel}`} />
+        </Button>
+      </div>
+    );
   }
-  const mes = mesComMaisRegistros([...statusPorData.keys()]);
 
-  const eventosPorData = new Map<string, DayEvent[]>();
-  function adicionarEvento(data: string, evento: DayEvent) {
-    eventosPorData.set(data, [...(eventosPorData.get(data) ?? []), evento]);
+  const sessionById = new Map(
+    (attendanceSessions ?? [])
+      .filter((session) => visibleGroupIds.has(session.groupId))
+      .map((session) => [session.id, session]),
+  );
+  const visibleRecords = (attendanceRecords ?? []).filter((record) =>
+    sessionById.has(record.sessionId),
+  );
+
+  const visibleGrades = studentGradesInScope(
+    grades ?? [],
+    teacherAssignments ?? [],
+    studentGroups,
+    role,
+  );
+
+  const statusByDate = new Map<string, AttendanceStatus>();
+  for (const record of visibleRecords) {
+    const session = sessionById.get(record.sessionId);
+    if (session) statusByDate.set(session.date, record.status);
   }
-  for (const eventoEscolar of eventosEscolares ?? []) {
-    for (const data of datesInRange(eventoEscolar.startDate, eventoEscolar.endDate)) {
-      adicionarEvento(data, { type: eventoEscolar.type, title: eventoEscolar.title });
+  const month = monthWithMostRecords([...statusByDate.keys()]);
+
+  const eventsByDate = new Map<string, DayEvent[]>();
+  function addEvent(date: string, event: DayEvent) {
+    eventsByDate.set(date, [...(eventsByDate.get(date) ?? []), event]);
+  }
+  for (const schoolEvent of schoolEvents ?? []) {
+    for (const date of datesInRange(schoolEvent.startDate, schoolEvent.endDate)) {
+      addEvent(date, { type: schoolEvent.type, title: schoolEvent.title });
     }
   }
 
+  // With no records at all, "0%" would read as perfect attendance — better to claim nothing.
+  const hasNoRecords = visibleRecords.length === 0;
+
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Desempenho &amp; Presença</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Relatório acadêmico e de frequência do período atual
-          </p>
-        </div>
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-            Período
-            <select className={control} defaultValue="2026-1">
-              <option value="2026-1">Semestre 1 (2026)</option>
-              <option value="2026-2">Semestre 2 (2026)</option>
-            </select>
-          </label>
-          <Button
-            type="button"
-            // ponytail: geração real do PDF depende de um endpoint de relatório
-            onClick={() => {}}
-          >
-            <DownloadIcon />
-            Baixar relatório PDF
-          </Button>
-        </div>
+      <header className="flex items-center gap-4">
+        <AvatarText name={student.name} />
+        <p className="text-sm text-muted-foreground">Desempenho e presença</p>
+        <Badge variant={student.active ? "success" : "danger"}>
+          {student.active ? "Ativo" : "Inativo"}
+        </Badge>
       </header>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <section className="rounded-xl border bg-card p-4 shadow-sm lg:col-span-1">
-          <div className="flex items-center gap-4">
-            <AvatarText name={aluno.name} />
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">{aluno.name}</h2>
-              <Badge variant={aluno.active ? "success" : "danger"}>
-                {aluno.active ? "ATIVO" : "INATIVO"}
-              </Badge>
-            </div>
+      {!student.active && (
+        <p className="rounded-lg border border-warning-500/40 bg-warning-50 px-4 py-3 text-sm text-warning-700">
+          Aluno inativo — os dados abaixo estão congelados e não recebem novas chamadas.
+        </p>
+      )}
+
+      <Card>
+        <dl className="flex flex-col gap-3 sm:grid sm:grid-cols-3 sm:gap-6">
+          <div className="flex flex-col gap-1">
+            <dt className="text-xs font-medium text-muted-foreground">Idade</dt>
+            <dd className="text-sm font-medium text-foreground">
+              {computeAgeAt(student.birthDate, todayIso())} anos
+            </dd>
           </div>
+          <div className="flex flex-col gap-1">
+            <dt className="text-xs font-medium text-muted-foreground">Responsável</dt>
+            <dd className="text-sm font-medium text-foreground">{student.guardianName}</dd>
+          </div>
+          <div className="flex flex-col gap-1">
+            <dt className="text-xs font-medium text-muted-foreground">Telefone</dt>
+            <dd className="text-sm font-medium text-foreground">
+              <a
+                className="whitespace-nowrap tabular-nums hover:underline"
+                href={`tel:${student.guardianPhone}`}
+              >
+                {student.guardianPhone}
+              </a>
+            </dd>
+          </div>
+        </dl>
+      </Card>
 
-          <dl className="mt-6 grid grid-cols-3 gap-3 text-sm">
-            <div>
-              <dt className="text-muted-foreground">Idade</dt>
-              <dd className="font-medium text-foreground">
-                {computeAgeAt(aluno.birthDate, todayIso())} anos
-              </dd>
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+        <Card className="flex flex-col gap-6 lg:col-span-1">
+          {hasNoRecords ? (
+            <p className="text-sm text-muted-foreground">Sem chamadas registradas.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg border border-border bg-gray-50 p-3 text-center">
+                <p className="text-xl font-semibold text-foreground tabular-nums">
+                  {formatPercent(attendanceRate(visibleRecords))}
+                </p>
+                <p className="text-xs font-medium text-muted-foreground">Frequência</p>
+              </div>
+              <div className="rounded-lg border border-border bg-gray-50 p-3 text-center">
+                <p className="text-xl font-semibold text-foreground tabular-nums">
+                  {countAbsences(visibleRecords)}
+                </p>
+                <p className="text-xs font-medium text-muted-foreground">Faltas</p>
+              </div>
             </div>
-            <div>
-              <dt className="text-muted-foreground">Responsável</dt>
-              <dd className="font-medium text-foreground">{aluno.guardianName}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Telefone</dt>
-              <dd className="font-medium text-foreground">{aluno.guardianPhone}</dd>
-            </div>
-          </dl>
+          )}
 
-          <div className="mt-6">
-            <p className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              Aulas
-            </p>
-            {aulasDoAluno.length === 0 ? (
+          <div>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">Aulas</p>
+            {studentGroups.length === 0 ? (
               <p className="text-sm text-muted-foreground">Sem aulas matriculadas.</p>
             ) : (
               <ul className="flex flex-wrap gap-2">
-                {aulasDoAluno.map((aula) => (
+                {studentGroups.map((group) => (
                   <li
-                    key={aula.id}
+                    key={group.id}
                     className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-foreground"
                   >
-                    {aula.name}
+                    {group.name}
                   </li>
                 ))}
               </ul>
             )}
           </div>
+        </Card>
 
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-muted p-4 text-center">
-              <p className="text-2xl font-bold text-foreground">
-                {formatPercent(attendanceRate(presencas ?? []))}
-              </p>
-              <p className="text-xs text-muted-foreground">Frequência</p>
-            </div>
-            <div className="rounded-xl bg-muted p-4 text-center">
-              <p className="text-2xl font-bold text-foreground">{countAbsences(presencas ?? [])}</p>
-              <p className="text-xs text-muted-foreground">Faltas</p>
-            </div>
-          </div>
-        </section>
+        <Tabs defaultValue="presenca" className="flex flex-col gap-4 lg:col-span-2">
+          <TabsList className="grid w-full grid-cols-2 border border-border sm:w-64">
+            <TabsTrigger value="presenca">Presença</TabsTrigger>
+            <TabsTrigger value="notas">Notas</TabsTrigger>
+          </TabsList>
 
-        <section className="rounded-xl border bg-card p-4 shadow-sm lg:col-span-2">
-          {carregandoPresencas && (
-            <p className="text-sm text-muted-foreground">Carregando registros…</p>
-          )}
-          {!carregandoPresencas && mes && (
-            <AttendanceCalendar
-              key={aluno.id}
-              mes={mes}
-              statusPorData={statusPorData}
-              eventosPorData={eventosPorData}
-            />
-          )}
-          {!carregandoPresencas && !mes && (
-            <p className="text-sm text-muted-foreground">Sem registros de presença.</p>
-          )}
-        </section>
+          <TabsContent value="presenca">
+            <Card asChild>
+              <section>
+                {isLoadingAttendance && (
+                  <p className="text-sm text-muted-foreground">Carregando registros…</p>
+                )}
+                {!isLoadingAttendance && isAttendanceError && (
+                  <QueryErrorState
+                    message={messageForError(
+                      attendanceError,
+                      "Não foi possível carregar a presença.",
+                    )}
+                    onRetry={() => refetchAttendance()}
+                  />
+                )}
+                {!isLoadingAttendance && !isAttendanceError && month && (
+                  <AttendanceCalendar
+                    key={student.id}
+                    month={month}
+                    statusByDate={statusByDate}
+                    eventsByDate={eventsByDate}
+                  />
+                )}
+                {!isLoadingAttendance && !isAttendanceError && !month && (
+                  <p className="text-sm text-muted-foreground">Sem registros de presença.</p>
+                )}
+              </section>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="notas">
+            <AcademicPanel grades={visibleGrades} subjects={subjects ?? []} />
+          </TabsContent>
+        </Tabs>
       </div>
-
-      <AcademicPanel grades={notas ?? []} subjects={materias ?? []} />
     </div>
   );
 }

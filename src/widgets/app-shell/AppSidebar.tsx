@@ -9,6 +9,7 @@ import type { Role } from "@/entities/profile/model";
 import {
   GridIcon,
   CalenderIcon,
+  CalendarIcon,
   GroupIcon,
   PieChartIcon,
   UserCircleIcon,
@@ -18,14 +19,15 @@ import {
 } from "@tailadmin/icons";
 
 const navIcons: Record<NavIcon, ReactNode> = {
-  painel: <GridIcon />,
+  dashboard: <GridIcon />,
   session: <CalenderIcon />,
   user: <GroupIcon />,
-  relatorios: <PieChartIcon />,
+  reports: <PieChartIcon />,
   admin: <UserCircleIcon />,
-  materia: <DocsIcon />,
-  turma: <TableIcon />,
+  subject: <DocsIcon />,
+  group: <TableIcon />,
   grades: <TaskIcon />,
+  events: <CalendarIcon />,
 };
 
 export interface AppSidebarProps {
@@ -48,7 +50,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className={`flex flex-col py-8 ${showText ? "items-start" : "items-center"}`}>
-        <span className="text-2xl font-bold text-primary">{showText ? "Radar" : "R"}</span>
+        <span className="text-2xl font-bold text-primary">{showText ? "Radarge" : "R"}</span>
         {showText && (
           <span className="text-xs font-medium text-muted-foreground">Gestão Estudantil</span>
         )}

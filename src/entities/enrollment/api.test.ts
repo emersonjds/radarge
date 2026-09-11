@@ -1,40 +1,101 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { resetDb } from "@/shared/lib/storage/db";
+import { http, HttpResponse } from "msw";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { server } from "../../test/msw/server";
+import { resetApiClient } from "@/shared/lib/api/instance";
 import {
   enrollStudent,
+  fetchEnrollments,
   fetchEnrollmentsByGroup,
   fetchEnrollmentsByStudent,
   unenrollStudent,
 } from "./api";
 
-describe("enrollment api (over the store)", () => {
-  beforeEach(async () => {
-    await resetDb();
+const API_URL = "http://api.test";
+
+const enrollment = {
+  id: "enrollment-1",
+  studentId: "student-1",
+  groupId: "group-1",
+  joinedAt: "2026-02-01",
+  active: true,
+};
+
+beforeEach(() => {
+  vi.stubEnv("NEXT_PUBLIC_API_URL", API_URL);
+  resetApiClient();
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
+describe("enrollments against the API", () => {
+  it("lists what the API returns, untouched", async () => {
+    server.use(http.get("*/enrollments", () => HttpResponse.json([enrollment])));
+
+    await expect(fetchEnrollments()).resolves.toEqual([enrollment]);
   });
 
-  it("enrolls a student in an aula", async () => {
-    const enrollment = await enrollStudent({ studentId: "s-new", groupId: "turma-mat-b" });
-    expect(enrollment.active).toBe(true);
-    const list = await fetchEnrollmentsByGroup("turma-mat-b");
-    expect(list.some((row) => row.studentId === "s-new")).toBe(true);
+  it("filters by group through the query string, not in JavaScript", async () => {
+    let receivedUrl: string | null = null;
+    server.use(
+      http.get("*/enrollments", ({ request }) => {
+        receivedUrl = request.url;
+        return HttpResponse.json([enrollment]);
+      }),
+    );
+
+    await fetchEnrollmentsByGroup("group-1");
+
+    expect(new URL(receivedUrl ?? "").searchParams.get("groupId")).toBe("group-1");
   });
 
-  it("does not duplicate on repeated enroll", async () => {
-    await enrollStudent({ studentId: "s-new", groupId: "turma-mat-b" });
-    await enrollStudent({ studentId: "s-new", groupId: "turma-mat-b" });
-    const list = await fetchEnrollmentsByStudent("s-new");
-    expect(list.filter((row) => row.groupId === "turma-mat-b")).toHaveLength(1);
+  it("filters by student through the query string, not in JavaScript", async () => {
+    let receivedUrl: string | null = null;
+    server.use(
+      http.get("*/enrollments", ({ request }) => {
+        receivedUrl = request.url;
+        return HttpResponse.json([enrollment]);
+      }),
+    );
+
+    await fetchEnrollmentsByStudent("student-1");
+
+    expect(new URL(receivedUrl ?? "").searchParams.get("studentId")).toBe("student-1");
   });
 
-  it("soft-removes with unenroll and reactivates with a new enroll", async () => {
-    await enrollStudent({ studentId: "s-new", groupId: "turma-mat-b" });
-    await unenrollStudent({ studentId: "s-new", groupId: "turma-mat-b" });
-    const afterUnenroll = await fetchEnrollmentsByStudent("s-new");
-    expect(afterUnenroll[0].active).toBe(false);
+  it("accepts the API's 200 on enrol, not a 201", async () => {
+    let received: unknown = null;
+    server.use(
+      http.post("*/enrollments", async ({ request }) => {
+        received = await request.json();
+        return HttpResponse.json(enrollment, { status: 200 });
+      }),
+    );
 
-    await enrollStudent({ studentId: "s-new", groupId: "turma-mat-b" });
-    const afterReenroll = await fetchEnrollmentsByStudent("s-new");
-    expect(afterReenroll[0].active).toBe(true);
-    expect(afterReenroll).toHaveLength(1);
+    await expect(enrollStudent({ studentId: "student-1", groupId: "group-1" })).resolves.toEqual(
+      enrollment,
+    );
+    expect(received).toEqual({ studentId: "student-1", groupId: "group-1" });
+  });
+
+  it("withdraws with the student and group as query parameters, not a body", async () => {
+    let receivedUrl: string | null = null;
+    let receivedBody: string | null = null;
+    server.use(
+      http.delete("*/enrollments", async ({ request }) => {
+        receivedUrl = request.url;
+        receivedBody = await request.text();
+        return HttpResponse.json({ ...enrollment, active: false });
+      }),
+    );
+
+    await expect(
+      unenrollStudent({ studentId: "student-1", groupId: "group-1" }),
+    ).resolves.toBeUndefined();
+    const searchParams = new URL(receivedUrl ?? "").searchParams;
+    expect(searchParams.get("studentId")).toBe("student-1");
+    expect(searchParams.get("groupId")).toBe("group-1");
+    expect(receivedBody).toBe("");
   });
 });

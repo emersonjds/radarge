@@ -7,29 +7,36 @@ import { formatDate } from "@/shared/lib/format";
 const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 export interface TrendLineChartProps {
-  pontos: { data: string; attendance: number }[];
+  points: { date: string; attendance: number }[];
 }
 
-export function TrendLineChart({ pontos }: TrendLineChartProps) {
+export function TrendLineChart({ points }: TrendLineChartProps) {
   const options: ApexOptions = {
-    chart: { type: "area", fontFamily: "Outfit, sans-serif", toolbar: { show: false } },
+    chart: { type: "area", fontFamily: "var(--font-outfit)",
+      toolbar: { show: false },
+      // The bars grow from zero on every render, and a screenshot taken during
+      // that grow reads as a near-empty chart.
+      animations: { enabled: false },
+    },
     colors: ["#465fff"],
     stroke: { curve: "smooth", width: 2 },
     fill: { type: "gradient", gradient: { opacityFrom: 0.35, opacityTo: 0 } },
     dataLabels: { enabled: false },
     legend: { show: false },
     xaxis: {
-      categories: pontos.map((ponto) => formatDate(ponto.data)),
+      categories: points.map((point) => formatDate(point.date)),
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
-    yaxis: { max: 100, labels: { formatter: (valor) => `${Math.round(valor)}%` } },
+    // min pinned alongside max: a flat series (every point equal) makes ApexCharts
+    // pick its own range and overshoot past 100%, which attendance never does.
+    yaxis: { min: 0, max: 100, labels: { formatter: (value) => `${Math.round(value)}%` } },
     grid: { borderColor: "#f2f4f7" },
-    tooltip: { y: { formatter: (valor) => `${Math.round(valor)}%` } },
+    tooltip: { y: { formatter: (value) => `${Math.round(value)}%` } },
   };
 
   const series = [
-    { name: "Frequência", data: pontos.map((ponto) => Math.round(ponto.attendance)) },
+    { name: "Frequência", data: points.map((point) => Math.round(point.attendance)) },
   ];
 
   return <ReactApexChart options={options} series={series} type="area" height={230} />;
