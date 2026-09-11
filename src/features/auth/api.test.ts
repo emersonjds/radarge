@@ -57,9 +57,7 @@ describe("signIn", () => {
 describe("signOut", () => {
   it("drops the token even when the request itself fails", async () => {
     setAccessToken("live-token");
-    server.use(
-      http.post("*/auth/logout", () => HttpResponse.error()),
-    );
+    server.use(http.post("*/auth/logout", () => HttpResponse.error()));
 
     await expect(signOut()).rejects.toThrow();
     expect(getAccessToken()).toBeNull();

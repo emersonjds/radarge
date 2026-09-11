@@ -59,7 +59,9 @@ test("a provisional password leads to the set-password screen", async ({ page })
   await captureScreen(page, "e2e/auth-real/evidence/provisional-password.png");
 });
 
-test("signing out really ends the session: going back to the dashboard does not enter", async ({ page }) => {
+test("signing out really ends the session: going back to the dashboard does not enter", async ({
+  page,
+}) => {
   const account = ACCOUNTS.logout;
   await signIn(page, account.username, account.password);
   await expect(page).toHaveURL("/");

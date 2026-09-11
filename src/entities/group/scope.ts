@@ -6,7 +6,11 @@ export function groupsForTeacher(groups: Group[], teacherId: string | null): Gro
   return groups.filter((group) => group.teacherId === teacherId);
 }
 
-export function visibleGroups(groups: Group[], role: Role | null, profileId: string | null): Group[] {
+export function visibleGroups(
+  groups: Group[],
+  role: Role | null,
+  profileId: string | null,
+): Group[] {
   if (role === null) return [];
   if (role === "teacher") return groupsForTeacher(groups, profileId);
   return groups;

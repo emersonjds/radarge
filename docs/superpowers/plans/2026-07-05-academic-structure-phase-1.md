@@ -54,7 +54,13 @@ In `src/shared/lib/storage/db.ts`, add `"assignments"` to the `Collection` union
 
 ```ts
 const STORAGE_KEY = "radarge.db.v6";
-const LEGACY_KEYS = ["radarge.db.v1", "radarge.db.v2", "radarge.db.v3", "radarge.db.v4", "radarge.db.v5"];
+const LEGACY_KEYS = [
+  "radarge.db.v1",
+  "radarge.db.v2",
+  "radarge.db.v3",
+  "radarge.db.v4",
+  "radarge.db.v5",
+];
 
 export type Collection =
   | "profiles"

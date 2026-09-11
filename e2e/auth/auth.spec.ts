@@ -240,11 +240,17 @@ test.describe("profile management (admin)", () => {
 
     const ownRow = page.getByRole("listitem").filter({ hasText: ACCOUNTS.profilesAdmin.name });
     await expect(ownRow.getByText("Você")).toBeVisible();
-    await expect(ownRow.getByRole("button", { name: `Editar ${ACCOUNTS.profilesAdmin.name}` })).toBeVisible();
     await expect(
-      ownRow.getByRole("button", { name: new RegExp(`(Des)?[Aa]tivar ${ACCOUNTS.profilesAdmin.name}`) }),
+      ownRow.getByRole("button", { name: `Editar ${ACCOUNTS.profilesAdmin.name}` }),
+    ).toBeVisible();
+    await expect(
+      ownRow.getByRole("button", {
+        name: new RegExp(`(Des)?[Aa]tivar ${ACCOUNTS.profilesAdmin.name}`),
+      }),
     ).toHaveCount(0);
-    await expect(ownRow.getByRole("button", { name: `Excluir ${ACCOUNTS.profilesAdmin.name}` })).toHaveCount(0);
+    await expect(
+      ownRow.getByRole("button", { name: `Excluir ${ACCOUNTS.profilesAdmin.name}` }),
+    ).toHaveCount(0);
   });
 
   test("deleting a teacher warns that their groups are left without one", async () => {
@@ -256,8 +262,12 @@ test.describe("profile management (admin)", () => {
       dialogText = dialog.message();
       return dialog.dismiss();
     });
-    const teacherRow = page.getByRole("listitem").filter({ hasText: ACCOUNTS.profilesTeacher.name });
-    await teacherRow.getByRole("button", { name: `Excluir ${ACCOUNTS.profilesTeacher.name}` }).click();
+    const teacherRow = page
+      .getByRole("listitem")
+      .filter({ hasText: ACCOUNTS.profilesTeacher.name });
+    await teacherRow
+      .getByRole("button", { name: `Excluir ${ACCOUNTS.profilesTeacher.name}` })
+      .click();
 
     expect(dialogText).toContain("regente de 2 aulas");
     expect(dialogText).toContain("ficarão sem professor");

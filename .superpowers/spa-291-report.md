@@ -30,7 +30,7 @@ Created `src/shared/lib/api/{client,token-store,errors}.ts` and added `NEXT_PUBL
 - `ApiError` carries the server `code`; `NetworkError` covers a network drop and an unusable body;
   `SessionEndedError` covers a failed refresh.
 - A 401 triggers `refreshOnce()`, which keeps the in-flight promise (`refreshInFlight ??=
-  performRefresh()`); concurrent calls reuse the same promise, so there is a single
+performRefresh()`); concurrent calls reuse the same promise, so there is a single
   `POST /auth/refresh`.
 - `fetch` is injectable (`CreateApiClientOptions.fetch`), which the Task 3 script needs: it runs
   in Node and needs a manual cookie jar, because Node's native `fetch` does not keep cookies

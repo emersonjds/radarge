@@ -4,10 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import {
-  passwordChangeFormSchema,
-  type PasswordChangeFormValues,
-} from "@/entities/profile/model";
+import { passwordChangeFormSchema, type PasswordChangeFormValues } from "@/entities/profile/model";
 import { messageForError } from "@/shared/lib/api/error-message";
 import { Button } from "@/shared/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
@@ -42,7 +39,7 @@ export function ChangePasswordForm() {
       <form
         onSubmit={form.handleSubmit(submit)}
         noValidate
-        className="w-full max-w-sm duration-500 animate-in fade-in slide-in-from-bottom-3 motion-reduce:animate-none"
+        className="w-full max-w-sm animate-in duration-500 fade-in slide-in-from-bottom-3 motion-reduce:animate-none"
       >
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Defina sua senha</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">

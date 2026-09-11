@@ -11,7 +11,9 @@ export interface AttendanceBarChartProps {
 
 export function AttendanceBarChart({ data }: AttendanceBarChartProps) {
   const options: ApexOptions = {
-    chart: { type: "bar", fontFamily: "var(--font-outfit)",
+    chart: {
+      type: "bar",
+      fontFamily: "var(--font-outfit)",
       toolbar: { show: false },
       // The bars grow from zero on every render, and a screenshot taken during
       // that grow reads as a near-empty chart.

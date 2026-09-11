@@ -27,7 +27,8 @@ export const signIn = async (credentials: Credentials): Promise<SessionProfile> 
  * That is what carries a session across a page reload, which always loses the
  * in-memory token.
  */
-export const fetchMe = (): Promise<SessionProfile> => apiClient().request<SessionProfile>("/auth/me");
+export const fetchMe = (): Promise<SessionProfile> =>
+  apiClient().request<SessionProfile>("/auth/me");
 
 export const signOut = async (): Promise<void> => {
   try {

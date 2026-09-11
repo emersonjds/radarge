@@ -17,7 +17,7 @@ const MOCK_TOTAL_TEACHERS = 148;
 and at the render site:
 
 ```ts
-String(totalTeachers < MOCK_TEACHERS_THRESHOLD ? MOCK_TOTAL_TEACHERS : totalTeachers)
+String(totalTeachers < MOCK_TEACHERS_THRESHOLD ? MOCK_TOTAL_TEACHERS : totalTeachers);
 ```
 
 An installation with one teacher shows **148**. This is the exact failure CLAUDE.md §6
@@ -57,7 +57,7 @@ label: text-sm text-muted-foreground
 ```
 
 Two values come from us, not from the template: the radius and the padding. What is
-adopted here is the card's *layout* — the icon tile, the `items-end justify-between`
+adopted here is the card's _layout_ — the icon tile, the `items-end justify-between`
 row, label and value on the left with a figure on the right. Radius and padding follow
 `design-language.md` (`rounded-xl`, `p-4 md:p-5`), which is the anatomy the shared `Card`
 primitive will carry, so this card does not have to be edited a second time.
@@ -68,11 +68,11 @@ Identical 30px, but `--text-title-*` is deprecated and gets deleted.
 The right-hand slot takes a `Badge` (`src/shared/ui/badge.tsx`, variants `success` and
 `danger` already exist) **only where a real second figure exists**:
 
-| Card | Right slot | Source |
-|---|---|---|
-| Total de alunos | `{active} ativos`, variant `success` | `students.data.filter(s => s.active).length` |
-| Total de professores | nothing | no second figure exists; the card degrades to label + value |
-| Frequência geral | trend delta with an arrow | first vs last point of `useAbsenteeismTrend()` |
+| Card                 | Right slot                           | Source                                                      |
+| -------------------- | ------------------------------------ | ----------------------------------------------------------- |
+| Total de alunos      | `{active} ativos`, variant `success` | `students.data.filter(s => s.active).length`                |
+| Total de professores | nothing                              | no second figure exists; the card degrades to label + value |
+| Frequência geral     | trend delta with an arrow            | first vs last point of `useAbsenteeismTrend()`              |
 
 The trend delta is `(100 - last.absenceRate) - (100 - first.absenceRate)`, rounded.
 Render `success` with `ArrowUpIcon` when positive, `danger` with `ArrowDownIcon` when

@@ -1,4 +1,10 @@
-import { expect, type Browser, type BrowserContext, type Locator, type Page } from "@playwright/test";
+import {
+  expect,
+  type Browser,
+  type BrowserContext,
+  type Locator,
+  type Page,
+} from "@playwright/test";
 import type { TestAccount } from "./seed-api";
 
 export interface Viewport {

@@ -5,4 +5,11 @@ playwright-report/
 test-results/
 pnpm-lock.yaml
 src/shared/tailadmin/
-e2e/**/evidencias/
+e2e/**/evidence/
+
+# Generated from the API contract by `pnpm api:types` - formatting it only drifts again.
+openapi.json
+src/shared/api/schema.d.ts
+
+# Lagune's own files.
+.lagune/

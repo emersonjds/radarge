@@ -52,11 +52,7 @@ function shiftMonth(month: string, delta: number): string {
 const navBtn =
   "flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted";
 
-export function AttendanceCalendar({
-  month,
-  statusByDate,
-  eventsByDate,
-}: AttendanceCalendarProps) {
+export function AttendanceCalendar({ month, statusByDate, eventsByDate }: AttendanceCalendarProps) {
   const [visibleMonth, setVisibleMonth] = useState(month);
   const [year, monthNumber] = visibleMonth.split("-").map(Number);
   const monthIndex = monthNumber - 1;

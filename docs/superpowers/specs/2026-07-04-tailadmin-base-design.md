@@ -27,12 +27,12 @@
 
 ## 2. Decisões travadas com o usuário
 
-| Tema                   | Decisão                                                                                                 |
-| ---------------------- | ------------------------------------------------------------------------------------------------------- |
+| Tema                   | Decisão                                                                                                   |
+| ---------------------- | --------------------------------------------------------------------------------------------------------- |
 | Identidade visual      | **TailAdmin puro** — paleta/índigo e fonte Outfit do template, sem retematizar para o azul Radarge agora. |
-| Navegação mobile       | **Sidebar responsiva do template** (off-canvas + backdrop no mobile). Remove a bottom-nav custom.       |
-| Dark mode              | **Travar em claro (v1)** — remove o toggle; mantém só o tema claro.                                     |
-| Gerenciador de pacotes | **pnpm** (gerar `pnpm-lock.yaml`; ignorar o `package-lock.json` do template).                           |
+| Navegação mobile       | **Sidebar responsiva do template** (off-canvas + backdrop no mobile). Remove a bottom-nav custom.         |
+| Dark mode              | **Travar em claro (v1)** — remove o toggle; mantém só o tema claro.                                       |
+| Gerenciador de pacotes | **pnpm** (gerar `pnpm-lock.yaml`; ignorar o `package-lock.json` do template).                             |
 
 ## 3. Estrutura de arquivos (mantendo FSD)
 

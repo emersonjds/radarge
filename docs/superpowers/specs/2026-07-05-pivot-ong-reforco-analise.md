@@ -130,7 +130,7 @@ Impacto direto:
 | `widgets/groups-admin`                      | painel de "Alunos da aula" (add/remove)                              | médio   |
 | `widgets/student-detail` / `reports`        | passa a mostrar N aulas em vez de 1 turma                            | médio   |
 | Chamada (`take-attendance`)                 | fonte de alunos passa a ser enrollment                               | pequeno |
-| Seed + bump `radarge.db.v8`                   | nova coleção `enrollments`, novo shape de student, remove gradeLevel | pequeno |
+| Seed + bump `radarge.db.v8`                 | nova coleção `enrollments`, novo shape de student, remove gradeLevel | pequeno |
 | Copy PT-BR + `CLAUDE.md`                    | reflete identidade ONG                                               | pequeno |
 | E2E                                         | ajustar specs que confiam em "turma X do aluno Y"                    | pequeno |
 

@@ -24,7 +24,8 @@ export function AppBreadcrumb() {
   const segments = pathname.split("/").filter(Boolean);
   if (segments.length === 0) return null;
 
-  const defaultTitle = SEGMENT_LABELS[segments[segments.length - 1]] ?? segments[segments.length - 1];
+  const defaultTitle =
+    SEGMENT_LABELS[segments[segments.length - 1]] ?? segments[segments.length - 1];
   const hasEntityOverride = title !== null && title !== defaultTitle;
 
   const crumbs: Crumb[] = [{ label: "Início", href: "/" }];

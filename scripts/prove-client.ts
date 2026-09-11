@@ -93,7 +93,9 @@ const runHappyPath = async (): Promise<void> => {
 
   console.log("6. list students");
   const students = await client.request<Student[]>("/students");
-  console.log(`   ${String(students.length)} student(s) found: ${students.map((one) => one.name).join(", ")}`);
+  console.log(
+    `   ${String(students.length)} student(s) found: ${students.map((one) => one.name).join(", ")}`,
+  );
 };
 
 const runWithApiDown = async (): Promise<void> => {
@@ -111,7 +113,9 @@ const runWithApiDown = async (): Promise<void> => {
   } catch (error) {
     const elapsedMs = Date.now() - startedAt;
     const isNetworkError = error instanceof NetworkError;
-    console.log(`rejected in ${String(elapsedMs)}ms as ${(error as Error).name}: ${(error as Error).message}`);
+    console.log(
+      `rejected in ${String(elapsedMs)}ms as ${(error as Error).name}: ${(error as Error).message}`,
+    );
     console.log(`isNetworkError=${String(isNetworkError)}`);
     if (!isNetworkError) throw error;
   }
