@@ -22,15 +22,15 @@ Restraint executed badly is not minimalism, it is an unfinished screen.
 
 Measured on real E2E captures at 375px and 1280px. Each section below names the ones it fixes.
 
-| # | Defect | Evidence in the code |
-|---|---|---|
-| 1 | Loose information with no grouping | `StudentDetail.tsx:191`: a `dl.grid-cols-3` holding the labels `Idade`/`Responsável`/`Telefone`; the guardian's name wraps onto 3 lines and the phone number breaks in the middle |
-| 2 | Missing data carrying the weight of data | `StudentDetail.tsx:214`: `—` in `text-2xl font-bold`; an em dash shouting like a number |
-| 3 | Out-of-proportion empty state | `AcademicPanel.tsx:38-45`: the string "Sem notas lançadas." fills an entire card |
-| 4 | A container that does not contain | `StudentDetail.tsx:213`: tiles in `bg-muted` (`#f2f4f7`) over `bg-card` (`#ffffff`): 1.08:1 contrast, no visible boundary |
-| 5 | Density that ignores the available width | `ClassOverview` stuck at `md:grid-cols-2` up to 1280px, while the student identity block squeezes 3 fields into a narrow column |
-| 6 | Mobile treated as a narrow desktop | `StudentRow.tsx:38`: `truncate` on the name to fit 4 single-letter buttons (`h-10 w-10` × 4 + gaps = 178px out of 343px) |
-| 7 | Long list with no limit | `StudentsReportTable` renders every student: 2194px tall with 21 of them |
+| #   | Defect                                   | Evidence in the code                                                                                                                                                              |
+| --- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Loose information with no grouping       | `StudentDetail.tsx:191`: a `dl.grid-cols-3` holding the labels `Idade`/`Responsável`/`Telefone`; the guardian's name wraps onto 3 lines and the phone number breaks in the middle |
+| 2   | Missing data carrying the weight of data | `StudentDetail.tsx:214`: `—` in `text-2xl font-bold`; an em dash shouting like a number                                                                                           |
+| 3   | Out-of-proportion empty state            | `AcademicPanel.tsx:38-45`: the string "Sem notas lançadas." fills an entire card                                                                                                  |
+| 4   | A container that does not contain        | `StudentDetail.tsx:213`: tiles in `bg-muted` (`#f2f4f7`) over `bg-card` (`#ffffff`): 1.08:1 contrast, no visible boundary                                                         |
+| 5   | Density that ignores the available width | `ClassOverview` stuck at `md:grid-cols-2` up to 1280px, while the student identity block squeezes 3 fields into a narrow column                                                   |
+| 6   | Mobile treated as a narrow desktop       | `StudentRow.tsx:38`: `truncate` on the name to fit 4 single-letter buttons (`h-10 w-10` × 4 + gaps = 178px out of 343px)                                                          |
+| 7   | Long list with no limit                  | `StudentsReportTable` renders every student: 2194px tall with 21 of them                                                                                                          |
 
 ## Prerequisites (gaps between what was agreed and today's code)
 
@@ -54,17 +54,17 @@ spec's job, but no screen is correct while they exist:
 One family: **Outfit**. No second family, no monospace for data. `tabular-nums` in Outfit already
 aligns a column of numbers, and a mono for a small label is template decoration.
 
-| Role | Class | Size / line height | Weight | Where |
-|---|---|---|---|---|
-| **Display number** | `text-3xl font-semibold tracking-tight tabular-nums` | 30px / 36px | 600 | The number that answers the screen's main question. **At most one per screen.** |
-| **Secondary number** | `text-xl font-semibold tabular-nums` | 20px / 28px | 600 | Tile value in a comparative group (the UI labels `Presentes` / `Faltas` / `Atrasos`) |
-| **Inline number** | `text-sm font-medium tabular-nums` | 14px / 20px | 500 | Table cell, value inside a label+value pair |
-| **Page title** (`h1`) | `text-xl font-semibold sm:text-2xl` | 20→24px / 28→32px | 600 | One per route |
-| **Card title** (`h2`) | `text-base font-semibold` | 16px / 24px | 600 | Card header |
-| **Body value** | `text-sm font-medium text-foreground` | 14px / 20px | 500 | Person's name, field value, list item |
-| **Body** | `text-sm text-foreground` | 14px / 20px | 400 | Running sentence, `max-w-[68ch]` |
-| **Label** | `text-xs font-medium text-muted-foreground` | 12px / 16px | 500 | `dt`, `label`, tile label, group header |
-| **Caption / meta** | `text-xs text-muted-foreground` | 12px / 16px | 400 | Date, count, help text, subtitle |
+| Role                  | Class                                                | Size / line height | Weight | Where                                                                                |
+| --------------------- | ---------------------------------------------------- | ------------------ | ------ | ------------------------------------------------------------------------------------ |
+| **Display number**    | `text-3xl font-semibold tracking-tight tabular-nums` | 30px / 36px        | 600    | The number that answers the screen's main question. **At most one per screen.**      |
+| **Secondary number**  | `text-xl font-semibold tabular-nums`                 | 20px / 28px        | 600    | Tile value in a comparative group (the UI labels `Presentes` / `Faltas` / `Atrasos`) |
+| **Inline number**     | `text-sm font-medium tabular-nums`                   | 14px / 20px        | 500    | Table cell, value inside a label+value pair                                          |
+| **Page title** (`h1`) | `text-xl font-semibold sm:text-2xl`                  | 20→24px / 28→32px  | 600    | One per route                                                                        |
+| **Card title** (`h2`) | `text-base font-semibold`                            | 16px / 24px        | 600    | Card header                                                                          |
+| **Body value**        | `text-sm font-medium text-foreground`                | 14px / 20px        | 500    | Person's name, field value, list item                                                |
+| **Body**              | `text-sm text-foreground`                            | 14px / 20px        | 400    | Running sentence, `max-w-[68ch]`                                                     |
+| **Label**             | `text-xs font-medium text-muted-foreground`          | 12px / 16px        | 500    | `dt`, `label`, tile label, group header                                              |
+| **Caption / meta**    | `text-xs text-muted-foreground`                      | 12px / 16px        | 400    | Date, count, help text, subtitle                                                     |
 
 ### The number versus its label: explicit rule
 
@@ -110,19 +110,19 @@ in `StudentDetail.tsx:224` and "ATIVO"/"INATIVO" in the `Badge` at `StudentDetai
 Allowed steps: **1 (4px), 2 (8px), 3 (12px), 4 (16px), 5 (20px), 6 (24px), 8 (32px), 12 (48px)**.
 Nothing else. No arbitrary value (`p-[13px]`), no `space-y-7`.
 
-| Relationship | Value | Class |
-|---|---|---|
-| Label → its value | 4px | `gap-1` (vertical block) |
-| Icon → text beside it | 8px | `gap-2` |
-| Between two adjacent touch targets | 8px | `gap-2` (absolute minimum, see §8) |
-| Between fields of the same group | 12px | `gap-3` |
-| Card inner padding | 16px → 20px | `p-4 md:p-5` |
-| Between groups inside a card | 16px + divider | `mt-4 pt-4 border-t border-border` |
-| Between card title and content | 16px | `mt-4` |
-| Between cards | 16px → 24px | `gap-4 md:gap-6` |
-| Page side padding | 16px → 24px | `px-4 md:px-6` |
-| Page header → first card | 24px | `mt-6` |
-| Vertical breathing room of a page empty state | 48px | `py-12` |
+| Relationship                                  | Value          | Class                              |
+| --------------------------------------------- | -------------- | ---------------------------------- |
+| Label → its value                             | 4px            | `gap-1` (vertical block)           |
+| Icon → text beside it                         | 8px            | `gap-2`                            |
+| Between two adjacent touch targets            | 8px            | `gap-2` (absolute minimum, see §8) |
+| Between fields of the same group              | 12px           | `gap-3`                            |
+| Card inner padding                            | 16px → 20px    | `p-4 md:p-5`                       |
+| Between groups inside a card                  | 16px + divider | `mt-4 pt-4 border-t border-border` |
+| Between card title and content                | 16px           | `mt-4`                             |
+| Between cards                                 | 16px → 24px    | `gap-4 md:gap-6`                   |
+| Page side padding                             | 16px → 24px    | `px-4 md:px-6`                     |
+| Page header → first card                      | 24px           | `mt-6`                             |
+| Vertical breathing room of a page empty state | 48px           | `py-12`                            |
 
 Grouping rule (the one that fixes defect 1): **the distance between related elements is always
 smaller than the distance to the neighboring group.** If label and value sit 4px apart and the
@@ -141,13 +141,13 @@ margins are what cancel each other out when two screens stack the same component
 
 Every color comes from `@theme` (`globals.css`). **Never a raw hex.**
 
-| Role | Token | What it gets | What it never gets |
-|---|---|---|---|
-| **Brand** | `brand-500` / `primary` | Primary action, link, focus `ring`, active navigation item, selected state, **and at most one display number per screen** | Student status, decoration, background of a large block |
-| **Success** | `success-*` | `Presente`, a regular situation, saved successfully | Anything that is not "all good" |
-| **Warning** | `warning-*` | `Atrasado`, waiting on an action, student close to the absence limit | A real error |
-| **Error** | `error-*` / `destructive` | `Ausente`, student at risk, validation failure, destructive action | Generic emphasis |
-| **Neutral** | `gray-*` / `muted-foreground` | Everything else: label, meta, divider, value with no status weight, **`Justificado`** | — |
+| Role        | Token                         | What it gets                                                                                                              | What it never gets                                      |
+| ----------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **Brand**   | `brand-500` / `primary`       | Primary action, link, focus `ring`, active navigation item, selected state, **and at most one display number per screen** | Student status, decoration, background of a large block |
+| **Success** | `success-*`                   | `Presente`, a regular situation, saved successfully                                                                       | Anything that is not "all good"                         |
+| **Warning** | `warning-*`                   | `Atrasado`, waiting on an action, student close to the absence limit                                                      | A real error                                            |
+| **Error**   | `error-*` / `destructive`     | `Ausente`, student at risk, validation failure, destructive action                                                        | Generic emphasis                                        |
+| **Neutral** | `gray-*` / `muted-foreground` | Everything else: label, meta, divider, value with no status weight, **`Justificado`**                                     | —                                                       |
 
 The status names in that table are the literal Portuguese UI labels, exactly as rendered:
 `Presente`, `Ausente`, `Atrasado`, `Justificado`.
@@ -222,11 +222,11 @@ Rules:
 
 Three sizes. The choice is not aesthetic: **count what is missing.**
 
-| Missing… | Size | Anatomy |
-|---|---|---|
-| one value | **inline** | `EmptyValue` (§4). No padding, no border, no icon, no sentence. |
-| the content of a card that already exists and has siblings | **block** | `py-6 text-center`, one sentence in `text-sm text-muted-foreground`, optionally a `size="sm"` link or button below it with `mt-3`. No icon, no title (the card already has an `h2`), no dashed border. |
-| the whole route | **page** | `py-12 text-center`: `size-10 text-gray-300` icon (`aria-hidden`), `text-base font-semibold text-foreground` title, `mt-2 text-sm text-muted-foreground max-w-sm mx-auto` sentence, primary action at `mt-6`. |
+| Missing…                                                   | Size       | Anatomy                                                                                                                                                                                                       |
+| ---------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| one value                                                  | **inline** | `EmptyValue` (§4). No padding, no border, no icon, no sentence.                                                                                                                                               |
+| the content of a card that already exists and has siblings | **block**  | `py-6 text-center`, one sentence in `text-sm text-muted-foreground`, optionally a `size="sm"` link or button below it with `mt-3`. No icon, no title (the card already has an `h2`), no dashed border.        |
+| the whole route                                            | **page**   | `py-12 text-center`: `size-10 text-gray-300` icon (`aria-hidden`), `text-base font-semibold text-foreground` title, `mt-2 text-sm text-muted-foreground max-w-sm mx-auto` sentence, primary action at `mt-6`. |
 
 Rules that hold for all three:
 
@@ -253,12 +253,12 @@ Rules that hold for all three:
 **Two surfaces, at most.** Page (`bg-background`, white) → card (`bg-card` + border + shadow).
 There is no third stacked surface.
 
-| Level | What it is | Classes |
-|---|---|---|
-| **Card** | A unit of content that would make sense on its own on another screen | `rounded-xl border border-border bg-card p-4 shadow-sm md:p-5` |
-| **Simple group** | A subdivision inside a card | No background, no border. Separated by `mt-4 pt-4 border-t border-border`, or by spacing plus a label |
-| **Value tile** | One value in a set of **two or more** comparable ones, side by side | `rounded-lg border border-border bg-gray-50 p-3` — **border required** |
-| **Nothing** | Page header, section title, block empty state | Text directly on the parent surface |
+| Level            | What it is                                                           | Classes                                                                                               |
+| ---------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Card**         | A unit of content that would make sense on its own on another screen | `rounded-xl border border-border bg-card p-4 shadow-sm md:p-5`                                        |
+| **Simple group** | A subdivision inside a card                                          | No background, no border. Separated by `mt-4 pt-4 border-t border-border`, or by spacing plus a label |
+| **Value tile**   | One value in a set of **two or more** comparable ones, side by side  | `rounded-lg border border-border bg-gray-50 p-3` — **border required**                                |
+| **Nothing**      | Page header, section title, block empty state                        | Text directly on the parent surface                                                                   |
 
 Rules:
 
@@ -297,12 +297,12 @@ Rules:
 
 ### ≥768px: table
 
-| Element | Classes |
-|---|---|
+| Element       | Classes                                                                                                                              |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Header (`th`) | `px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground` over `bg-muted` + `border-b border-border` |
-| Cell (`td`) | `px-4 py-3 text-sm text-foreground` → a row of ~44px |
-| Row | `border-t border-border hover:bg-muted` |
-| Clickable row | the whole row is the target; the link covers the identifying cell |
+| Cell (`td`)   | `px-4 py-3 text-sm text-foreground` → a row of ~44px                                                                                 |
+| Row           | `border-t border-border hover:bg-muted`                                                                                              |
+| Clickable row | the whole row is the target; the link covers the identifying cell                                                                    |
 
 Down from `px-5 py-4` (a ~52px row) to `px-4 py-3` (~44px): two more rows per screen without
 losing the 44px target.
@@ -424,26 +424,26 @@ The exact patterns that produced the seven defects. If you write one of these, y
 reintroducing a bug that is already catalogued.
 
 1. **Do not** put three or more label+value pairs in a `grid-cols-*` with a uniform gap. Stack
-   them. *(defect 1)*
+   them. _(defect 1)_
 2. **Do not** let a missing value inherit the classes of a present one. `—` is never
-   `text-2xl font-bold`. Use `EmptyValue`. *(defect 2)*
+   `text-2xl font-bold`. Use `EmptyValue`. _(defect 2)_
 3. **Do not** concatenate two pieces of data into one string inside the same text element
    (`` `${a} de ${b}` ``). They are two sibling elements, and that is what stops the value from
-   breaking in the middle. *(defect 1)*
+   breaking in the middle. _(defect 1)_
 4. **Do not** give `h-full`, `min-h-*` or `flex-1` to a container whose child is an empty state.
-   *(defect 3)*
-5. **Do not** use `bg-muted` without a border as a content container. *(defect 4)*
+   _(defect 3)_
+5. **Do not** use `bg-muted` without a border as a content container. _(defect 4)_
 6. **Do not** nest a card inside a card, or put `shadow-sm` on something that is not a card.
-   *(defect 4)*
+   _(defect 4)_
 7. **Do not** let a layout stop at `md:grid-cols-2` when there are 3+ comparable blocks and the
-   screen is 1280px wide. *(defect 5)*
-8. **Do not** use `truncate` on a person's name. Never, at any width. *(defect 6)*
+   screen is 1280px wide. _(defect 5)_
+8. **Do not** use `truncate` on a person's name. Never, at any width. _(defect 6)_
 9. **Do not** shrink the content to fit the controls. Move the controls to another line.
-   *(defect 6)*
+   _(defect 6)_
 10. **Do not** use `overflow-x-auto` to "solve" a table on a phone. Below 768px, a table becomes a
-    card list. *(defect 6)*
-11. **Do not** render an unbounded collection. Every list paginates at 20. *(defect 7)*
-12. **Do not** use `<select>` or `<input>` with `text-sm` on mobile: iOS zooms in. *(defect 6)*
+    card list. _(defect 6)_
+11. **Do not** render an unbounded collection. Every list paginates at 20. _(defect 7)_
+12. **Do not** use `<select>` or `<input>` with `text-sm` on mobile: iOS zooms in. _(defect 6)_
 13. **Do not** use color as the only carrier of meaning, and do not use the brand color for a
     status.
 14. **Do not** use uppercase outside `<th>`, or `font-bold` (700) anywhere.
@@ -456,11 +456,11 @@ reintroducing a bug that is already catalogued.
 
 Only what is missing, with the reason. Nothing hand-rolled that the registry already delivers.
 
-| Component | `pnpm dlx shadcn@latest add …` | Why |
-|---|---|---|
-| `card` | `card` | The `rounded-xl border bg-card p-4 shadow-sm` pattern is copied across ~10 files. Centralizing it is what makes §6 hold by construction instead of by discipline. |
-| `pagination` | `pagination` | Required by §7. Brings `aria-current` and navigation semantics ready-made. |
-| `skeleton` | `skeleton` | Table and list loading (§5). For that only. |
+| Component    | `npx shadcn@latest add …` | Why                                                                                                                                                               |
+| ------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `card`       | `card`                    | The `rounded-xl border bg-card p-4 shadow-sm` pattern is copied across ~10 files. Centralizing it is what makes §6 hold by construction instead of by discipline. |
+| `pagination` | `pagination`              | Required by §7. Brings `aria-current` and navigation semantics ready-made.                                                                                        |
+| `skeleton`   | `skeleton`                | Table and list loading (§5). For that only.                                                                                                                       |
 
 **Do not** add now: `progress` (the bar is static and decorative, two `div`s cover it),
 `sheet`/`drawer` (no screen asks for one), `tooltip` (the native `title` covers the truncation

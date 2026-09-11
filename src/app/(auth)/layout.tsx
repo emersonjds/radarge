@@ -59,9 +59,30 @@ const TEXT_ZONE = { minLeft: 4, maxLeft: 55, minTop: 34, maxTop: 66 };
 // Three depth tiers instead of one flat layer: a few bold foreground icons, a moderate
 // middle layer, and a large low-opacity background layer that reads as texture.
 const PANEL_ICON_TIERS = [
-  { name: "foreground", minSize: 36, sizeRange: 10, minOpacity: 0.22, opacityRange: 0.064, strokeWidth: 2.5 },
-  { name: "middle", minSize: 26, sizeRange: 8, minOpacity: 0.12, opacityRange: 0.048, strokeWidth: 2 },
-  { name: "background", minSize: 42, sizeRange: 12, minOpacity: 0.04, opacityRange: 0.016, strokeWidth: 1.25 },
+  {
+    name: "foreground",
+    minSize: 36,
+    sizeRange: 10,
+    minOpacity: 0.22,
+    opacityRange: 0.064,
+    strokeWidth: 2.5,
+  },
+  {
+    name: "middle",
+    minSize: 26,
+    sizeRange: 8,
+    minOpacity: 0.12,
+    opacityRange: 0.048,
+    strokeWidth: 2,
+  },
+  {
+    name: "background",
+    minSize: 42,
+    sizeRange: 12,
+    minOpacity: 0.04,
+    opacityRange: 0.016,
+    strokeWidth: 1.25,
+  },
 ] as const;
 
 // 7x5 is the ceiling for this tier set: at 40% jitter and up to +/-60deg of rotation (which
@@ -148,20 +169,22 @@ export default function AuthLayout({ children }: Readonly<{ children: React.Reac
 
         {/* Hidden below lg: the panel itself already renders at mobile widths, but these icons cost nothing there. */}
         <div aria-hidden className="pointer-events-none absolute inset-0 hidden lg:block">
-          {PANEL_ICONS.map(({ id, Icon, top, left, size, rotation, opacity, strokeWidth, delay }) => (
-            <div
-              key={id}
-              className="absolute"
-              style={{ top: `${top}%`, left: `${left}%`, transform: `rotate(${rotation}deg)` }}
-            >
-              <Icon
-                size={size}
-                strokeWidth={strokeWidth}
-                className="animate-[auth-panel-drift_10s_ease-in-out_infinite] text-white motion-reduce:animate-none"
-                style={{ opacity, animationDelay: delay }}
-              />
-            </div>
-          ))}
+          {PANEL_ICONS.map(
+            ({ id, Icon, top, left, size, rotation, opacity, strokeWidth, delay }) => (
+              <div
+                key={id}
+                className="absolute"
+                style={{ top: `${top}%`, left: `${left}%`, transform: `rotate(${rotation}deg)` }}
+              >
+                <Icon
+                  size={size}
+                  strokeWidth={strokeWidth}
+                  className="animate-[auth-panel-drift_10s_ease-in-out_infinite] text-white motion-reduce:animate-none"
+                  style={{ opacity, animationDelay: delay }}
+                />
+              </div>
+            ),
+          )}
         </div>
 
         <div className="relative max-w-md">

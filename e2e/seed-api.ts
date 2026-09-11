@@ -488,7 +488,11 @@ interface EventFixture {
  * unrecoverable in place — the fix is to replace it, not to leave events the
  * owning teacher can never see again.
  */
-const seedEvent = async (token: string, group: Identified, fixture: EventFixture): Promise<Identified> => {
+const seedEvent = async (
+  token: string,
+  group: Identified,
+  fixture: EventFixture,
+): Promise<Identified> => {
   const existing = await findOrCreate<Identified & { title: string; groupId: string }>(
     token,
     "/events",
@@ -570,7 +574,10 @@ const seedAcademicStructure = async (
 };
 
 /** auth.spec.ts's "excluir professor regente" needs exactly one teacher with 2 turmas. */
-const seedProfiles = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
+const seedProfiles = async (
+  token: string,
+  subjects: Map<SubjectName, Identified>,
+): Promise<void> => {
   const teacherId = await profileIdOf(token, ACCOUNTS.profilesTeacher.username);
 
   await seedGroup(token, subjects, {
@@ -686,11 +693,18 @@ const seedPivot = async (token: string): Promise<void> => {
   await removeStaleFixture(token, "João Pedro Silva");
 
   const teacherId = await profileIdOf(token, ACCOUNTS.pivotTeacher.username);
-  await seedGroup(token, new Map(), { name: "E2E Pivot — Aula", shift: "afternoon", teacherId: teacherId });
+  await seedGroup(token, new Map(), {
+    name: "E2E Pivot — Aula",
+    shift: "afternoon",
+    teacherId: teacherId,
+  });
 };
 
 /** "Enzo Ferreira" scores high in Matemática and lower in Português: aptitude reads "Exatas". */
-const seedReports = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
+const seedReports = async (
+  token: string,
+  subjects: Map<SubjectName, Identified>,
+): Promise<void> => {
   const teacherId = await profileIdOf(token, ACCOUNTS.reportsTeacher.username);
 
   const groupA = await seedGroup(token, subjects, {
@@ -724,7 +738,8 @@ const seedReports = async (token: string, subjects: Map<SubjectName, Identified>
       token,
       "/evaluations",
       (candidate) =>
-        candidate.groupId === entry.group.id && candidate.subjectId === subjects.get(entry.subjectName)!.id,
+        candidate.groupId === entry.group.id &&
+        candidate.subjectId === subjects.get(entry.subjectName)!.id,
       {
         groupId: entry.group.id,
         subjectId: subjects.get(entry.subjectName)!.id,
@@ -746,7 +761,10 @@ const seedReports = async (token: string, subjects: Map<SubjectName, Identified>
  * turmas under one professor, a student owned only by the other professor, one with no
  * turma at all, and one inactive.
  */
-const seedStudentDetail = async (token: string, subjects: Map<SubjectName, Identified>): Promise<void> => {
+const seedStudentDetail = async (
+  token: string,
+  subjects: Map<SubjectName, Identified>,
+): Promise<void> => {
   const teacher1Id = await profileIdOf(token, ACCOUNTS.detailTeacher1.username);
   const teacher2Id = await profileIdOf(token, ACCOUNTS.detailTeacher2.username);
 
@@ -768,7 +786,11 @@ const seedStudentDetail = async (token: string, subjects: Map<SubjectName, Ident
     teacherId: teacher2Id,
     subject: "Ciências",
   });
-  const groupC = await findByName<Identified & { name: string }>(token, "/groups", "E2E Detalhe — Aula C");
+  const groupC = await findByName<Identified & { name: string }>(
+    token,
+    "/groups",
+    "E2E Detalhe — Aula C",
+  );
 
   const studentOne = await seedStudent(token, {
     name: "Aluno Detalhe Um",

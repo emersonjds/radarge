@@ -85,7 +85,10 @@ describe("createApiClient", () => {
   it("throws ApiError with the server's code on a typed error response", async () => {
     server.use(
       http.post("*/students", () =>
-        HttpResponse.json({ code: "validation_error", message: "birthDate is invalid" }, { status: 422 }),
+        HttpResponse.json(
+          { code: "validation_error", message: "birthDate is invalid" },
+          { status: 422 },
+        ),
       ),
     );
 
@@ -138,7 +141,10 @@ describe("createApiClient", () => {
         HttpResponse.json({ code: "unauthorized", message: "expired" }, { status: 401 }),
       ),
       http.post("*/auth/refresh", () =>
-        HttpResponse.json({ code: "unauthorized", message: "no valid refresh cookie" }, { status: 401 }),
+        HttpResponse.json(
+          { code: "unauthorized", message: "no valid refresh cookie" },
+          { status: 401 },
+        ),
       ),
     );
 

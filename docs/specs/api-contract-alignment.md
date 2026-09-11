@@ -7,9 +7,9 @@ Linear: SPA-292. Prerequisite for every fetcher migration that follows.
 The radarge-api emits English enum values. Two front-end enums still carried the
 Portuguese keys the localStorage prototype was born with:
 
-| Field | Was | Now |
-| -- | -- | -- |
-| `Group.shift` | `manhã`, `afternoon`, `evening` | `morning`, `afternoon`, `evening` |
+| Field          | Was                                             | Now                                                                |
+| -------------- | ----------------------------------------------- | ------------------------------------------------------------------ |
+| `Group.shift`  | `manhã`, `afternoon`, `evening`                 | `morning`, `afternoon`, `evening`                                  |
 | `Subject.area` | `exatas`, `biologicas`, `linguagens`, `humanas` | `exact_sciences`, `biological_sciences`, `languages`, `humanities` |
 
 `shift` was already half-migrated — only `manhã` diverged. The other six enums in

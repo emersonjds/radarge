@@ -9,7 +9,7 @@ stay untouched, and it was the reason the fetchers were written async from the s
 ## Types come from the contract, not from zod
 
 The payload type is `components["schemas"][...]` out of `shared/api/schema.d.ts`, generated
-from `openapi.json`. A field the API renames then becomes a `pnpm type-check` failure rather
+from `openapi.json`. A field the API renames then becomes a `npm run type-check` failure rather
 than `undefined` on a screen.
 
 The entity's zod schema stops parsing rows off the wire — the API already validated them,

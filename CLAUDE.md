@@ -9,7 +9,7 @@ Regras de ouro para todo desenvolvimento assistido por IA neste projeto. Leia e 
 - **Nome**: Radarge
 - **Domínio**: sistema de presença e acompanhamento para **ONG de reforço escolar no contra-turno**. Professores marcam presença nas **aulas** (mobile); admins acompanham frequência, absenteísmo e desempenho em dashboards (mobile + desktop).
 - **Modelo**: alunos têm uma **ficha** independente (nome, data de nascimento, responsável, telefone) e podem estar matriculados em **múltiplas aulas** simultaneamente (relação N:N). Não há conceito de série/ano escolar — cada aula é uma oficina temática (ex: Reforço de Matemática — Segunda).
-- **Stack**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, pnpm. shadcn/ui (Radix + cva) em `src/shared/ui`. TanStack Query, zod, ApexCharts.
+- **Stack**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, npm. shadcn/ui (Radix + cva) em `src/shared/ui`. TanStack Query, zod, ApexCharts.
 - **Tipo**: SPA com static export (`output: "export"`) — sem servidor próprio.
 - **Idioma da UI**: português brasileiro em 100% dos textos visíveis.
 
@@ -47,7 +47,7 @@ Regras de ouro para todo desenvolvimento assistido por IA neste projeto. Leia e 
 - TypeScript: tipos explícitos em interfaces públicas; **sem `any`** (use `unknown` + narrowing); props sempre com interface nomeada.
 - Nomes semânticos — proibido identificadores de uma letra.
 - Estilo: **Tailwind utility classes** + componentes shadcn/ui em `src/shared/ui`. Combine classes com `cn()` (`src/shared/lib/utils.ts`), nunca com template literal. Variantes com `cva`, não com `if`. Mobile-first. Nunca hex cru — sempre o token do `@theme`.
-- Componente novo de UI genérica: rode `pnpm dlx shadcn@latest add <nome>` (cai em `src/shared/ui` pelo `components.json`). Só escreva do zero se o registro não tiver.
+- Componente novo de UI genérica: rode `npx shadcn@latest add <nome>` (cai em `src/shared/ui` pelo `components.json`). Só escreva do zero se o registro não tiver.
 
 ## 5. Arquitetura — Feature-Sliced Design
 
@@ -71,7 +71,7 @@ src/
 
 > **O backend é a `radarge-api`** — Node, Fastify, Postgres, no repositório irmão `personal-projects/radarge-api`. O plano de Supabase foi descartado em 2026-09-05: o front é static export e não tem servidor, então toda proteção mora na API e não em RLS.
 
-- **O contrato é a fonte da verdade dos tipos.** `openapi.json` na raiz é o snapshot publicado pela API; `pnpm api:types` gera `src/shared/api/schema.d.ts` a partir dele. Divergência de contrato vira erro de `pnpm type-check`, não `undefined` em tela.
+- **O contrato é a fonte da verdade dos tipos.** `openapi.json` na raiz é o snapshot publicado pela API; `npm run api:types` gera `src/shared/api/schema.d.ts` a partir dele. Divergência de contrato vira erro de `npm run type-check`, não `undefined` em tela.
 - **O cliente HTTP vive em `src/shared/lib/api/`.** Base URL por `NEXT_PUBLIC_API_URL`, `credentials: "include"` em toda chamada, access token só em memória (`token-store.ts`), e refresh de tentativa única no 401 — duas chamadas falhando juntas compartilham a mesma promessa, senão a segunda apresenta um token já rotacionado, a API entende como reuso e derruba a sessão.
 - **A `message` de erro da API nunca vai para a tela.** Ela responde `{ code, message }`; o código é para rotear, o texto que o usuário lê é nosso.
 - Os fetchers de `entities/*/api.ts` são **assíncronos** e têm assinatura estável — é o que permite trocar a origem dos dados sem mexer nas features. Mantenha-os assim.
@@ -94,7 +94,7 @@ src/
 
 ## 8. Review (antes de concluir)
 
-- [ ] `pnpm type-check` sem erros
+- [ ] `npm run type-check` sem erros
 - [ ] Textos da UI em PT-BR
 - [ ] Responsivo (375px, 768px, 1280px) — mobile-first para o professor, desktop+mobile para o admin
 - [ ] Sem `console.log` / código de debug
@@ -106,7 +106,7 @@ Toda feature/implementação que passa pelo fluxo SDD **deve** ter as três cama
 
 1. **Unitário** — lógica pura (libs, derivações, regras).
 2. **Integração com MSW** — fetchers e queries contra a radarge-api mockada (`src/test/msw/`). Afirme **a requisição** (caminho, verbo e corpo enviado), não só a resposta: um teste que só olha o que voltou passa enquanto manda `records` no lugar de `entries`.
-3. **E2E de tela (Playwright)** — fluxo real no browser **contra a API rodando**, com prints de evidência em PNG. As evidências ficam em `e2e/<feature>/evidencias/*.png` (gere rodando o spec; não invente prints). Suba o backend antes: `cd ../radarge-api && docker compose up -d && pnpm dev`. Os dados vêm de `e2e/seed-api.ts`, que popula pela própria API.
+3. **E2E de tela (Playwright)** — fluxo real no browser **contra a API rodando**, com prints de evidência em PNG. As evidências ficam em `e2e/<feature>/evidencias/*.png` (gere rodando o spec; não invente prints). Suba o backend antes: `cd ../radarge-api && docker compose up -d && npm run dev`. Os dados vêm de `e2e/seed-api.ts`, que popula pela própria API.
 
 > Mock não aplica a regra do servidor. Três bugs passaram por uma suíte MSW inteira verde e só caíram no teste contra a API viva: `Content-Type` anunciado em requisição sem corpo (logout devolvia 500 e a sessão sobrevivia), cookie de refresh descartado pelo navegador, e frequência de 100% inventada para turma sem chamada. É por isso que o E2E vale mais.
 
@@ -132,3 +132,13 @@ Regra: **um agent por função, sem duplicação**.
 - **Aluno em risco**: aluno com faltas acima de um limite (indicador de risco de evasão).
 
 **Observação**: no código, a entidade ainda se chama `Group` (por legado e para evitar refactor massivo), mas na UI e na documentação de produto sempre se refere como **"aula"**. O modelo de dados agora reflete um contexto de ONG de reforço no contra-turno, não uma escola tradicional com turmas seriadas.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

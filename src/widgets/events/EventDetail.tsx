@@ -134,13 +134,10 @@ function MoneyCard({ summary }: MoneyCardProps) {
       </p>
       {hasExpected ? (
         <p className="text-xs text-muted-foreground">
-          de <span className="whitespace-nowrap">{formatCurrency(summary.expected)}</span>{" "}
-          esperados
+          de <span className="whitespace-nowrap">{formatCurrency(summary.expected)}</span> esperados
         </p>
       ) : (
-        <p className="text-xs text-muted-foreground">
-          Todos os alunos estão isentos de pagamento.
-        </p>
+        <p className="text-xs text-muted-foreground">Todos os alunos estão isentos de pagamento.</p>
       )}
       {hasExpected && (
         <div

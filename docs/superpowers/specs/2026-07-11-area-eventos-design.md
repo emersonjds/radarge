@@ -37,12 +37,12 @@ _Aceite_: contadores de autorizados/pendentes/negados e de pagos/pendentes visí
 
 ## 3. Decisões (travadas)
 
-| Tema | Decisão | Por quê |
-|---|---|---|
-| Pagamento | Custo único por aluno no evento + status por aluno (`pending`/`paid`/`waived`) | Cobre bolsa/isenção, que é realidade de ONG, e responde "quem falta pagar". Contribuição livre não responde isso. |
-| Autorização | Status por aluno (`pending`/`authorized`/`denied`) | Distingue "não respondeu" de "não deixou ir" — é a diferença que gera a cobrança. |
-| Papéis | Admin e coordenador criam/editam/excluem; professor lê os eventos das aulas dele e marca autorização/pagamento | Segue o escopo por papel que já existe (`visibleGroups`). Quem fala com a família é o professor. |
-| Avisos | Link `wa.me` pré-preenchido + copiar texto | Zero backend, zero dependência. Vira o template da Cloud API quando o Supabase entrar (ver `docs/whatsapp-notificacoes.html`). |
+| Tema        | Decisão                                                                                                        | Por quê                                                                                                                        |
+| ----------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Pagamento   | Custo único por aluno no evento + status por aluno (`pending`/`paid`/`waived`)                                 | Cobre bolsa/isenção, que é realidade de ONG, e responde "quem falta pagar". Contribuição livre não responde isso.              |
+| Autorização | Status por aluno (`pending`/`authorized`/`denied`)                                                             | Distingue "não respondeu" de "não deixou ir" — é a diferença que gera a cobrança.                                              |
+| Papéis      | Admin e coordenador criam/editam/excluem; professor lê os eventos das aulas dele e marca autorização/pagamento | Segue o escopo por papel que já existe (`visibleGroups`). Quem fala com a família é o professor.                               |
+| Avisos      | Link `wa.me` pré-preenchido + copiar texto                                                                     | Zero backend, zero dependência. Vira o template da Cloud API quando o Supabase entrar (ver `docs/whatsapp-notificacoes.html`). |
 
 ## 4. Modelo de dados
 

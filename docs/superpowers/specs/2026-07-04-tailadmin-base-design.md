@@ -27,12 +27,12 @@
 
 ## 2. Decisões travadas com o usuário
 
-| Tema                   | Decisão                                                                                                 |
-| ---------------------- | ------------------------------------------------------------------------------------------------------- |
+| Tema                   | Decisão                                                                                                   |
+| ---------------------- | --------------------------------------------------------------------------------------------------------- |
 | Identidade visual      | **TailAdmin puro** — paleta/índigo e fonte Outfit do template, sem retematizar para o azul Radarge agora. |
-| Navegação mobile       | **Sidebar responsiva do template** (off-canvas + backdrop no mobile). Remove a bottom-nav custom.       |
-| Dark mode              | **Travar em claro (v1)** — remove o toggle; mantém só o tema claro.                                     |
-| Gerenciador de pacotes | **pnpm** (gerar `pnpm-lock.yaml`; ignorar o `package-lock.json` do template).                           |
+| Navegação mobile       | **Sidebar responsiva do template** (off-canvas + backdrop no mobile). Remove a bottom-nav custom.         |
+| Dark mode              | **Travar em claro (v1)** — remove o toggle; mantém só o tema claro.                                       |
+| Gerenciador de pacotes | **npm** (gerar `package-lock.json`; ignorar o `package-lock.json` do template).                           |
 
 ## 3. Estrutura de arquivos (mantendo FSD)
 
@@ -58,15 +58,15 @@ Guards por papel e navegação por papel inalterados em comportamento; só re-re
 
 ## 5. Execução
 
-- **Fase 0 — Fundação:** instalar deps do template com pnpm; `postcss.config.js`; `globals.css` (`@theme`); trazer `SidebarContext`, `icons`, `hooks`, kit `ui`, shell (`AppSidebar`/`AppHeader`/`Backdrop`); wire providers; layout `(app)` usando o shell; nav por papel no sidebar; **login rodando**. Remover CSS Modules/tokens antigos conforme cada consumidor migra.
-- **Fases 1..N — uma por tela** (ordem: Login → Alunos → Chamada → Perfis → Painel/Dashboard → Relatórios/StudentDetail), mantendo `pnpm type-check` verde a cada passo.
+- **Fase 0 — Fundação:** instalar deps do template com npm; `postcss.config.js`; `globals.css` (`@theme`); trazer `SidebarContext`, `icons`, `hooks`, kit `ui`, shell (`AppSidebar`/`AppHeader`/`Backdrop`); wire providers; layout `(app)` usando o shell; nav por papel no sidebar; **login rodando**. Remover CSS Modules/tokens antigos conforme cada consumidor migra.
+- **Fases 1..N — uma por tela** (ordem: Login → Alunos → Chamada → Perfis → Painel/Dashboard → Relatórios/StudentDetail), mantendo `npm run type-check` verde a cada passo.
 - **Limpeza final:** remover `AppShell`, bottom-nav, tokens e `*.module.css` órfãos; remover deps não usadas.
 
 ## 6. Testes
 
 - **Unit/integração de domínio** (vitest + MSW/store) continuam valendo — não tocam UI.
 - **E2E (Playwright)** mudam: some a bottom-nav ("Navegação inferior"); seletores de navegação passam a mirar a sidebar. Atualizar specs + **evidências PNG** por fase (login, alunos CRUD, chamada, perfis, guards por papel).
-- Gate por fase: `pnpm type-check`, `pnpm lint`, `pnpm vitest run`, Playwright, `pnpm build`.
+- Gate por fase: `npm run type-check`, `npm run lint`, `npx vitest run`, Playwright, `npm run build`.
 
 ## 7. Riscos e mitigações
 

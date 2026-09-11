@@ -18,7 +18,7 @@
 - **Styling:** design tokens / TailAdmin classes only — never raw hex. Reuse the `controlClasses` string and the `undefined|null|Entity` modal-state convention from `StudentFormModal`/`SubjectFormModal`.
 - **White-label:** new entities stay tenant-agnostic — no `organizationId`, no hardcoded school/"Radarge" name in domain logic.
 - **Store:** bump `STORAGE_KEY` to `radarge.db.v7`; add `radarge.db.v6` to `LEGACY_KEYS`; add `"evaluations"` and `"evaluationGrades"` collections (Task 1); remove `"grades"` (Task 4).
-- **Commands:** `npm test <file>` (single vitest file), `npm test` (full suite), `pnpm type-check`, `npm run build`, `npm run test:e2e <file>`.
+- **Commands:** `npm test <file>` (single vitest file), `npm test` (full suite), `npm run type-check`, `npm run build`, `npm run test:e2e <file>`.
 
 ---
 
@@ -306,7 +306,7 @@ export function useDeleteEvaluation() {
 
 - [ ] **Step 7: Run the test — verify it passes**
 
-Run: `npm test src/entities/evaluation/api.test.ts` → PASS (3 tests). Then `pnpm type-check` → clean.
+Run: `npm test src/entities/evaluation/api.test.ts` → PASS (3 tests). Then `npm run type-check` → clean.
 
 - [ ] **Step 8: Commit**
 
@@ -543,7 +543,7 @@ Add both to the returned object (keep `grades` for now):
 
 - [ ] **Step 7: Run tests + type-check**
 
-Run: `npm test src/entities/evaluation-grade/api.test.ts` → PASS (3). Run `npm test` (full) → all green. `pnpm type-check` → clean.
+Run: `npm test src/entities/evaluation-grade/api.test.ts` → PASS (3). Run `npm test` (full) → all green. `npm run type-check` → clean.
 
 - [ ] **Step 8: Commit**
 
@@ -940,7 +940,7 @@ export default function GradesPage() {
 
 - [ ] **Step 7: Verify + commit**
 
-Run: `pnpm type-check` → clean. `npm run build` → succeeds (export includes `/grades`).
+Run: `npm run type-check` → clean. `npm run build` → succeeds (export includes `/grades`).
 
 ```bash
 git add src/widgets/grades-teacher "src/app/(app)/grades" src/shared/config/navigation.ts src/widgets/app-shell/AppSidebar.tsx
@@ -1139,7 +1139,7 @@ In `src/shared/lib/storage/db.ts`: remove `"grades"` from the `Collection` union
 
 - [ ] **Step 7: Verify the whole analytics chain still works**
 
-Run: `npm test` (full suite) → all green, including the existing `src/features/analytics/academic.test.ts` (it uses explicit `Grade[]` inputs, so it must still pass unchanged). `pnpm type-check` → clean. `npm run build` → succeeds.
+Run: `npm test` (full suite) → all green, including the existing `src/features/analytics/academic.test.ts` (it uses explicit `Grade[]` inputs, so it must still pass unchanged). `npm run type-check` → clean. `npm run build` → succeeds.
 
 - [ ] **Step 8: Commit**
 
@@ -1214,7 +1214,7 @@ Run: `npm run test:e2e e2e/evaluations/evaluations.spec.ts` → PASS, PNGs writt
 
 - [ ] **Step 3: Full regression + build**
 
-Run: `npm test` → all green. `pnpm type-check` → clean. `npm run build` → succeeds.
+Run: `npm test` → all green. `npm run type-check` → clean. `npm run build` → succeeds.
 
 - [ ] **Step 4: Commit**
 

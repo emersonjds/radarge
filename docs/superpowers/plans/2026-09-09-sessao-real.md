@@ -6,7 +6,7 @@ Linear: SPA-284. Branch `feature/spa-284-real-session`, cortada de `developer`.
 
 ## O que existe hoje
 
-`src/features/session/session-store.ts` guarda o id do perfil como string crua em `localStorage`, sob a chave `radarge.session`. `src/features/auth/authenticate.ts` diz em comentário: *"Demo login: entra pelo cargo, sem senha"*. A tela avisa que os dados são fictícios. O guard em `src/widgets/app-shell/TailAdminShell.tsx` só checa se existe id — não checa papel, então um professor que digite `/users` na barra de endereço entra.
+`src/features/session/session-store.ts` guarda o id do perfil como string crua em `localStorage`, sob a chave `radarge.session`. `src/features/auth/authenticate.ts` diz em comentário: _"Demo login: entra pelo cargo, sem senha"_. A tela avisa que os dados são fictícios. O guard em `src/widgets/app-shell/TailAdminShell.tsx` só checa se existe id — não checa papel, então um professor que digite `/users` na barra de endereço entra.
 
 O cliente HTTP tipado já existe em `src/shared/lib/api/`, com token em memória em `token-store.ts` e refresh de tentativa única.
 
@@ -15,7 +15,7 @@ O cliente HTTP tipado já existe em `src/shared/lib/api/`, com token em memória
 - Sem `any`, sem `as unknown as`, sem asserção de não-nulo. Named exports, arrow functions, early return.
 - Comentário só para fato que o código não mostra.
 - **A mensagem de erro do servidor nunca vai para a tela.** O texto é nosso, escolhido a partir do `code`.
-- Gate: `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build`, saída com `tail`.
+- Gate: `npm run type-check`, `npm run lint`, `npm test`, `npm run build`, saída com `tail`.
 
 ---
 

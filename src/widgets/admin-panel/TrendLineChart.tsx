@@ -12,7 +12,9 @@ export interface TrendLineChartProps {
 
 export function TrendLineChart({ points }: TrendLineChartProps) {
   const options: ApexOptions = {
-    chart: { type: "area", fontFamily: "var(--font-outfit)",
+    chart: {
+      type: "area",
+      fontFamily: "var(--font-outfit)",
       toolbar: { show: false },
       // The bars grow from zero on every render, and a screenshot taken during
       // that grow reads as a near-empty chart.

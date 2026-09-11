@@ -19,7 +19,7 @@
 - **Styling:** design tokens only (`var(--color-*)`, `text-brand-*`, etc.) — never raw hex. Mobile-first; verify 375/768/1280.
 - **White-label:** keep new code tenant-agnostic — no `organizationId`, no hardcoded school/ONG/"Radarge" name in domain logic (branding stays only in `AppSidebar`).
 - **Store:** bump `STORAGE_KEY` to `radarge.db.v6` (adds the `assignments` collection); add `radarge.db.v5` to `LEGACY_KEYS`.
-- **Commands:** `pnpm test` (Vitest), `pnpm type-check`, `pnpm build`, `pnpm test:e2e` (Playwright). If the `rtk` hook interferes, prefix with `rtk proxy` (e.g. `rtk proxy pnpm test`).
+- **Commands:** `npm test` (Vitest), `npm run type-check`, `npm run build`, `npm run test:e2e` (Playwright). If the `rtk` hook interferes, prefix with `rtk proxy` (e.g. `rtk proxy npm test`).
 
 ---
 
@@ -54,7 +54,13 @@ In `src/shared/lib/storage/db.ts`, add `"assignments"` to the `Collection` union
 
 ```ts
 const STORAGE_KEY = "radarge.db.v6";
-const LEGACY_KEYS = ["radarge.db.v1", "radarge.db.v2", "radarge.db.v3", "radarge.db.v4", "radarge.db.v5"];
+const LEGACY_KEYS = [
+  "radarge.db.v1",
+  "radarge.db.v2",
+  "radarge.db.v3",
+  "radarge.db.v4",
+  "radarge.db.v5",
+];
 
 export type Collection =
   | "profiles"
@@ -157,7 +163,7 @@ describe("assignment api (over the store)", () => {
 
 - [ ] **Step 4: Run the test — verify it fails**
 
-Run: `pnpm test src/entities/assignment/api.test.ts`
+Run: `npm test src/entities/assignment/api.test.ts`
 Expected: FAIL (module `./api` not found).
 
 - [ ] **Step 5: Write the api**
@@ -388,12 +394,12 @@ return {
 
 - [ ] **Step 8: Run the test — verify it passes**
 
-Run: `pnpm test src/entities/assignment/api.test.ts`
+Run: `npm test src/entities/assignment/api.test.ts`
 Expected: PASS (4 tests).
 
 - [ ] **Step 9: Type-check and commit**
 
-Run: `pnpm type-check` → no errors.
+Run: `npm run type-check` → no errors.
 
 ```bash
 git add src/entities/assignment src/shared/lib/storage/db.ts src/shared/lib/storage/seed.ts
@@ -464,7 +470,7 @@ describe("subject writes (over the store)", () => {
 
 - [ ] **Step 2: Run the test — verify it fails**
 
-Run: `pnpm test src/entities/subject/write.test.ts`
+Run: `npm test src/entities/subject/write.test.ts`
 Expected: FAIL (`createSubject` not exported).
 
 - [ ] **Step 3: Implement the writes**
@@ -570,12 +576,12 @@ export function useDeleteSubject() {
 
 - [ ] **Step 5: Run the test — verify it passes**
 
-Run: `pnpm test src/entities/subject/write.test.ts`
+Run: `npm test src/entities/subject/write.test.ts`
 Expected: PASS (3 tests).
 
 - [ ] **Step 6: Type-check and commit**
 
-Run: `pnpm type-check` → no errors.
+Run: `npm run type-check` → no errors.
 
 ```bash
 git add src/entities/subject
@@ -669,7 +675,7 @@ describe("group writes (over the store)", () => {
 
 - [ ] **Step 3: Run the test — verify it fails**
 
-Run: `pnpm test src/entities/group/write.test.ts`
+Run: `npm test src/entities/group/write.test.ts`
 Expected: FAIL (`createGroup` not exported).
 
 - [ ] **Step 4: Implement the writes**
@@ -777,12 +783,12 @@ export function useDeleteGroup() {
 
 - [ ] **Step 6: Run the test — verify it passes**
 
-Run: `pnpm test src/entities/group/write.test.ts`
+Run: `npm test src/entities/group/write.test.ts`
 Expected: PASS (3 tests).
 
 - [ ] **Step 7: Type-check and commit**
 
-Run: `pnpm type-check` → no errors.
+Run: `npm run type-check` → no errors.
 
 ```bash
 git add src/entities/group
@@ -1039,8 +1045,8 @@ export default function SubjectsPage() {
 
 - [ ] **Step 5: Verify build + type-check**
 
-Run: `pnpm type-check` → no errors.
-Run: `pnpm build` → succeeds (static export includes `/subjects`).
+Run: `npm run type-check` → no errors.
+Run: `npm run build` → succeeds (static export includes `/subjects`).
 
 - [ ] **Step 6: Commit**
 
@@ -1481,8 +1487,8 @@ export default function GroupsPage() {
 
 - [ ] **Step 6: Verify build + type-check**
 
-Run: `pnpm type-check` → no errors.
-Run: `pnpm build` → succeeds (static export includes `/groups`).
+Run: `npm run type-check` → no errors.
+Run: `npm run build` → succeeds (static export includes `/groups`).
 
 - [ ] **Step 7: Commit**
 
@@ -1533,7 +1539,7 @@ describe("groupsForRegente", () => {
 
 - [ ] **Step 2: Run the test — verify it fails**
 
-Run: `pnpm test src/features/take-attendance/scope.test.ts`
+Run: `npm test src/features/take-attendance/scope.test.ts`
 Expected: FAIL (`./scope` not found).
 
 - [ ] **Step 3: Implement the helper**
@@ -1552,7 +1558,7 @@ export function groupsForRegente(groups: Group[], teacherId: string | null): Gro
 
 - [ ] **Step 4: Run the test — verify it passes**
 
-Run: `pnpm test src/features/take-attendance/scope.test.ts`
+Run: `npm test src/features/take-attendance/scope.test.ts`
 Expected: PASS (2 tests).
 
 - [ ] **Step 5: Wire it into `AttendanceForm`**
@@ -1599,9 +1605,9 @@ const chamada = await createAttendanceSession.mutateAsync({
 
 - [ ] **Step 6: Verify unit + type-check + build**
 
-Run: `pnpm test src/features/take-attendance/scope.test.ts` → PASS.
-Run: `pnpm type-check` → no errors.
-Run: `pnpm build` → succeeds.
+Run: `npm test src/features/take-attendance/scope.test.ts` → PASS.
+Run: `npm run type-check` → no errors.
+Run: `npm run build` → succeeds.
 
 - [ ] **Step 7: Commit**
 
@@ -1714,14 +1720,14 @@ test.describe("roll-call scoping", () => {
 
 - [ ] **Step 2: Run the E2E suite**
 
-Run: `pnpm test:e2e e2e/academic-structure/academic-structure.spec.ts`
+Run: `npm run test:e2e e2e/academic-structure/academic-structure.spec.ts`
 Expected: PASS (4 tests), PNGs written under `e2e/academic-structure/evidencias/`.
 
 - [ ] **Step 3: Full regression + build**
 
-Run: `pnpm test` → all unit/integration pass.
-Run: `pnpm type-check` → no errors.
-Run: `pnpm build` → succeeds.
+Run: `npm test` → all unit/integration pass.
+Run: `npm run type-check` → no errors.
+Run: `npm run build` → succeeds.
 
 - [ ] **Step 4: Commit**
 

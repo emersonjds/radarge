@@ -55,7 +55,10 @@ export const createApiClient = (options: CreateApiClientOptions = {}): ApiClient
     let response: Response;
 
     try {
-      response = await runFetch(`${baseUrl}/auth/refresh`, { method: "POST", credentials: "include" });
+      response = await runFetch(`${baseUrl}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
     } catch {
       setAccessToken(null);
       return false;

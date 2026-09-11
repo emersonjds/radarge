@@ -19,22 +19,22 @@ student list. It does not touch the header or the list.
    icon per tile is decoration nobody asked for (YAGNI). Revisit only if user testing shows color
    alone is not enough.
 7. The progress bar is two `div`s with color tokens, not a new component: it is static and not
-   interactive, which does not justify `pnpm dlx shadcn add progress`.
+   interactive, which does not justify `npx shadcn add progress`.
 
 ## Data mapping (`EventSummary`)
 
 The label column holds the literal PT-BR UI copy, exactly as it is rendered.
 
-| `EventSummary` field | PT-BR label | Group |
-|---|---|---|
-| `collected` + `expected` | "Arrecadado" / "de {expected} esperados" | Money (top) |
-| `authorized` | "Autorizados" | Authorization |
-| `pendingAuthorization` | "Aguardando" | Authorization |
-| `denied` | "Não autorizados" | Authorization |
-| `paid` | "Pagos" | Payment |
-| `pendingPayment` | "Pendentes de pagamento" | Payment |
-| `waived` | "Isentos" | Payment |
-| `total` | "Total de alunos" | Free event only |
+| `EventSummary` field     | PT-BR label                              | Group           |
+| ------------------------ | ---------------------------------------- | --------------- |
+| `collected` + `expected` | "Arrecadado" / "de {expected} esperados" | Money (top)     |
+| `authorized`             | "Autorizados"                            | Authorization   |
+| `pendingAuthorization`   | "Aguardando"                             | Authorization   |
+| `denied`                 | "Não autorizados"                        | Authorization   |
+| `paid`                   | "Pagos"                                  | Payment         |
+| `pendingPayment`         | "Pendentes de pagamento"                 | Payment         |
+| `waived`                 | "Isentos"                                | Payment         |
+| `total`                  | "Total de alunos"                        | Free event only |
 
 Reading order, top to bottom, always: **money → authorization → payment**. It is the order of the
 teacher's own question: can the trip go ahead, who still has to authorize, everything else is
@@ -101,12 +101,12 @@ text block (label, value, "de X esperados") on the left, the percentage badge pl
 
 ## Visual hierarchy
 
-| Layer | What it is | Size/weight | Color |
-|---|---|---|---|
-| **Headline** | the `Arrecadado` value | `text-2xl font-bold` | `text-brand-700` (the only brand color in the block: it is the number that matters most) |
-| **Secondary** | "de X esperados", the % badge, the authorization labels | `text-sm` / `text-xs font-semibold` | `text-muted-foreground`, success/warning/error tone on the authorization labels |
-| **Tertiary** | the `Autorizados` / `Aguardando` / `Não autorizados` values | `text-2xl font-bold text-foreground` | background tint by tone, neutral text |
-| **Quaternary** | the whole Payment group (label and value) | `text-2xl font-semibold text-foreground` (weight 600, not 700) | neutral, no background tint |
+| Layer          | What it is                                                  | Size/weight                                                    | Color                                                                                    |
+| -------------- | ----------------------------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **Headline**   | the `Arrecadado` value                                      | `text-2xl font-bold`                                           | `text-brand-700` (the only brand color in the block: it is the number that matters most) |
+| **Secondary**  | "de X esperados", the % badge, the authorization labels     | `text-sm` / `text-xs font-semibold`                            | `text-muted-foreground`, success/warning/error tone on the authorization labels          |
+| **Tertiary**   | the `Autorizados` / `Aguardando` / `Não autorizados` values | `text-2xl font-bold text-foreground`                           | background tint by tone, neutral text                                                    |
+| **Quaternary** | the whole Payment group (label and value)                   | `text-2xl font-semibold text-foreground` (weight 600, not 700) | neutral, no background tint                                                              |
 
 Size note: the `Autorizados` and `Pagos` values are pinned to `text-2xl` by the E2E contract (see
 the final section). That is why the hierarchy between the authorization and payment groups does
@@ -117,11 +117,11 @@ the three tiles of one row different sizes would look broken, which is why `Agua
 
 ## Tone per tile (Authorization group)
 
-| Tile | `border` | `bg` | label color |
-|---|---|---|---|
-| Autorizados | `border-success-200` | `bg-success-50` | `text-success-700` |
-| Aguardando | `border-warning-300` | `bg-warning-50` | `text-warning-700` |
-| Não autorizados | `border-error-200` | `bg-error-50` | `text-error-700` |
+| Tile            | `border`             | `bg`            | label color        |
+| --------------- | -------------------- | --------------- | ------------------ |
+| Autorizados     | `border-success-200` | `bg-success-50` | `text-success-700` |
+| Aguardando      | `border-warning-300` | `bg-warning-50` | `text-warning-700` |
+| Não autorizados | `border-error-200`   | `bg-error-50`   | `text-error-700`   |
 
 `Aguardando` uses `border-warning-300`, one step stronger than the `-200` of its neighbors: it is
 the actionable number the teacher has to see first (who still has to authorize), the only tone
@@ -236,7 +236,7 @@ does not block delivery. This condition is checked before any other (`free`, wai
 ## Tokens, spacing, container
 
 - Container of the whole block: `<section aria-label="Indicadores do evento" class="rounded-xl
-  border bg-card p-4 shadow-sm md:p-5">`, the same visual treatment as the header and the student
+border bg-card p-4 shadow-sm md:p-5">`, the same visual treatment as the header and the student
   list (`border`, `bg-card`, `shadow-sm`, `rounded-xl`), creating the same card rhythm across the
   screen (header → indicators → list). This is the change that fixes the "floating" tiles: they
   come to live inside a real card instead of loose on `bg-muted`.
@@ -247,7 +247,7 @@ does not block delivery. This condition is checked before any other (`free`, wai
 - `--radius` (`0.5rem`) on every corner: `rounded-lg` for the small tiles, `rounded-xl` for the
   money card and the outer container, consistent with the rest of the screen.
 - Group headers ("Autorização", "Pagamento"): a styled `<p>` (`text-xs
-  font-semibold uppercase tracking-wide text-muted-foreground`), not a real `<h2>`/`<h3>`. It is a
+font-semibold uppercase tracking-wide text-muted-foreground`), not a real `<h2>`/`<h3>`. It is a
   visual grouping label, not a navigation landmark; the page already has an `h1` (the event title)
   and needs no more heading levels here.
 - The count tiles are not interactive (they have no `onClick`), so the 44px touch-target rule does
@@ -275,7 +275,7 @@ does not block delivery. This condition is checked before any other (`free`, wai
 For `Autorizados`, `Pagos` and `Arrecadado`, the test does:
 
 ```ts
-page.getByText("<Rótulo>", { exact: true }).locator("..").locator("p.text-2xl")
+page.getByText("<Rótulo>", { exact: true }).locator("..").locator("p.text-2xl");
 ```
 
 For those three labels this requires: a text element holding exactly the label, a **shared direct
@@ -287,7 +287,7 @@ implementation must follow so it does not break this:
    This is why the spec puts no icon next to the label of any of those three tiles.
 2. **`Autorizados` and `Pagos`**: the `p.text-2xl` must contain **the number alone**, with no
    suffix and no extra whitespace beyond the automatic trim. The test runs `Number(await
-   statAutorizados.textContent())` and `Number(...)` on `statPagos`; any text besides the digits
+statAutorizados.textContent())` and `Number(...)` on `statPagos`; any text besides the digits
    breaks the parse.
 3. **`Arrecadado`**: the `p.text-2xl` must contain `formatCurrency(collected)` **alone** (for
    example `"R$ 25,00"`), never concatenated with "de X esperados". The test only requires

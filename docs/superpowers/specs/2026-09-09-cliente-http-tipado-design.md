@@ -26,7 +26,7 @@ entra no bundle. O contrato entra versionado no repositório, com um script que 
 regenera, porque um front que precisa da API no ar para compilar não compila em
 CI nem na máquina de quem acabou de clonar.
 
-Divergência de contrato passa a ser erro de tipo em `pnpm type-check`, e não um
+Divergência de contrato passa a ser erro de tipo em `npm run type-check`, e não um
 `undefined` numa tela em produção.
 
 ## O cliente é escrito à mão, e isso é deliberado

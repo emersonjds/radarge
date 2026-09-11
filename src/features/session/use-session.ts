@@ -39,7 +39,11 @@ export function useSession(): Session {
     },
   });
 
-  const status: SessionStatus = isPending ? "loading" : isError || !data ? "anonymous" : "authenticated";
+  const status: SessionStatus = isPending
+    ? "loading"
+    : isError || !data
+      ? "anonymous"
+      : "authenticated";
 
   return {
     status,

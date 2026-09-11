@@ -4,35 +4,35 @@
 
 **Goal:** Rebuild every Radarge screen on top of the TailAdmin template (Tailwind 4 + its UI kit + sidebar/header shell), preserving all domain logic and PT-BR content.
 
-**Architecture:** Hybrid — keep Radarge's `entities/features/shared-lib/queries` (localStorage front-only), replace the presentation layer (CSS Modules → Tailwind, custom shell → TailAdmin shell). Incremental on branch `feat/tailadmin-base`, `pnpm type-check` green after every task.
+**Architecture:** Hybrid — keep Radarge's `entities/features/shared-lib/queries` (localStorage front-only), replace the presentation layer (CSS Modules → Tailwind, custom shell → TailAdmin shell). Incremental on branch `feat/tailadmin-base`, `npm run type-check` green after every task.
 
-**Tech Stack:** Next 16 (App Router, static export), React 19, TypeScript, Tailwind CSS 4 (`@tailwindcss/postcss`), TanStack Query, Zod, ApexCharts, Playwright, Vitest, pnpm.
+**Tech Stack:** Next 16 (App Router, static export), React 19, TypeScript, Tailwind CSS 4 (`@tailwindcss/postcss`), TanStack Query, Zod, ApexCharts, Playwright, Vitest, npm.
 
 **Template source:** `~/Downloads/free-nextjs-admin-dashboard-main` (referred to as `$TPL`).
 
 ## Global Constraints
 
-- Package manager: **pnpm** (`rtk proxy pnpm ...`). Generate `pnpm-lock.yaml`; never commit the template's `package-lock.json`.
+- Package manager: **npm** (`rtk proxy npm ...`). Generate `package-lock.json`; never commit the template's `package-lock.json`.
 - Static export stays: `next.config` keeps `output: "export"`. No server code.
 - UI text: **PT-BR** in 100% of visible strings.
 - **Light mode only** — do NOT bring `ThemeContext`; `<html>` has no `dark` class; strip the theme toggle from `AppHeader`.
 - Preserve domain contracts: `entities/*/api.ts` + `queries.ts` signatures, `features/session`, `features/auth`, `features/analytics`, `shared/lib/storage` (`radarge.db.v4`).
 - Roles `teacher | coordinator | admin`; nav & guards per role unchanged in behavior.
 - Commits: micro, English imperative, author **Emerson Silva <emerson_jdss@hotmail.com>**, ZERO LLM traces (no `Co-Authored-By`, no 🤖, no AI mention). Never `git push`.
-- Gate per phase: `pnpm type-check`, `pnpm lint`, `pnpm vitest run`, Playwright (affected specs), `pnpm build`.
+- Gate per phase: `npm run type-check`, `npm run lint`, `npx vitest run`, Playwright (affected specs), `npm run build`.
 
 ---
 
 ## PHASE 0 — Foundation
 
-### Task 0.1: Install Tailwind + template runtime deps (pnpm)
+### Task 0.1: Install Tailwind + template runtime deps (npm)
 
-**Files:** Modify `package.json`, generate `pnpm-lock.yaml`.
+**Files:** Modify `package.json`, generate `package-lock.json`.
 
-- [ ] Add deps with pnpm (only what Radarge needs now — ApexCharts yes; skip fullcalendar/jvectormap/swiper/flatpickr/dnd/dropzone):
-      `rtk proxy pnpm add tailwindcss@^4.1.17 @tailwindcss/postcss@^4.1.17 @tailwindcss/forms@^0.5.10 tailwind-merge@^2.6.0 apexcharts@^4.7.0 react-apexcharts@^1.8.0`
-- [ ] `rtk proxy pnpm add -D postcss@^8.5.6 autoprefixer@^10.4.22` (autoprefixer only if a plugin needs it; `@tailwindcss/postcss` is the main one).
-- [ ] Verify install: `rtk proxy pnpm ls tailwindcss` shows 4.x.
+- [ ] Add deps with npm (only what Radarge needs now — ApexCharts yes; skip fullcalendar/jvectormap/swiper/flatpickr/dnd/dropzone):
+      `rtk proxy npm install tailwindcss@^4.1.17 @tailwindcss/postcss@^4.1.17 @tailwindcss/forms@^0.5.10 tailwind-merge@^2.6.0 apexcharts@^4.7.0 react-apexcharts@^1.8.0`
+- [ ] `rtk proxy npm install -D postcss@^8.5.6 autoprefixer@^10.4.22` (autoprefixer only if a plugin needs it; `@tailwindcss/postcss` is the main one).
+- [ ] Verify install: `rtk proxy npm ls tailwindcss` shows 4.x.
 - [ ] Commit: `add tailwind and apexcharts dependencies`.
 
 ### Task 0.2: PostCSS config + Tailwind globals
@@ -50,7 +50,7 @@ module.exports = {
 ```
 
 - [ ] Copy `$TPL/src/app/globals.css` → `src/app/globals.css` **verbatim** (keeps the `@theme`, `@utility menu-*`, scrollbar, and third-party CSS blocks — inert if the lib is unused; do not trim, that would be rebuilding CSS).
-- [ ] `rtk proxy pnpm type-check` (CSS doesn't affect TS; just confirm nothing else broke).
+- [ ] `rtk proxy npm run type-check` (CSS doesn't affect TS; just confirm nothing else broke).
 - [ ] Commit: `add postcss config and tailwind globals`.
 
 ### Task 0.3: Root layout — Outfit font, light-only, providers
@@ -59,7 +59,7 @@ module.exports = {
 
 - [ ] Read current `src/app/layout.tsx` and the providers it renders (React Query client). Preserve them.
 - [ ] Rewrite `src/app/layout.tsx` to: import `Outfit` from `next/font/google`, import `./globals.css`, wrap children in existing React-Query provider **and** the new `SidebarProvider` (Task 0.4). `<html lang="pt-BR">`, `<body className={outfit.className}>` (NO `dark:` classes, NO ThemeProvider). Remove the old Inter font wiring and any CSS-module import.
-- [ ] `rtk proxy pnpm type-check`.
+- [ ] `rtk proxy npm run type-check`.
 - [ ] Commit: `switch root layout to outfit font and sidebar provider`.
 
 ### Task 0.4: Bring SidebarContext (no dark)
@@ -68,7 +68,7 @@ module.exports = {
 
 - [ ] Copy `$TPL/src/context/SidebarContext.tsx` verbatim to `src/shared/context/SidebarContext.tsx` (it has no dark-mode logic — safe).
 - [ ] Update `src/app/layout.tsx` import to `@/shared/context/SidebarContext`.
-- [ ] `rtk proxy pnpm type-check`.
+- [ ] `rtk proxy npm run type-check`.
 - [ ] Commit: `add sidebar context`.
 
 ### Task 0.5: Bring icons + hooks
@@ -77,7 +77,7 @@ module.exports = {
 
 - [ ] Copy the whole `src/icons` dir (SVGs + `index.ts`) to `src/shared/icons`. Confirm `next.config` + `@svgr/webpack` handles `?url`/SVG-as-component the same way the template's `next.config.ts` does — diff `$TPL/next.config.ts` against Radarge's `next.config` and port the SVGR webpack rule if missing.
 - [ ] Copy `useModal.ts` to `src/shared/hooks/`.
-- [ ] `rtk proxy pnpm type-check`.
+- [ ] `rtk proxy npm run type-check`.
 - [ ] Commit: `add template icons and use-modal hook`.
 
 ### Task 0.6: Bring UI kit (Button, Badge, Table, Modal, Avatar, form controls, Alert, Dropdown)
@@ -86,7 +86,7 @@ module.exports = {
 
 - [ ] Copy: `ui/button/Button.tsx`, `ui/badge/Badge.tsx`, `ui/table/index.tsx`, `ui/modal/index.tsx`, `ui/avatar/AvatarText.tsx` (initials — Radarge has no photos), `ui/dropdown/*`, `ui/alert/Alert.tsx`, `form/input/InputField.tsx`, `form/Label.tsx`, `form/select/Select.tsx` (or `form/Select.tsx`), `form/input/Checkbox.tsx`.
 - [ ] Rewrite import paths inside copied files.
-- [ ] `rtk proxy pnpm type-check` (unused for now is fine; just must compile).
+- [ ] `rtk proxy npm run type-check` (unused for now is fine; just must compile).
 - [ ] Commit: `add tailadmin ui kit`.
 
 **Interfaces produced (memorize for later tasks):**
@@ -105,7 +105,7 @@ module.exports = {
 - [ ] Copy `$TPL/src/layout/{AppSidebar,AppHeader,Backdrop}.tsx` into `src/widgets/app-shell/`. Fix imports (`@/context` → `@/shared/context`, `@/icons` → `@/shared/icons`).
 - [ ] **AppSidebar:** replace the template's hard-coded `navItems` with Radarge's role-based nav. Read `role` from `useSession()`; build items from `navTeacher`/`navCoordinator`/`navAdmin` (labels PT-BR: Painel, Alunos, Chamada, Relatórios, Perfis) mapping each `NavIcon` to a `@/shared/icons` component. Remove the template's submenu/"Others"/promo `SidebarWidget` sections. Brand: replace logo with a text "Radarge" wordmark.
 - [ ] **AppHeader:** strip the theme toggle, search, notifications, and the user dropdown's template links; keep a simple right-side user block (name + role via `useSession()`) and a "Sair" (logout) action calling `session.logout()`. Keep the mobile hamburger (`toggleMobileSidebar`).
-- [ ] `rtk proxy pnpm type-check`.
+- [ ] `rtk proxy npm run type-check`.
 - [ ] Commit: `add app shell with role based navigation`.
 
 ### Task 0.8: `(app)` layout uses the new shell; delete old AppShell
@@ -113,10 +113,10 @@ module.exports = {
 **Files:** Modify `src/app/(app)/layout.tsx`. Later-delete `src/widgets/app-shell/AppShell.*` (old) once nothing imports it.
 
 - [ ] Rewrite `src/app/(app)/layout.tsx` to the TailAdmin admin-layout pattern: `useSidebar()` → dynamic `mainContentMargin`, render `<AppSidebar/><Backdrop/>` + `<div><AppHeader/><div className="p-4 md:p-6 mx-auto max-w-(--breakpoint-2xl)">{children}</div></div>`. Keep the existing per-layout auth guard (redirect to `/login` when no session) — read the current layout to preserve it.
-- [ ] `rtk proxy pnpm type-check` + `rtk proxy pnpm build` (must compile the whole app; screens still use old primitives — that's fine, they still exist).
+- [ ] `rtk proxy npm run type-check` + `rtk proxy npm run build` (must compile the whole app; screens still use old primitives — that's fine, they still exist).
 - [ ] Commit: `render app routes inside tailadmin shell`.
 
-**Phase 0 gate:** `pnpm type-check`, `pnpm build` green. App boots with the new shell; individual screens may look transitional but must render.
+**Phase 0 gate:** `npm run type-check`, `npm run build` green. App boots with the new shell; individual screens may look transitional but must render.
 
 ---
 
@@ -127,8 +127,8 @@ module.exports = {
 - [ ] Read current login widget + `features/auth/authenticate.ts` (`authenticate(username, password) → PublicProfile|null`) and `session.setSession(profileId)`. Preserve this flow exactly.
 - [ ] Rebuild the login as a centered full-width card (Tailwind): title "Entrar", `Label`+plain controlled inputs (Usuário, Senha), submit `Button` "Entrar", error `Alert` "Usuário ou senha inválidos." Keep `getByLabel("Usuário")`, `getByLabel("Senha")`, button name "Entrar" so E2E selectors survive.
 - [ ] `(auth)/layout.tsx`: simple full-width wrapper (no sidebar), light bg.
-- [ ] Run `rtk proxy pnpm exec playwright test e2e/auth` — fix selectors as needed; regenerate PNG evidence.
-- [ ] `pnpm type-check`, `pnpm lint`.
+- [ ] Run `rtk proxy npx playwright test e2e/auth` — fix selectors as needed; regenerate PNG evidence.
+- [ ] `npm run type-check`, `npm run lint`.
 - [ ] Commit: `rebuild login on tailwind`.
 
 ---
@@ -142,7 +142,7 @@ module.exports = {
 - [ ] Rebuild the table with `Table/TableRow/TableCell` (template). Columns per role (professor: no matrícula/ação). Situação → `Badge` (`error` risco / `success` regular). Ação → icon buttons (view→`/reports/id` link, edit→open modal, delete→confirm) using `@/shared/icons` inside small `hover:bg-gray-100 rounded-full` buttons.
 - [ ] `StudentFormModal.tsx`: `Modal` (template) wrapping create/edit form (Nome, Turma `select`, Ativo checkbox on edit). Uses `useCreateStudent`/`useUpdateStudent`. Keep ids `#aluno-nome`/`#aluno-turma` for E2E.
 - [ ] Update `e2e/students/students.spec.ts` if the add/edit now opens a Modal (assert modal heading, fill `#aluno-nome`, Salvar). Regenerate PNG evidence.
-- [ ] `pnpm type-check`, `pnpm lint`, `pnpm vitest run` (student CRUD integration unaffected), Playwright students.
+- [ ] `npm run type-check`, `npm run lint`, `npx vitest run` (student CRUD integration unaffected), Playwright students.
 - [ ] Commit(s): `rebuild student list on tailwind`, `move student form into modal`.
 
 ---
@@ -197,8 +197,8 @@ module.exports = {
 **Files:** delete orphans across `src/shared/ui/*` (old CSS-module primitives), any remaining `*.module.css`, old `AppShell`, bottom-nav, unused icons, unused deps.
 
 - [ ] `grep -rl "module.css" src` → ensure none remain referenced; delete files.
-- [ ] Remove old `Icon.tsx`/`Button.tsx`/`Badge.tsx` (CSS-module versions) once nothing imports them; `rtk proxy pnpm ls` prune unused deps.
-- [ ] Full gate: `pnpm type-check`, `pnpm lint`, `pnpm vitest run`, full Playwright, `pnpm build`.
+- [ ] Remove old `Icon.tsx`/`Button.tsx`/`Badge.tsx` (CSS-module versions) once nothing imports them; `rtk proxy npm ls` prune unused deps.
+- [ ] Full gate: `npm run type-check`, `npm run lint`, `npx vitest run`, full Playwright, `npm run build`.
 - [ ] Commit: `remove legacy css modules and unused primitives`.
 
 ---

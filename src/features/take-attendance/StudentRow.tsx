@@ -38,7 +38,7 @@ export function StudentRow({ student, status, onSelectStatus }: StudentRowProps)
     >
       <div className="flex min-w-0 items-center gap-3">
         <AvatarText name={student.name} />
-        <span className="min-w-0 flex-1 line-clamp-2 break-words font-medium text-foreground">
+        <span className="line-clamp-2 min-w-0 flex-1 font-medium break-words text-foreground">
           {student.name}
         </span>
       </div>

@@ -202,7 +202,7 @@ Reutiliza o padrão que já existe: **lista (TanStack Table no desktop / cards n
       duplicar matéria na mesma turma.
 - [ ] Chamada não tem mais id hardcoded; lista só as turmas do regente logado; salva com
       o id da sessão.
-- [ ] `pnpm type-check`, testes das 3 camadas e `pnpm build` passam. UI 100% PT-BR.
+- [ ] `npm run type-check`, testes das 3 camadas e `npm run build` passam. UI 100% PT-BR.
       Responsivo (375/768/1280). Sem `console.log`, sem imports não usados.
 
 ## White-label / multi-tenant (mapeamento — NÃO implementar na Fase 1)

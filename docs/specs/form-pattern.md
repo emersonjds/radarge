@@ -6,13 +6,13 @@ Reference implementation: `src/widgets/subjects-admin/SubjectFormModal.tsx`.
 
 ## The pieces
 
-| Concern | Where it lives |
-| -- | -- |
-| Field state and submit | `react-hook-form` `useForm` |
-| Validation | `zodResolver` over a `*FormSchema` in the entity's `model.ts` |
-| Markup | `Form`, `FormField`, `FormItem`, `FormLabel`, `FormControl`, `FormMessage` from `@/shared/ui/form` |
-| Select | `@/shared/ui/select`, never a raw `<select>` |
-| Failure copy | `messageForError` from `@/shared/lib/api/error-message` |
+| Concern                | Where it lives                                                                                     |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| Field state and submit | `react-hook-form` `useForm`                                                                        |
+| Validation             | `zodResolver` over a `*FormSchema` in the entity's `model.ts`                                      |
+| Markup                 | `Form`, `FormField`, `FormItem`, `FormLabel`, `FormControl`, `FormMessage` from `@/shared/ui/form` |
+| Select                 | `@/shared/ui/select`, never a raw `<select>`                                                       |
+| Failure copy           | `messageForError` from `@/shared/lib/api/error-message`                                            |
 
 ## Why the form schema is separate from the entity schema
 

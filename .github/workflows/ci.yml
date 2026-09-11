@@ -1,0 +1,58 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [master, developer]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Anything that runs during a build inherits this, install scripts included, so it is
+# capped at reading the repository rather than left at the account default.
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version-file: package.json
+          cache: npm
+
+      - run: npm ci
+
+      - name: Formatting
+        run: npm run format:check
+
+      - name: Types
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm run test
+
+      # The contract is the source of truth for our types. Regenerating and finding a
+      # diff means openapi.json moved without the types following, or the types were
+      # edited by hand - either way the build would compile against a fiction.
+      - name: Generated types match the contract
+        run: |
+          npm run api:types
+          git diff --exit-code -- src/shared/api/schema.d.ts
+
+      - name: Build
+        run: npm run build
+
+# The Playwright suite is deliberately absent. It drives a live radarge-api against a
+# real Postgres, which is the whole reason it catches what the mocked tests cannot:
+# CORS, cookie flags, and the server's own scoping rules. Reproducing that here means
+# running the sibling repository, and a green CI against a mock would be worse than
+# no CI at all. It runs locally, per docs in the repository README.

@@ -19,7 +19,7 @@
 - Commit messages: EN, curto, imperativo.
 - Design tokens / TailAdmin classes; sem hex cru.
 - Bump storage → `radarge.db.v8`, `radarge.db.v7` entra em `LEGACY_KEYS`.
-- Cada task deixa `pnpm type-check`, `pnpm test` e `pnpm build` verdes antes do commit.
+- Cada task deixa `npm run type-check`, `npm test` e `npm run build` verdes antes do commit.
 
 ## Tarefas (ordem de execução)
 
@@ -121,6 +121,6 @@
 
 ## Aceite final
 
-- `pnpm lint`, `pnpm type-check`, `pnpm test`, `pnpm build` — todos verdes.
+- `npm run lint`, `npm run type-check`, `npm test`, `npm run build` — todos verdes.
 - `npx playwright test` — todos verdes.
 - Merge fast-forward de `feat/ong-reforco-pivot` em `developer`; branch removida.

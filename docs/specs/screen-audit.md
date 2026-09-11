@@ -26,12 +26,12 @@ Reference paths written as `template/<path>` resolve under
 
 ### 1.1 What CLAUDE.md claims versus what is loaded
 
-| Thing | CLAUDE.md §2 says | Actually in the code | Where |
-|---|---|---|---|
-| Font | Outfit via `next/font` | **Inter** via `next/font/google` | `src/app/layout.tsx:2,7,19` |
-| Font token | `--font-outfit` | `--font-sans: Inter, sans-serif` | `src/app/globals.css:8` |
-| Radius | `0.5rem` | **`0.625rem`** | `src/app/globals.css:165` |
-| Type scale | one scale | **two scales coexist** | `globals.css:20-35` plus plain Tailwind sizes everywhere |
+| Thing      | CLAUDE.md §2 says      | Actually in the code             | Where                                                    |
+| ---------- | ---------------------- | -------------------------------- | -------------------------------------------------------- |
+| Font       | Outfit via `next/font` | **Inter** via `next/font/google` | `src/app/layout.tsx:2,7,19`                              |
+| Font token | `--font-outfit`        | `--font-sans: Inter, sans-serif` | `src/app/globals.css:8`                                  |
+| Radius     | `0.5rem`               | **`0.625rem`**                   | `src/app/globals.css:165`                                |
+| Type scale | one scale              | **two scales coexist**           | `globals.css:20-35` plus plain Tailwind sizes everywhere |
 
 Three consequences that are bugs today, not preferences:
 
@@ -41,7 +41,7 @@ Three consequences that are bugs today, not preferences:
   browser's generic sans while every surrounding card renders Inter. Visible in
   `e2e/dashboard/evidence/admin-dashboard.png`: the axis labels do not match the card titles.
 - **`font-sans` and the body class fight each other.** `<body>` carries `inter.className` (a
-  `next/font` generated family) *and* `globals.css:228` applies `font-sans`, which resolves to the
+  `next/font` generated family) _and_ `globals.css:228` applies `font-sans`, which resolves to the
   literal family name `Inter`. Any descendant that uses the `font-sans` utility gets a different
   resolution path than the body. One source of truth is needed, not two.
 - **The template's whole scale is dead code.** Grepping `src/` for `shadow-theme-*`,
@@ -60,28 +60,28 @@ Compared `template/app/globals.css` against `src/app/globals.css` in full.
 
 **This is the headline finding: we did not drop the design tokens. We stopped using them.** The
 flatness is not a missing shadow scale — `--shadow-theme-sm` and Tailwind's `shadow-sm` are within
-a rounding error of each other. It is the four deltas below plus the missing card *content*
+a rounding error of each other. It is the four deltas below plus the missing card _content_
 described in §3.1.
 
-| Token / rule | Template | Ours | Effect |
-|---|---|---|---|
-| `--font-*` | `--font-outfit: Outfit, sans-serif` | `--font-sans: Inter, sans-serif` | Different family; charts still request Outfit |
-| `body` background | `bg-gray-50` | `bg-background` (white) | Auth routes (`/login`, `/change-password`) sit on white with no canvas. The app shell overrides with `bg-muted`, so only the auth pages are affected |
-| `--radius` | *not defined*; Tailwind defaults | `0.625rem` + a `@theme inline` ramp | See table below |
-| `@utility no-scrollbar`, `custom-scrollbar` | present | **absent** | Any template markup we lift that uses them silently loses its scrollbar treatment |
-| `@utility menu-item-icon`, `menu-item-arrow*`, `menu-dropdown-item*`, `menu-dropdown-badge*` | present | **absent** | No submenu or nav-badge support in the sidebar |
-| `menu-item-active` | `bg-brand-50 text-brand-500` | `bg-accent text-accent-foreground` | Same background (`--accent` aliases `brand-50`), text one step darker (`brand-600` vs `brand-500`) |
-| default border color | `var(--color-gray-200)` | `var(--border)` | Same value through the alias. No drift |
+| Token / rule                                                                                 | Template                            | Ours                                | Effect                                                                                                                                               |
+| -------------------------------------------------------------------------------------------- | ----------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--font-*`                                                                                   | `--font-outfit: Outfit, sans-serif` | `--font-sans: Inter, sans-serif`    | Different family; charts still request Outfit                                                                                                        |
+| `body` background                                                                            | `bg-gray-50`                        | `bg-background` (white)             | Auth routes (`/login`, `/change-password`) sit on white with no canvas. The app shell overrides with `bg-muted`, so only the auth pages are affected |
+| `--radius`                                                                                   | _not defined_; Tailwind defaults    | `0.625rem` + a `@theme inline` ramp | See table below                                                                                                                                      |
+| `@utility no-scrollbar`, `custom-scrollbar`                                                  | present                             | **absent**                          | Any template markup we lift that uses them silently loses its scrollbar treatment                                                                    |
+| `@utility menu-item-icon`, `menu-item-arrow*`, `menu-dropdown-item*`, `menu-dropdown-badge*` | present                             | **absent**                          | No submenu or nav-badge support in the sidebar                                                                                                       |
+| `menu-item-active`                                                                           | `bg-brand-50 text-brand-500`        | `bg-accent text-accent-foreground`  | Same background (`--accent` aliases `brand-50`), text one step darker (`brand-600` vs `brand-500`)                                                   |
+| default border color                                                                         | `var(--color-gray-200)`             | `var(--border)`                     | Same value through the alias. No drift                                                                                                               |
 
 Radius, resolved:
 
-| Utility | Template (Tailwind default) | Ours | Delta |
-|---|---|---|---|
-| `rounded-md` | 6px | 8px | +2 |
-| `rounded-lg` | 8px | 10px | +2 |
-| `rounded-xl` | 12px | **14px** | +2 |
-| `rounded-2xl` | 16px | 16px | none — `--radius-2xl` is not overridden |
-| `rounded-3xl` | 24px | 24px | none |
+| Utility       | Template (Tailwind default) | Ours     | Delta                                   |
+| ------------- | --------------------------- | -------- | --------------------------------------- |
+| `rounded-md`  | 6px                         | 8px      | +2                                      |
+| `rounded-lg`  | 8px                         | 10px     | +2                                      |
+| `rounded-xl`  | 12px                        | **14px** | +2                                      |
+| `rounded-2xl` | 16px                        | 16px     | none — `--radius-2xl` is not overridden |
+| `rounded-3xl` | 24px                        | 24px     | none                                    |
 
 The `@theme inline` block overrides `sm`/`md`/`lg`/`xl` only, so our scale runs 6-8-10-14-16 and
 jumps only 2px between `xl` and `2xl` while the template's runs 6-8-12-16-24. That
@@ -134,38 +134,38 @@ proportions, keep our implementation; **ours** = we already have something bette
 
 ### 2.1 The thirteen primitives in `src/shared/ui/`
 
-| Ours | Template equivalent | Verdict | What changes |
-|---|---|---|---|
-| `button.tsx` | `template/components/ui/button/Button.tsx` | **ours** | Template has *no* `focus-visible` ring at all — it fails WCAG 2.2 AA. Keep our `cva`. Take only the sizing: template's `md` is `px-5 py-3.5` (≈44px). Add a responsive default so `size="default"` is `h-11 md:h-9`, which removes the `className="h-11"` patch repeated in `StudentList.tsx:137`, `ReportsCenter.tsx:179` and `ProfilesAdmin.tsx:102,116,158`. Optionally add `shadow-theme-xs` to the primary variant. |
-| `input.tsx` | `template/components/form/input/InputField.tsx` | **adapt** | Template is `h-11 rounded-lg px-4 py-2.5 shadow-theme-xs` — correct 44px target. Ours is `h-9 px-3 py-1`, a 36px target. But template is `text-sm` (14px) which **zooms on iOS**; ours is `text-base md:text-sm`, which is right. Synthesis: `h-11 md:h-9`, `rounded-lg`, `px-4 py-2.5`, keep `text-base md:text-sm`, keep our `focus-visible` ring and `aria-invalid` handling. Template's `hint` slot is already covered by `form.tsx`. |
-| `select.tsx` (Radix) | `template/components/form/Select.tsx` (native) | **ours** | Radix gives keyboard and ARIA semantics the native wrapper does not. Take only `h-11 ... md:h-9` on `SelectTrigger` (today `data-[size=default]:h-9`) and `rounded-lg`. Note the native `<select>` is still used raw in `AttendanceForm.tsx:115`, `ReportsCenter.tsx:150,166` and `EventDetail` — those are pinned by `getByLabel(...).selectOption(...)` in four specs and **must stay native `<select>`**. |
-| `label.tsx` | `template/components/form/Label.tsx` | **ours** | Both are `text-sm font-medium`. Template adds `mb-1.5`; ours leaves spacing to the parent, which is the better call under `design-language.md` §2. No change. |
-| `dialog.tsx` (Radix) | `template/components/ui/modal/index.tsx` | **ours (adapt visuals)** | Template's modal has no focus trap, no `role="dialog"`, no `aria-modal`, and restores `body.overflow` imperatively. Radix wins outright. Adopt its *look*: content `rounded-3xl p-4 lg:p-11`, and above all its close button — `h-9.5 w-9.5 sm:h-11 sm:w-11 rounded-full bg-gray-100` — because our `DialogContent` close is a bare `size-4` icon at `top-4 right-4`, well under 44px. |
-| `table.tsx` | `template/components/tables/BasicTableOne.tsx` | **adapt** | Template cells are `px-5 py-4` / `px-4 py-3` with `text-theme-sm`; ours default to `p-2`, which is why every consumer overrides with a local `th`/`td` string. Move the padding into the primitive per `design-language.md` §7 (`px-4 py-3`), and **drop `whitespace-nowrap` from `TableCell`** — it is a root cause of the horizontal overflow in §3.4. |
-| `badge.tsx` | `template/components/ui/badge/Badge.tsx` | **ours** | Ours has 8 variants and a focus ring; template has `light`/`solid` × 7 colors. Ours is missing `warning` and `info` tones, which `EventDetail` hand-rolls today. Add `warning` (`bg-warning-50 text-warning-700`) and `info` (`bg-blue-light-50 text-blue-light-700`) following the existing `-50`/`-700` recipe. |
-| `avatar-text.tsx` | `template/components/ui/avatar/Avatar.tsx` | **ours** | Template's is image-only; we have no avatar images, so initials are correct. Fix only the five off-palette colors (§1.2). Add the `size` prop pattern from the template (`h-8`/`h-10`/`h-12`) so tables can use a smaller avatar than the page header. |
-| `icon-button.tsx` | none | **ours** | `size-11 sm:size-9` is the mobile-first pattern the rest of the codebase should copy. Nothing to take. Enforce its use: `StudentsReportTable.tsx:91` hand-rolls an `h-9 w-9` button instead. |
-| `tabs.tsx` (Radix) | none in template | **ours** | No template equivalent. Keep. |
-| `checkbox.tsx` (Radix) | `template/components/form/input/Checkbox.tsx` | **ours** | Radix semantics beat the template's `taskCheckbox` CSS trick. |
-| `textarea.tsx` | `template/components/form/input/TextArea.tsx` | **adapt** | Same `h-11`-equivalent padding and `rounded-lg` treatment as `input.tsx`. |
-| `form.tsx` (RHF) | `template/components/form/Form.tsx` | **ours** | Template's is a bare `<form>` wrapper. Ours is the RHF+zod integration the project standardised on. Keep. |
+| Ours                   | Template equivalent                             | Verdict                  | What changes                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---------------------- | ----------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `button.tsx`           | `template/components/ui/button/Button.tsx`      | **ours**                 | Template has _no_ `focus-visible` ring at all — it fails WCAG 2.2 AA. Keep our `cva`. Take only the sizing: template's `md` is `px-5 py-3.5` (≈44px). Add a responsive default so `size="default"` is `h-11 md:h-9`, which removes the `className="h-11"` patch repeated in `StudentList.tsx:137`, `ReportsCenter.tsx:179` and `ProfilesAdmin.tsx:102,116,158`. Optionally add `shadow-theme-xs` to the primary variant.                  |
+| `input.tsx`            | `template/components/form/input/InputField.tsx` | **adapt**                | Template is `h-11 rounded-lg px-4 py-2.5 shadow-theme-xs` — correct 44px target. Ours is `h-9 px-3 py-1`, a 36px target. But template is `text-sm` (14px) which **zooms on iOS**; ours is `text-base md:text-sm`, which is right. Synthesis: `h-11 md:h-9`, `rounded-lg`, `px-4 py-2.5`, keep `text-base md:text-sm`, keep our `focus-visible` ring and `aria-invalid` handling. Template's `hint` slot is already covered by `form.tsx`. |
+| `select.tsx` (Radix)   | `template/components/form/Select.tsx` (native)  | **ours**                 | Radix gives keyboard and ARIA semantics the native wrapper does not. Take only `h-11 ... md:h-9` on `SelectTrigger` (today `data-[size=default]:h-9`) and `rounded-lg`. Note the native `<select>` is still used raw in `AttendanceForm.tsx:115`, `ReportsCenter.tsx:150,166` and `EventDetail` — those are pinned by `getByLabel(...).selectOption(...)` in four specs and **must stay native `<select>`**.                              |
+| `label.tsx`            | `template/components/form/Label.tsx`            | **ours**                 | Both are `text-sm font-medium`. Template adds `mb-1.5`; ours leaves spacing to the parent, which is the better call under `design-language.md` §2. No change.                                                                                                                                                                                                                                                                             |
+| `dialog.tsx` (Radix)   | `template/components/ui/modal/index.tsx`        | **ours (adapt visuals)** | Template's modal has no focus trap, no `role="dialog"`, no `aria-modal`, and restores `body.overflow` imperatively. Radix wins outright. Adopt its _look_: content `rounded-3xl p-4 lg:p-11`, and above all its close button — `h-9.5 w-9.5 sm:h-11 sm:w-11 rounded-full bg-gray-100` — because our `DialogContent` close is a bare `size-4` icon at `top-4 right-4`, well under 44px.                                                    |
+| `table.tsx`            | `template/components/tables/BasicTableOne.tsx`  | **adapt**                | Template cells are `px-5 py-4` / `px-4 py-3` with `text-theme-sm`; ours default to `p-2`, which is why every consumer overrides with a local `th`/`td` string. Move the padding into the primitive per `design-language.md` §7 (`px-4 py-3`), and **drop `whitespace-nowrap` from `TableCell`** — it is a root cause of the horizontal overflow in §3.4.                                                                                  |
+| `badge.tsx`            | `template/components/ui/badge/Badge.tsx`        | **ours**                 | Ours has 8 variants and a focus ring; template has `light`/`solid` × 7 colors. Ours is missing `warning` and `info` tones, which `EventDetail` hand-rolls today. Add `warning` (`bg-warning-50 text-warning-700`) and `info` (`bg-blue-light-50 text-blue-light-700`) following the existing `-50`/`-700` recipe.                                                                                                                         |
+| `avatar-text.tsx`      | `template/components/ui/avatar/Avatar.tsx`      | **ours**                 | Template's is image-only; we have no avatar images, so initials are correct. Fix only the five off-palette colors (§1.2). Add the `size` prop pattern from the template (`h-8`/`h-10`/`h-12`) so tables can use a smaller avatar than the page header.                                                                                                                                                                                    |
+| `icon-button.tsx`      | none                                            | **ours**                 | `size-11 sm:size-9` is the mobile-first pattern the rest of the codebase should copy. Nothing to take. Enforce its use: `StudentsReportTable.tsx:91` hand-rolls an `h-9 w-9` button instead.                                                                                                                                                                                                                                              |
+| `tabs.tsx` (Radix)     | none in template                                | **ours**                 | No template equivalent. Keep.                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `checkbox.tsx` (Radix) | `template/components/form/input/Checkbox.tsx`   | **ours**                 | Radix semantics beat the template's `taskCheckbox` CSS trick.                                                                                                                                                                                                                                                                                                                                                                             |
+| `textarea.tsx`         | `template/components/form/input/TextArea.tsx`   | **adapt**                | Same `h-11`-equivalent padding and `rounded-lg` treatment as `input.tsx`.                                                                                                                                                                                                                                                                                                                                                                 |
+| `form.tsx` (RHF)       | `template/components/form/Form.tsx`             | **ours**                 | Template's is a bare `<form>` wrapper. Ours is the RHF+zod integration the project standardised on. Keep.                                                                                                                                                                                                                                                                                                                                 |
 
 ### 2.2 Components the template ships that we do not have
 
 Every one of these is currently hand-written inline somewhere in `src/`.
 
-| Template component | What we do instead | Verdict |
-|---|---|---|
-| `common/ComponentCard.tsx` | The string `rounded-xl border bg-card ... shadow-sm` is repeated **23 times across 14 files** | **adapt into `src/shared/ui/card.tsx`.** `design-language.md` already schedules `pnpm dlx shadcn@latest add card`. Take the template's header/body split (`px-6 py-5` header, `border-t` divider, `p-4 sm:p-6` body) but our padding scale (`p-4 md:p-5`) and our radius (`rounded-xl`). This single component is the highest-leverage change in the audit. |
-| `tables/Pagination.tsx` | **nothing** — no pagination exists anywhere in `src/` | **adapt.** `design-language.md` §7 mandates 20-row pagination. Template's version is a plain component with `h-10` buttons and no `aria-current`; prefer `shadcn add pagination` and use the template only for the `Mostrando 1–20 de 84` placement. |
-| `common/PageBreadCrumb.tsx` | `widgets/app-shell/AppBreadcrumb.tsx` | **adapt.** Template couples the `h2` page title and the trail in one flex row (`justify-between gap-3 mb-6`). Ours renders the trail alone and every widget then renders its own `h1` below it, which is why the reports student record shows *two* stacked back-affordances (§3.2). Merging title and trail fixes that structurally. |
-| `ui/alert/Alert.tsx` | `<p role="alert" className="text-sm text-destructive">` in 5 widgets | **adapt.** Four variants on the `-500` border / `-50` background recipe, matching our `Badge`. |
-| `ui/dropdown/Dropdown.tsx` + `DropdownItem.tsx` | Header logout is a bare `<button>`; `AppHeader` has no user menu | **adopt the pattern, implement with Radix.** Needs the `menu-dropdown-*` utilities from §1.2 restored to `globals.css`. Low priority — no screen demands it yet. |
-| `ecommerce/EcommerceMetrics.tsx` | `AdminPanel.tsx:46-56` `StatCard` | **adapt.** See §3.1. |
-| `ecommerce/MonthlyTarget.tsx` | nothing | **skip.** A radial gauge for a single percentage is decoration; `dataviz` and `design-language.md` both argue against it. |
-| `user-profile/UserInfoCard.tsx` | `StudentDetail.tsx:194-213` | **adopt the grid, verbatim.** See §3.2. |
-| `layout/AppSidebar.tsx` | `widgets/app-shell/AppSidebar.tsx` | **ours.** The 290/90px collapse already matches and is pinned by E2E. |
-| `layout/AppHeader.tsx` | `widgets/app-shell/AppHeader.tsx` | **ours.** Template's header carries a search box and theme toggle we do not want. |
+| Template component                              | What we do instead                                                                            | Verdict                                                                                                                                                                                                                                                                                                                                                |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `common/ComponentCard.tsx`                      | The string `rounded-xl border bg-card ... shadow-sm` is repeated **23 times across 14 files** | **adapt into `src/shared/ui/card.tsx`.** `design-language.md` already schedules `npx shadcn@latest add card`. Take the template's header/body split (`px-6 py-5` header, `border-t` divider, `p-4 sm:p-6` body) but our padding scale (`p-4 md:p-5`) and our radius (`rounded-xl`). This single component is the highest-leverage change in the audit. |
+| `tables/Pagination.tsx`                         | **nothing** — no pagination exists anywhere in `src/`                                         | **adapt.** `design-language.md` §7 mandates 20-row pagination. Template's version is a plain component with `h-10` buttons and no `aria-current`; prefer `shadcn add pagination` and use the template only for the `Mostrando 1–20 de 84` placement.                                                                                                   |
+| `common/PageBreadCrumb.tsx`                     | `widgets/app-shell/AppBreadcrumb.tsx`                                                         | **adapt.** Template couples the `h2` page title and the trail in one flex row (`justify-between gap-3 mb-6`). Ours renders the trail alone and every widget then renders its own `h1` below it, which is why the reports student record shows _two_ stacked back-affordances (§3.2). Merging title and trail fixes that structurally.                  |
+| `ui/alert/Alert.tsx`                            | `<p role="alert" className="text-sm text-destructive">` in 5 widgets                          | **adapt.** Four variants on the `-500` border / `-50` background recipe, matching our `Badge`.                                                                                                                                                                                                                                                         |
+| `ui/dropdown/Dropdown.tsx` + `DropdownItem.tsx` | Header logout is a bare `<button>`; `AppHeader` has no user menu                              | **adopt the pattern, implement with Radix.** Needs the `menu-dropdown-*` utilities from §1.2 restored to `globals.css`. Low priority — no screen demands it yet.                                                                                                                                                                                       |
+| `ecommerce/EcommerceMetrics.tsx`                | `AdminPanel.tsx:46-56` `StatCard`                                                             | **adapt.** See §3.1.                                                                                                                                                                                                                                                                                                                                   |
+| `ecommerce/MonthlyTarget.tsx`                   | nothing                                                                                       | **skip.** A radial gauge for a single percentage is decoration; `dataviz` and `design-language.md` both argue against it.                                                                                                                                                                                                                              |
+| `user-profile/UserInfoCard.tsx`                 | `StudentDetail.tsx:194-213`                                                                   | **adopt the grid, verbatim.** See §3.2.                                                                                                                                                                                                                                                                                                                |
+| `layout/AppSidebar.tsx`                         | `widgets/app-shell/AppSidebar.tsx`                                                            | **ours.** The 290/90px collapse already matches and is pinned by E2E.                                                                                                                                                                                                                                                                                  |
+| `layout/AppHeader.tsx`                          | `widgets/app-shell/AppHeader.tsx`                                                             | **ours.** Template's header carries a search box and theme toggle we do not want.                                                                                                                                                                                                                                                                      |
 
 ---
 
@@ -210,7 +210,7 @@ Every one of these is currently hand-written inline somewhere in `src/`.
 
 - **What is wrong, measured:**
   1. **`StudentDetail.tsx:194` is `<dl className="grid grid-cols-3 gap-3 text-sm">` with no
-     breakpoint prefix.** Three columns at 375px *and* at 1280px, inside a `lg:col-span-1` column
+     breakpoint prefix.** Three columns at 375px _and_ at 1280px, inside a `lg:col-span-1` column
      ~296px wide. At 1280px "Mãe de Ferreira" wraps to two lines and `(11) 93333-0001` breaks
      after the hyphen. At 375px it is worse: "Responsável do Aluno Detalhe Um" wraps to **three**
      lines and the phone still breaks mid-number. A broken phone number cannot be dialled or
@@ -236,7 +236,7 @@ Every one of these is currently hand-written inline somewhere in `src/`.
   `design-language.md` §6 the pairs stack (`flex flex-col gap-3`) rather than going to two columns,
   since we have three fields and the guardian name is the long one. Phone gets
   `whitespace-nowrap tabular-nums`. The `—` tiles become the `EmptyValue` treatment from
-  `design-language.md` §4 — and where the tile's *only* content is the absence, it shows the reason
+  `design-language.md` §4 — and where the tile's _only_ content is the absence, it shows the reason
   ("Sem chamadas registradas") instead of a 24px em dash.
 
 - **375px:** identity pairs stacked full-width, no wrap on any of the three. Tabs stay
@@ -297,7 +297,7 @@ Every one of these is currently hand-written inline somewhere in `src/`.
   §8. Promote `Marcar todos como presente` to full width `h-11`. `Salvar chamada` goes into the
   sticky footer the language prescribes.
 
-- **375px:** this *is* the 375px design. Everything above is the mobile spec; desktop
+- **375px:** this _is_ the 375px design. Everything above is the mobile spec; desktop
   (`roll-call-desktop.png`) can keep the inline row from `md:` up.
 
 - **Must not change:**
@@ -463,7 +463,7 @@ Grouped because they share one shape and one set of problems.
      files, not a shared `Skeleton`.
   4. `/users` renders the create form and the list as two peer `<section>` cards, so on desktop the
      form occupies the top third of the page permanently. Template's pattern for this is a modal
-     (`ProfileFormModal` already exists and is used for *editing*) — the create form should use it
+     (`ProfileFormModal` already exists and is used for _editing_) — the create form should use it
      too.
 
 - **Fix:** one `Card` (§2.2), one `Skeleton` (`shadcn add skeleton`, already scheduled by
@@ -514,15 +514,15 @@ Grouped because they share one shape and one set of problems.
 
 Independent of screen:
 
-| Selector | Pins | Where |
-|---|---|---|
-| `page.locator("aside")` | The sidebar is an `<aside>`; 290px expanded / 90px collapsed; x < 0 when the mobile drawer is closed | `take-attendance.spec.ts:62,90` |
-| `page.locator("div.fixed.inset-0.z-40")` | `Backdrop` keeps those exact three classes | `take-attendance.spec.ts:69` |
-| `getByRole("button", { name: "Alternar menu" })` | Header toggle label | `take-attendance.spec.ts:65,93` |
-| `getByRole("navigation", { name: "Navegação principal" })` | Sidebar `nav` `aria-label` | `take-attendance.spec.ts:79` |
-| `getByRole("main")` | `TailAdminShell` keeps `<main>` | `reports.spec.ts:53` |
-| `document.scrollWidth - clientWidth <= 0` | **No horizontal page scroll at 375px**, asserted in `take-attendance`, `student-detail` and `events` | three specs |
-| `getByText("404")` having count 0 | Client-side routes never fall through to the static-export 404 | `student-detail.spec.ts` ×4 |
+| Selector                                                   | Pins                                                                                                 | Where                           |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `page.locator("aside")`                                    | The sidebar is an `<aside>`; 290px expanded / 90px collapsed; x < 0 when the mobile drawer is closed | `take-attendance.spec.ts:62,90` |
+| `page.locator("div.fixed.inset-0.z-40")`                   | `Backdrop` keeps those exact three classes                                                           | `take-attendance.spec.ts:69`    |
+| `getByRole("button", { name: "Alternar menu" })`           | Header toggle label                                                                                  | `take-attendance.spec.ts:65,93` |
+| `getByRole("navigation", { name: "Navegação principal" })` | Sidebar `nav` `aria-label`                                                                           | `take-attendance.spec.ts:79`    |
+| `getByRole("main")`                                        | `TailAdminShell` keeps `<main>`                                                                      | `reports.spec.ts:53`            |
+| `document.scrollWidth - clientWidth <= 0`                  | **No horizontal page scroll at 375px**, asserted in `take-attendance`, `student-detail` and `events` | three specs                     |
+| `getByText("404")` having count 0                          | Client-side routes never fall through to the static-export 404                                       | `student-detail.spec.ts` ×4     |
 
 ---
 
@@ -530,20 +530,20 @@ Independent of screen:
 
 Ranked by (frequency of use) × (severity), not by effort.
 
-| # | Card | Screens | Why here | Existing card |
-|---|---|---|---|---|
-| 1 | **Foundation: Outfit, `--radius: 0.5rem`, one type scale, chart font token** | all | Every other card cites these values. Shipping any redesign before this means redoing it. Includes the two charts that request an unloaded font and the five off-palette avatar colors. | **new** |
-| 2 | **`Card` primitive + responsive `h-11 md:h-9` on `Button`/`Input`/`SelectTrigger`** | all | 23 inline card strings across 14 files, and every screen currently patches its own touch targets. This is the single change that makes the rest small. | **new** |
-| 3 | **Roll call at 375px** | `/attendance` | The most-used screen by the most-constrained user. Name truncated to 81px, 40px targets 6px apart, an input that zooms iOS, a placeholder promising a field that does not exist. A wrong tap here writes a wrong absence. | **SPA-324** — extend it: the card names the floating date and `Aluno Ch...`; it does not name the iOS zoom, the 32px bulk-action button, the matrícula copy, or the P/A/F/J legend. |
-| 4 | **Student record layout** | `/students?aluno=`, `/reports?studentId=` | Broken at *both* 375px and 1280px, and it breaks a `tel:` link that a coordinator actually dials. The `UserInfoCard` fix is well-understood. | **SPA-322** — fits, plus one addition: the card must also rewrite `student-detail.spec.ts:113`, which currently asserts the defect. |
-| 5 | **List density, pagination and overflow** | `/students`, `/reports` | Unbounded lists and a table so wide the E2E has to scroll it back. Blocks the 768px card-list break. | **SPA-321** — fits. Add: delete the `scrollLeft` workaround in `students.spec.ts:36-38` and remove `whitespace-nowrap` from `TableCell`, which is the shared root cause. |
-| 6 | **Dashboard honesty: delete `MOCK_TOTAL_TEACHERS` and `ADMIN_TASKS`** | `/` (admin) | A fabricated teacher count and four invented tasks violate CLAUDE.md §6 directly. This is a correctness bug that happens to live in a widget. Ranked above the dashboard's visual work because a wrong number is worse than an ugly one. | **new** — do not fold into a visual card. |
-| 7 | **Dashboard card anatomy and stretched empty states** | `/` (admin) | The alerts card renders one sentence in 340px because it is height-matched to a chart. KPI cards are half-empty without the template's delta slot. | **new** |
-| 8 | **Event tiles at 375px** | `/events` | `grid-cols-3` at 375px wraps "Não autorizados" and "Pendentes de pagamento". Teacher-facing and mobile. Ranked below roll call only because it is used per-event, not per-class-per-day. | **new** — includes replacing the three `p.text-2xl` selectors with stable hooks. |
-| 9 | **Breadcrumb owns the page title** | all, visibly `/reports` | Merging `PageBreadCrumb`'s title+trail row removes the doubled back-affordance and the "Relatórios" crumb sitting above a student's name. | **SPA-323** — fits, and the structural fix is the breadcrumb, not the reports route. |
-| 10 | **Auth pages get a canvas and a card** | `/login`, `/change-password` | First screen every user sees, currently a form floating on white. Smallest diff in the list. | **new** |
-| 11 | **Reports: delete the dead `Período` select; unify `ClassOverview` tiles** | `/reports` | A filter that filters nothing is a trust problem, but it is admin-only and low-traffic. | **new** |
-| 12 | **Admin CRUD consistency (`/groups`, `/subjects`, `/users`, `/grades`)** | four routes | Mostly absorbed by cards 1 and 2. What remains is a shared `Skeleton` and moving the `/users` create form into the existing modal. | **new** |
+| #   | Card                                                                                | Screens                                   | Why here                                                                                                                                                                                                                                 | Existing card                                                                                                                                                                       |
+| --- | ----------------------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Foundation: Outfit, `--radius: 0.5rem`, one type scale, chart font token**        | all                                       | Every other card cites these values. Shipping any redesign before this means redoing it. Includes the two charts that request an unloaded font and the five off-palette avatar colors.                                                   | **new**                                                                                                                                                                             |
+| 2   | **`Card` primitive + responsive `h-11 md:h-9` on `Button`/`Input`/`SelectTrigger`** | all                                       | 23 inline card strings across 14 files, and every screen currently patches its own touch targets. This is the single change that makes the rest small.                                                                                   | **new**                                                                                                                                                                             |
+| 3   | **Roll call at 375px**                                                              | `/attendance`                             | The most-used screen by the most-constrained user. Name truncated to 81px, 40px targets 6px apart, an input that zooms iOS, a placeholder promising a field that does not exist. A wrong tap here writes a wrong absence.                | **SPA-324** — extend it: the card names the floating date and `Aluno Ch...`; it does not name the iOS zoom, the 32px bulk-action button, the matrícula copy, or the P/A/F/J legend. |
+| 4   | **Student record layout**                                                           | `/students?aluno=`, `/reports?studentId=` | Broken at _both_ 375px and 1280px, and it breaks a `tel:` link that a coordinator actually dials. The `UserInfoCard` fix is well-understood.                                                                                             | **SPA-322** — fits, plus one addition: the card must also rewrite `student-detail.spec.ts:113`, which currently asserts the defect.                                                 |
+| 5   | **List density, pagination and overflow**                                           | `/students`, `/reports`                   | Unbounded lists and a table so wide the E2E has to scroll it back. Blocks the 768px card-list break.                                                                                                                                     | **SPA-321** — fits. Add: delete the `scrollLeft` workaround in `students.spec.ts:36-38` and remove `whitespace-nowrap` from `TableCell`, which is the shared root cause.            |
+| 6   | **Dashboard honesty: delete `MOCK_TOTAL_TEACHERS` and `ADMIN_TASKS`**               | `/` (admin)                               | A fabricated teacher count and four invented tasks violate CLAUDE.md §6 directly. This is a correctness bug that happens to live in a widget. Ranked above the dashboard's visual work because a wrong number is worse than an ugly one. | **new** — do not fold into a visual card.                                                                                                                                           |
+| 7   | **Dashboard card anatomy and stretched empty states**                               | `/` (admin)                               | The alerts card renders one sentence in 340px because it is height-matched to a chart. KPI cards are half-empty without the template's delta slot.                                                                                       | **new**                                                                                                                                                                             |
+| 8   | **Event tiles at 375px**                                                            | `/events`                                 | `grid-cols-3` at 375px wraps "Não autorizados" and "Pendentes de pagamento". Teacher-facing and mobile. Ranked below roll call only because it is used per-event, not per-class-per-day.                                                 | **new** — includes replacing the three `p.text-2xl` selectors with stable hooks.                                                                                                    |
+| 9   | **Breadcrumb owns the page title**                                                  | all, visibly `/reports`                   | Merging `PageBreadCrumb`'s title+trail row removes the doubled back-affordance and the "Relatórios" crumb sitting above a student's name.                                                                                                | **SPA-323** — fits, and the structural fix is the breadcrumb, not the reports route.                                                                                                |
+| 10  | **Auth pages get a canvas and a card**                                              | `/login`, `/change-password`              | First screen every user sees, currently a form floating on white. Smallest diff in the list.                                                                                                                                             | **new**                                                                                                                                                                             |
+| 11  | **Reports: delete the dead `Período` select; unify `ClassOverview` tiles**          | `/reports`                                | A filter that filters nothing is a trust problem, but it is admin-only and low-traffic.                                                                                                                                                  | **new**                                                                                                                                                                             |
+| 12  | **Admin CRUD consistency (`/groups`, `/subjects`, `/users`, `/grades`)**            | four routes                               | Mostly absorbed by cards 1 and 2. What remains is a shared `Skeleton` and moving the `/users` create form into the existing modal.                                                                                                       | **new**                                                                                                                                                                             |
 
 Cards 1 and 2 are prerequisites for 3–12. Card 6 is independent of all of them and can ship first.
 

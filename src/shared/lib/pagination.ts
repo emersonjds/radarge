@@ -9,7 +9,11 @@ export function paginate<T>(rows: T[], page: number, pageSize = TABLE_PAGE_SIZE)
   return rows.slice(start, start + pageSize);
 }
 
-export function pageRangeLabel(page: number, totalRows: number, pageSize = TABLE_PAGE_SIZE): string {
+export function pageRangeLabel(
+  page: number,
+  totalRows: number,
+  pageSize = TABLE_PAGE_SIZE,
+): string {
   if (totalRows === 0) return "Mostrando 0 de 0";
   const start = (page - 1) * pageSize + 1;
   const end = Math.min(page * pageSize, totalRows);

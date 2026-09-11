@@ -47,10 +47,7 @@ export function ClassOverview({
         <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Stat label="Frequência média" value={formatPercent(avgAttendance)} />
           <Stat label="Nota média" value={formatScore(summary.averageScore)} />
-          <Stat
-            label="Área forte"
-            value={summary.topArea ? areaLabels[summary.topArea] : "—"}
-          />
+          <Stat label="Área forte" value={summary.topArea ? areaLabels[summary.topArea] : "—"} />
           <div className="rounded-lg border border-border bg-gray-50 p-3">
             <p className="text-xs font-medium text-muted-foreground">Matérias de destaque</p>
             <p className="mt-1 flex flex-wrap gap-1">

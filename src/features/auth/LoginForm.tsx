@@ -40,7 +40,7 @@ export function LoginForm() {
       <form
         onSubmit={form.handleSubmit(submit)}
         noValidate
-        className="w-full max-w-sm duration-500 animate-in fade-in slide-in-from-bottom-3 motion-reduce:animate-none"
+        className="w-full max-w-sm animate-in duration-500 fade-in slide-in-from-bottom-3 motion-reduce:animate-none"
       >
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Entrar</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">

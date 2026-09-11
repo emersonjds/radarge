@@ -29,7 +29,8 @@ export const messageForError = (
   fallback: string,
   overrides: Record<string, string> = {},
 ): string => {
-  if (error instanceof ApiError) return overrides[error.code] ?? MESSAGE_BY_CODE[error.code] ?? fallback;
+  if (error instanceof ApiError)
+    return overrides[error.code] ?? MESSAGE_BY_CODE[error.code] ?? fallback;
   if (error instanceof NetworkError) return OFFLINE;
   if (error instanceof SessionEndedError) return SESSION_OVER;
   return fallback;
