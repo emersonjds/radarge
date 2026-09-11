@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { ACCOUNTS, seedAll } from "../seed-api";
+import { ACCOUNTS, adminToken, provisionalPasswordOf, seedAll } from "../seed-api";
 import { captureScreen } from "../helpers";
 
 /**
@@ -52,7 +52,8 @@ test("session survives a reload even though the token dies with memory", async (
 
 test("a provisional password leads to the set-password screen", async ({ page }) => {
   const account = ACCOUNTS.provisional;
-  await signIn(page, account.username, account.provisionalPassword);
+  const provisionalPassword = await provisionalPasswordOf(await adminToken(), account.username);
+  await signIn(page, account.username, provisionalPassword);
 
   await expect(page).toHaveURL(/\/change-password/);
   await expect(page.getByRole("heading", { name: "Defina sua senha" })).toBeVisible();

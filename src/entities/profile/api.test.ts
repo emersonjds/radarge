@@ -60,28 +60,26 @@ describe("profiles against the API", () => {
     await expect(fetchProfile("blocked")).rejects.toBeInstanceOf(ApiError);
   });
 
-  it("sends the new profile as the contract describes it", async () => {
+  it("sends the new profile as the contract describes it, and reads back the generated password", async () => {
     let received: unknown = null;
     server.use(
       http.post("*/profiles", async ({ request }) => {
         received = await request.json();
-        return HttpResponse.json(managed, { status: 201 });
+        return HttpResponse.json(
+          { ...managed, provisionalPassword: "GENERATED1234" },
+          { status: 201 },
+        );
       }),
     );
 
-    await createProfile({
+    const created = await createProfile({
       name: "Ana Professora",
       username: "ana",
       role: "teacher",
-      password: "a-long-enough-password",
     });
 
-    expect(received).toEqual({
-      name: "Ana Professora",
-      username: "ana",
-      role: "teacher",
-      password: "a-long-enough-password",
-    });
+    expect(received).toEqual({ name: "Ana Professora", username: "ana", role: "teacher" });
+    expect(created.provisionalPassword).toBe("GENERATED1234");
   });
 
   it("surfaces a taken username as the API's own conflict code", async () => {
@@ -91,12 +89,7 @@ describe("profiles against the API", () => {
       ),
     );
 
-    const failure = createProfile({
-      name: "Ana",
-      username: "ana",
-      role: "teacher",
-      password: "a-long-enough-password",
-    });
+    const failure = createProfile({ name: "Ana", username: "ana", role: "teacher" });
 
     await expect(failure).rejects.toMatchObject({ code: "conflict" });
   });
@@ -113,6 +106,21 @@ describe("profiles against the API", () => {
     await updateProfile("profile-1", { name: "Ana Maria" });
 
     expect(received).toEqual({ name: "Ana Maria" });
+  });
+
+  it("asks for a password reset with a flag, never a chosen password", async () => {
+    let received: unknown = null;
+    server.use(
+      http.patch("*/profiles/profile-1", async ({ request }) => {
+        received = await request.json();
+        return HttpResponse.json({ ...managed, provisionalPassword: "RESETGENERATED1" });
+      }),
+    );
+
+    const updated = await updateProfile("profile-1", { resetPassword: true });
+
+    expect(received).toEqual({ resetPassword: true });
+    expect(updated.provisionalPassword).toBe("RESETGENERATED1");
   });
 
   it("deactivates through the same patch route, not a route of its own", async () => {

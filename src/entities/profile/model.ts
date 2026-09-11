@@ -14,27 +14,18 @@ export const MIN_PASSWORD_LENGTH = 8;
 export const PASSWORD_MIN_LENGTH_MESSAGE = `Senha deve ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`;
 
 /**
- * Built per mode because the password rule differs: required on create, optional on
- * edit, where blank means "keep the current one". Modelling that in the schema keeps
- * it out of the submit handler.
+ * No password field: the API generates it. `resetPassword` only means something on
+ * edit — create always generates one — so the submit handler is what decides whether
+ * to send it, not this schema.
  */
-export const profileFormSchema = (mode: "create" | "edit") =>
-  z.object({
-    name: z.string().trim().min(1, "Informe o nome."),
-    username: z.string().trim().min(1, "Informe o login de usuário."),
-    role: roleSchema,
-    password:
-      mode === "create"
-        ? z.string().min(MIN_PASSWORD_LENGTH, PASSWORD_MIN_LENGTH_MESSAGE)
-        : z
-            .string()
-            .refine(
-              (value) => value === "" || value.length >= MIN_PASSWORD_LENGTH,
-              PASSWORD_MIN_LENGTH_MESSAGE,
-            ),
-  });
+export const profileFormSchema = z.object({
+  name: z.string().trim().min(1, "Informe o nome."),
+  username: z.string().trim().min(1, "Informe o login de usuário."),
+  role: roleSchema,
+  resetPassword: z.boolean(),
+});
 
-export type ProfileFormValues = z.infer<ReturnType<typeof profileFormSchema>>;
+export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 /** Credentials the sign-in screen collects. */
 export const credentialsFormSchema = z.object({

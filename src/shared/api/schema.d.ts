@@ -376,7 +376,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ManagedProfile"];
+                        "application/json": components["schemas"]["ProfileWithProvisionalPassword"];
                     };
                 };
                 /** @description Default Response */
@@ -571,7 +571,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ManagedProfile"];
+                        "application/json": components["schemas"]["ProfileWithProvisionalPassword"];
                     };
                 };
                 /** @description Default Response */
@@ -3754,12 +3754,23 @@ export interface components {
             jobTitle: string | null;
             active: boolean;
         };
+        ProfileWithProvisionalPasswordInput: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            username: string;
+            /** @enum {string} */
+            role: "teacher" | "coordinator" | "admin";
+            email: string | null;
+            jobTitle: string | null;
+            active: boolean;
+            provisionalPassword?: string;
+        };
         NewProfileInput: {
             name: string;
             username: string;
             /** @enum {string} */
             role: "teacher" | "coordinator" | "admin";
-            password: string;
             /** Format: email */
             email?: string;
             jobTitle?: string;
@@ -3769,11 +3780,11 @@ export interface components {
             username?: string;
             /** @enum {string} */
             role?: "teacher" | "coordinator" | "admin";
-            password?: string;
             /** Format: email */
             email?: string;
             jobTitle?: string;
             active?: boolean;
+            resetPassword?: boolean;
         };
         EventInput: {
             /** Format: uuid */
@@ -4115,12 +4126,23 @@ export interface components {
             jobTitle: string | null;
             active: boolean;
         };
+        ProfileWithProvisionalPassword: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            username: string;
+            /** @enum {string} */
+            role: "teacher" | "coordinator" | "admin";
+            email: string | null;
+            jobTitle: string | null;
+            active: boolean;
+            provisionalPassword?: string;
+        };
         NewProfile: {
             name: string;
             username: string;
             /** @enum {string} */
             role: "teacher" | "coordinator" | "admin";
-            password: string;
             /** Format: email */
             email?: string;
             jobTitle?: string;
@@ -4130,11 +4152,11 @@ export interface components {
             username?: string;
             /** @enum {string} */
             role?: "teacher" | "coordinator" | "admin";
-            password?: string;
             /** Format: email */
             email?: string;
             jobTitle?: string;
             active?: boolean;
+            resetPassword?: boolean;
         };
         Event: {
             /** Format: uuid */
