@@ -1,0 +1,43 @@
+{
+	admin off
+	servers {
+		# Only Railway's edge can reach this port. Trusting it makes Caddy append the
+		# edge's address to X-Forwarded-For, which radarge-api reads two hops deep.
+		trusted_proxies static 0.0.0.0/0 ::/0
+	}
+}
+
+:{$PORT:8080} {
+	encode zstd gzip
+
+	header {
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+
+	handle_path /api/* {
+		reverse_proxy radarge-api.railway.internal:8080 {
+			# The api scopes its refresh cookie to /auth; behind this prefix the
+			# browser only sends it back if the path says /api/auth.
+			header_down Set-Cookie "Path=/auth" "Path=/api/auth"
+		}
+	}
+
+	handle {
+		root * /srv
+		@static path /_next/static/*
+		header @static Cache-Control "public, max-age=31536000, immutable"
+		try_files {path} {path}.html {path}/index.html
+		file_server
+	}
+
+	handle_errors 404 {
+		root * /srv
+		rewrite * /404.html
+		file_server
+	}
+}
