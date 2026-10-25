@@ -8,6 +8,28 @@ async function openMenu(page: Page) {
   await page.getByRole("button", { name: "Alternar menu" }).click();
 }
 
+/** Creates a teacher profile through the form and reads the API-generated password
+ * off the reveal screen — the form itself never collects one. */
+async function createTeacherProfile(page: Page, name: string, username: string): Promise<string> {
+  await page.getByRole("button", { name: "Adicionar perfil" }).click();
+  await page.getByLabel("Nome").fill(name);
+  await page.getByLabel("Login de usuário").fill(username);
+  await page.getByLabel("Papel", { exact: true }).click();
+  await page.getByRole("option", { name: "Professor" }).click();
+  await page.getByRole("button", { name: "Criar perfil" }).click();
+
+  await expect(page.getByText("Senha provisória gerada")).toBeVisible();
+  const password = await page.locator("code").innerText();
+  // The one screen a coordinator cannot afford to misread: it shows the password once.
+  await captureEvidence(
+    page.getByRole("dialog"),
+    "e2e/auth/evidence/provisional-password-reveal.png",
+  );
+  await page.getByRole("button", { name: "Concluir" }).click();
+
+  return password;
+}
+
 let adminContext: BrowserContext;
 let teacherContext: BrowserContext;
 let coordinatorContext: BrowserContext;
@@ -115,15 +137,9 @@ test.describe("profile management (admin)", () => {
   test("admin creates a teacher profile", async () => {
     const page = await newPageIn(adminContext, MOBILE_VIEWPORT);
     await page.goto("/users");
-    await page.getByRole("button", { name: "Adicionar perfil" }).click();
 
     const username = `perfil.teste.${Date.now()}`;
-    await page.getByLabel("Nome").fill("Perfil de Teste");
-    await page.getByLabel("Login de usuário").fill(username);
-    await page.getByLabel("Papel", { exact: true }).click();
-    await page.getByRole("option", { name: "Professor" }).click();
-    await page.getByLabel("Senha").fill("teste1234");
-    await page.getByRole("button", { name: "Criar perfil" }).click();
+    await createTeacherProfile(page, "Perfil de Teste", username);
 
     // By username, not display name: delete is exercised elsewhere in this file, so
     // a rerun can leave two rows sharing a name.
@@ -143,17 +159,11 @@ test.describe("profile management (admin)", () => {
   test("admin edits a profile role and the badge changes", async () => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
-    await page.getByRole("button", { name: "Adicionar perfil" }).click();
 
     // A throwaway profile: editing the file's fixed teacher would change the
     // teacherRow of the groups every other test here depends on.
     const username = `perfil.papel.${Date.now()}`;
-    await page.getByLabel("Nome").fill("Perfil Papel E2E");
-    await page.getByLabel("Login de usuário").fill(username);
-    await page.getByLabel("Papel", { exact: true }).click();
-    await page.getByRole("option", { name: "Professor" }).click();
-    await page.getByLabel("Senha").fill("teste1234");
-    await page.getByRole("button", { name: "Criar perfil" }).click();
+    await createTeacherProfile(page, "Perfil Papel E2E", username);
 
     // By username, for the same reason as above.
     const item = page.getByRole("listitem").filter({ hasText: username });
@@ -173,16 +183,9 @@ test.describe("profile management (admin)", () => {
   test("admin deactivates a profile and the account can no longer sign in", async ({ browser }) => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
-    await page.getByRole("button", { name: "Adicionar perfil" }).click();
 
     const username = `perfil.inativo.${Date.now()}`;
-    const password = "teste1234";
-    await page.getByLabel("Nome").fill("Perfil Inativo E2E");
-    await page.getByLabel("Login de usuário").fill(username);
-    await page.getByLabel("Papel", { exact: true }).click();
-    await page.getByRole("option", { name: "Professor" }).click();
-    await page.getByLabel("Senha").fill(password);
-    await page.getByRole("button", { name: "Criar perfil" }).click();
+    const password = await createTeacherProfile(page, "Perfil Inativo E2E", username);
 
     const item = page.getByRole("listitem").filter({ hasText: username });
     await expect(item.getByText("Ativo", { exact: true })).toBeVisible();
@@ -210,15 +213,9 @@ test.describe("profile management (admin)", () => {
   test("a deactivated profile can be reactivated and deleted", async () => {
     const page = await newPageIn(adminContext);
     await page.goto("/users");
-    await page.getByRole("button", { name: "Adicionar perfil" }).click();
 
     const username = `perfil.ciclo.${Date.now()}`;
-    await page.getByLabel("Nome").fill("Perfil Ciclo E2E");
-    await page.getByLabel("Login de usuário").fill(username);
-    await page.getByLabel("Papel", { exact: true }).click();
-    await page.getByRole("option", { name: "Professor" }).click();
-    await page.getByLabel("Senha").fill("teste1234");
-    await page.getByRole("button", { name: "Criar perfil" }).click();
+    await createTeacherProfile(page, "Perfil Ciclo E2E", username);
 
     const item = page.getByRole("listitem").filter({ hasText: username });
     await expect(item).toBeVisible();

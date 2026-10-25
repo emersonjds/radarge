@@ -8,6 +8,11 @@ import { ApiError } from "@/shared/lib/api/errors";
  */
 export type PublicProfile = components["schemas"]["ManagedProfile"];
 
+/** Carries `provisionalPassword` once, right after the API generates it: on
+ * creation always, on an update only when the caller asked for a reset. */
+export type ProfileWithProvisionalPassword =
+  components["schemas"]["ProfileWithProvisionalPassword"];
+
 export type NewProfileInput = components["schemas"]["NewProfile"];
 export type ProfileUpdate = components["schemas"]["ProfileChanges"];
 
@@ -24,11 +29,17 @@ export const fetchProfile = async (id: string): Promise<PublicProfile | null> =>
   }
 };
 
-export const createProfile = (input: NewProfileInput): Promise<PublicProfile> =>
-  apiClient().request<PublicProfile>("/profiles", { method: "POST", body: input });
+export const createProfile = (input: NewProfileInput): Promise<ProfileWithProvisionalPassword> =>
+  apiClient().request<ProfileWithProvisionalPassword>("/profiles", { method: "POST", body: input });
 
-export const updateProfile = (id: string, patch: ProfileUpdate): Promise<PublicProfile> =>
-  apiClient().request<PublicProfile>(`/profiles/${id}`, { method: "PATCH", body: patch });
+export const updateProfile = (
+  id: string,
+  patch: ProfileUpdate,
+): Promise<ProfileWithProvisionalPassword> =>
+  apiClient().request<ProfileWithProvisionalPassword>(`/profiles/${id}`, {
+    method: "PATCH",
+    body: patch,
+  });
 
 export const setProfileActive = async (id: string, active: boolean): Promise<void> => {
   await updateProfile(id, { active });

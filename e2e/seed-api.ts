@@ -29,7 +29,6 @@ export interface TestAccount {
   name: string;
   username: string;
   role: "teacher" | "coordinator" | "admin";
-  provisionalPassword: string;
   /** Absent when the account is meant to stay on its provisional password. */
   password?: string;
 }
@@ -40,35 +39,30 @@ export const ACCOUNTS = {
     name: "Ana Professora",
     username: "e2e.entrada",
     role: "teacher",
-    provisionalPassword: "provisoria-entrada-1",
     password: "definitiva-entrada-1",
   },
   wrongPassword: {
     name: "Bruno Professor",
     username: "e2e.senha.errada",
     role: "teacher",
-    provisionalPassword: "provisoria-errada-1",
     password: "definitiva-errada-1",
   },
   reload: {
     name: "Carla Professora",
     username: "e2e.recarga",
     role: "teacher",
-    provisionalPassword: "provisoria-recarga-1",
     password: "definitiva-recarga-1",
   },
   logout: {
     name: "Diego Professor",
     username: "e2e.saida",
     role: "teacher",
-    provisionalPassword: "provisoria-saida-1",
     password: "definitiva-saida-1",
   },
   provisional: {
     name: "Elena Professora",
     username: "e2e.provisoria",
     role: "teacher",
-    provisionalPassword: "provisoria-mantida-1",
   },
 
   // auth/auth.spec.ts — nav-by-role and profile CRUD.
@@ -76,21 +70,18 @@ export const ACCOUNTS = {
     name: "Admin Perfis E2E",
     username: "e2e.perfis",
     role: "admin",
-    provisionalPassword: "provisoria-perfis-admin-1",
     password: "definitiva-perfis-admin-1",
   },
   profilesTeacher: {
     name: "Renata Teixeira",
     username: "e2e.perfis.professor",
     role: "teacher",
-    provisionalPassword: "provisoria-perfis-prof-1",
     password: "definitiva-perfis-prof-1",
   },
   profilesCoordinator: {
     name: "Coordenador Perfis E2E",
     username: "e2e.perfis.coordenador",
     role: "coordinator",
-    provisionalPassword: "provisoria-perfis-coord-1",
     password: "definitiva-perfis-coord-1",
   },
 
@@ -99,21 +90,18 @@ export const ACCOUNTS = {
     name: "Admin Academica E2E",
     username: "e2e.academica",
     role: "admin",
-    provisionalPassword: "provisoria-academica-admin-1",
     password: "definitiva-academica-admin-1",
   },
   academicaProfessor1: {
     name: "Ricardo Alves",
     username: "e2e.academica.professor1",
     role: "teacher",
-    provisionalPassword: "provisoria-academica-prof1-1",
     password: "definitiva-academica-prof1-1",
   },
   academicaProfessor2: {
     name: "Bruno Ferreira E2E",
     username: "e2e.academica.professor2",
     role: "teacher",
-    provisionalPassword: "provisoria-academica-prof2-1",
     password: "definitiva-academica-prof2-1",
   },
 
@@ -122,14 +110,12 @@ export const ACCOUNTS = {
     name: "Admin Painel E2E",
     username: "e2e.painel",
     role: "admin",
-    provisionalPassword: "provisoria-painel-admin-1",
     password: "definitiva-painel-admin-1",
   },
   dashboardCoordinator: {
     name: "Coordenador Painel E2E",
     username: "e2e.painel.coordenador",
     role: "coordinator",
-    provisionalPassword: "provisoria-painel-coord-1",
     password: "definitiva-painel-coord-1",
   },
 
@@ -138,7 +124,6 @@ export const ACCOUNTS = {
     name: "Professor Notas E2E",
     username: "e2e.notas",
     role: "teacher",
-    provisionalPassword: "provisoria-notas-1",
     password: "definitiva-notas-1",
   },
 
@@ -147,21 +132,18 @@ export const ACCOUNTS = {
     name: "Professor Eventos Um E2E",
     username: "e2e.eventos.professor1",
     role: "teacher",
-    provisionalPassword: "provisoria-eventos-prof1-1",
     password: "definitiva-eventos-prof1-1",
   },
   eventsTeacher2: {
     name: "Professor Eventos Dois E2E",
     username: "e2e.eventos.professor2",
     role: "teacher",
-    provisionalPassword: "provisoria-eventos-prof2-1",
     password: "definitiva-eventos-prof2-1",
   },
   eventsCoordinator: {
     name: "Coordenador Eventos E2E",
     username: "e2e.eventos.coordenador",
     role: "coordinator",
-    provisionalPassword: "provisoria-eventos-coord-1",
     password: "definitiva-eventos-coord-1",
   },
 
@@ -170,14 +152,12 @@ export const ACCOUNTS = {
     name: "Admin Pivot E2E",
     username: "e2e.pivot",
     role: "admin",
-    provisionalPassword: "provisoria-pivot-admin-1",
     password: "definitiva-pivot-admin-1",
   },
   pivotTeacher: {
     name: "Professor Pivot E2E",
     username: "e2e.pivot.professor",
     role: "teacher",
-    provisionalPassword: "provisoria-pivot-prof-1",
     password: "definitiva-pivot-prof-1",
   },
 
@@ -186,14 +166,12 @@ export const ACCOUNTS = {
     name: "Admin Relatorios E2E",
     username: "e2e.relatorios",
     role: "admin",
-    provisionalPassword: "provisoria-relatorios-admin-1",
     password: "definitiva-relatorios-admin-1",
   },
   reportsTeacher: {
     name: "Professor Relatorios E2E",
     username: "e2e.relatorios.professor",
     role: "teacher",
-    provisionalPassword: "provisoria-relatorios-prof-1",
     password: "definitiva-relatorios-prof-1",
   },
 
@@ -202,21 +180,18 @@ export const ACCOUNTS = {
     name: "Admin Detalhe E2E",
     username: "e2e.detalhe",
     role: "admin",
-    provisionalPassword: "provisoria-detalhe-admin-1",
     password: "definitiva-detalhe-admin-1",
   },
   detailTeacher1: {
     name: "Professor Detalhe Um E2E",
     username: "e2e.detalhe.professor1",
     role: "teacher",
-    provisionalPassword: "provisoria-detalhe-prof1-1",
     password: "definitiva-detalhe-prof1-1",
   },
   detailTeacher2: {
     name: "Professor Detalhe Dois E2E",
     username: "e2e.detalhe.professor2",
     role: "teacher",
-    provisionalPassword: "provisoria-detalhe-prof2-1",
     password: "definitiva-detalhe-prof2-1",
   },
 
@@ -225,7 +200,6 @@ export const ACCOUNTS = {
     name: "Admin Alunos E2E",
     username: "e2e.alunos",
     role: "admin",
-    provisionalPassword: "provisoria-alunos-admin-1",
     password: "definitiva-alunos-admin-1",
   },
 
@@ -234,7 +208,6 @@ export const ACCOUNTS = {
     name: "Professor Chamada E2E",
     username: "e2e.chamada",
     role: "teacher",
-    provisionalPassword: "provisoria-chamada-1",
     password: "definitiva-chamada-1",
   },
 } as const satisfies Record<string, TestAccount>;
@@ -308,6 +281,51 @@ export const adminToken = async (): Promise<string> => {
   return cacheAdminToken();
 };
 
+/**
+ * The API generates every provisional password and hands it back exactly once, in the
+ * creation response — nothing here chooses it, and nothing can ask for it again. Cached
+ * to a file for the same cross-worker reason as the admin token: a spec that needs to
+ * sign in with a still-provisional password runs in a different process than the setup
+ * project that created the account.
+ */
+const PROVISIONAL_PASSWORDS_FILE = "e2e/.auth/provisional-passwords.json";
+
+const readProvisionalPasswords = async (): Promise<Record<string, string>> => {
+  try {
+    return JSON.parse(await readFile(PROVISIONAL_PASSWORDS_FILE, "utf8")) as Record<string, string>;
+  } catch {
+    return {};
+  }
+};
+
+const rememberProvisionalPassword = async (username: string, password: string): Promise<void> => {
+  const passwords = await readProvisionalPasswords();
+  passwords[username] = password;
+  await mkdir(dirname(PROVISIONAL_PASSWORDS_FILE), { recursive: true });
+  await writeFile(PROVISIONAL_PASSWORDS_FILE, JSON.stringify(passwords), "utf8");
+};
+
+/**
+ * Self-heals a cache miss by minting a fresh one: an account seeded before this cache
+ * file existed has no entry to read, but the reset endpoint this same defect fix added
+ * can always hand the account a brand new provisional password on demand.
+ */
+export const provisionalPasswordOf = async (token: string, username: string): Promise<string> => {
+  const cached = (await readProvisionalPasswords())[username];
+  if (cached !== undefined) return cached;
+
+  const profiles = await apiList<Identified & { username: string }>("/profiles", token);
+  const profile = profiles.find((row) => row.username === username);
+  if (!profile) throw new Error(`no profile named "${username}" to reset a password for`);
+
+  const reset = await apiRequest(`/profiles/${profile.id}`, "PATCH", token, {
+    resetPassword: true,
+  });
+  const { provisionalPassword } = (await reset.json()) as { provisionalPassword: string };
+  await rememberProvisionalPassword(username, provisionalPassword);
+  return provisionalPassword;
+};
+
 /** Looks a seeded row up by name — the API hands out the id, the specs only know the name. */
 export const findByName = async <TRow extends Identified & { name: string }>(
   token: string,
@@ -326,11 +344,14 @@ const ensureAccount = async (token: string, account: TestAccount): Promise<boole
   const response = await apiRequest("/profiles", "POST", token, {
     name: account.name,
     username: account.username,
-    password: account.provisionalPassword,
     role: account.role,
   });
 
-  if (response.ok) return true;
+  if (response.ok) {
+    const created = (await response.json()) as { provisionalPassword: string };
+    await rememberProvisionalPassword(account.username, created.provisionalPassword);
+    return true;
+  }
   if (response.status !== 409) {
     throw new Error(`could not create ${account.username}: ${String(response.status)}`);
   }
@@ -363,14 +384,15 @@ const ensureAccount = async (token: string, account: TestAccount): Promise<boole
  * per five minutes, successes included (Linear SPA-307). With two dozen accounts that
  * is two dozen wasted attempts every run, which locks the suite out of itself.
  */
-const settlePassword = async (account: TestAccount): Promise<void> => {
+const settlePassword = async (adminAccessToken: string, account: TestAccount): Promise<void> => {
   if (account.password === undefined) return;
 
-  const token = await signIn(account.username, account.provisionalPassword);
+  const provisionalPassword = await provisionalPasswordOf(adminAccessToken, account.username);
+  const token = await signIn(account.username, provisionalPassword);
   if (token === null) return;
 
   await apiRequest("/auth/change-password", "POST", token, {
-    currentPassword: account.provisionalPassword,
+    currentPassword: provisionalPassword,
     newPassword: account.password,
   });
 };
@@ -382,7 +404,7 @@ export const seedAccounts = async (): Promise<string> => {
 
   for (const account of Object.values(ACCOUNTS)) {
     if (await ensureAccount(token, account)) {
-      await settlePassword(account);
+      await settlePassword(token, account);
     }
   }
 

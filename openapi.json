@@ -855,6 +855,53 @@
           "active"
         ]
       },
+      "ProfileWithProvisionalPasswordInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "teacher",
+              "coordinator",
+              "admin"
+            ]
+          },
+          "email": {
+            "nullable": true,
+            "type": "string"
+          },
+          "jobTitle": {
+            "nullable": true,
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "provisionalPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "username",
+          "role",
+          "email",
+          "jobTitle",
+          "active"
+        ]
+      },
       "NewProfileInput": {
         "type": "object",
         "properties": {
@@ -877,11 +924,6 @@
               "admin"
             ]
           },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 200
-          },
           "email": {
             "type": "string",
             "format": "email",
@@ -895,8 +937,7 @@
         "required": [
           "name",
           "username",
-          "role",
-          "password"
+          "role"
         ]
       },
       "ProfileChangesInput": {
@@ -921,11 +962,6 @@
               "admin"
             ]
           },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 200
-          },
           "email": {
             "type": "string",
             "format": "email",
@@ -936,6 +972,9 @@
             "maxLength": 120
           },
           "active": {
+            "type": "boolean"
+          },
+          "resetPassword": {
             "type": "boolean"
           }
         }
@@ -2235,6 +2274,54 @@
         ],
         "additionalProperties": false
       },
+      "ProfileWithProvisionalPassword": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "teacher",
+              "coordinator",
+              "admin"
+            ]
+          },
+          "email": {
+            "nullable": true,
+            "type": "string"
+          },
+          "jobTitle": {
+            "nullable": true,
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "provisionalPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "username",
+          "role",
+          "email",
+          "jobTitle",
+          "active"
+        ],
+        "additionalProperties": false
+      },
       "NewProfile": {
         "type": "object",
         "properties": {
@@ -2257,11 +2344,6 @@
               "admin"
             ]
           },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 200
-          },
           "email": {
             "type": "string",
             "format": "email",
@@ -2275,8 +2357,7 @@
         "required": [
           "name",
           "username",
-          "role",
-          "password"
+          "role"
         ],
         "additionalProperties": false
       },
@@ -2302,11 +2383,6 @@
               "admin"
             ]
           },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 200
-          },
           "email": {
             "type": "string",
             "format": "email",
@@ -2317,6 +2393,9 @@
             "maxLength": 120
           },
           "active": {
+            "type": "boolean"
+          },
+          "resetPassword": {
             "type": "boolean"
           }
         },
@@ -3085,7 +3164,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ManagedProfile"
+                  "$ref": "#/components/schemas/ProfileWithProvisionalPassword"
                 }
               }
             }
@@ -3238,7 +3317,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ManagedProfile"
+                  "$ref": "#/components/schemas/ProfileWithProvisionalPassword"
                 }
               }
             }
