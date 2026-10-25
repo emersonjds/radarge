@@ -72,3 +72,24 @@ npx skills add https://github.com/nextlevelbuilder/ui-ux-pro-max-skill --skill u
 
 Os arquivos das skills não são versionados (ver `.gitignore`); o manifesto fica
 em `skills-lock.json`. Referência de UI/branding em `design/mockups/`.
+
+## Deploy
+
+Service `radarge-web` no projeto Railway `radarge`, declarado em
+`radarge-api/.railway/railway.ts` e com deploy automático a partir da `main`. O
+`Dockerfile` gera o static export com `NEXT_PUBLIC_API_URL=/api` e o entrega a um
+Caddy (`Caddyfile`), que:
+
+- serve `out/`, com rota interna recarregável (`/attendance` → `attendance.html`);
+- faz proxy de `/api/*` para `radarge-api.railway.internal:8080` pela rede privada.
+  Front e API na mesma origem mantêm o cookie de refresh como primeira parte: sem
+  domínio próprio, dois domínios `*.up.railway.app` seriam sites diferentes e o
+  Safari descartaria o cookie;
+- envia os cabeçalhos de segurança (CSP, HSTS, nosniff, Referrer-Policy).
+
+Conferir a imagem localmente:
+
+```sh
+docker build -t radarge-web:local .
+docker run --rm -p 18080:8080 radarge-web:local   # /api responde 502 sem a API
+```
