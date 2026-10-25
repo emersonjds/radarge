@@ -1,9 +1,10 @@
 {
 	admin off
 	servers {
-		# Only Railway's edge can reach this port. Trusting it makes Caddy append the
-		# edge's address to X-Forwarded-For, which radarge-api reads two hops deep.
-		trusted_proxies static 0.0.0.0/0 ::/0
+		# Railway's edge reaches this port from 100.64.0.0/10 and overwrites X-Real-IP
+		# with the caller's address. Its X-Forwarded-For carries a PoP hop that varies.
+		trusted_proxies static private_ranges 100.64.0.0/10
+		client_ip_headers X-Real-IP
 	}
 }
 
@@ -21,6 +22,7 @@
 
 	handle_path /api/* {
 		reverse_proxy radarge-api.railway.internal:8080 {
+			header_up X-Forwarded-For {client_ip}
 			# The api scopes its refresh cookie to /auth; behind this prefix the
 			# browser only sends it back if the path says /api/auth.
 			header_down Set-Cookie "Path=/auth" "Path=/api/auth"
