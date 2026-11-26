@@ -89,6 +89,9 @@
           },
           "mustChangePassword": {
             "type": "boolean"
+          },
+          "tourCompleted": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -98,7 +101,8 @@
           "role",
           "email",
           "jobTitle",
-          "mustChangePassword"
+          "mustChangePassword",
+          "tourCompleted"
         ]
       },
       "SessionInput": {
@@ -1478,6 +1482,9 @@
           },
           "mustChangePassword": {
             "type": "boolean"
+          },
+          "tourCompleted": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -1487,7 +1494,8 @@
           "role",
           "email",
           "jobTitle",
-          "mustChangePassword"
+          "mustChangePassword",
+          "tourCompleted"
         ],
         "additionalProperties": false
       },
@@ -3079,6 +3087,56 @@
             }
           },
           "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me/tour-completed": {
+      "post": {
+        "summary": "Record that the caller finished or skipped the first-access tour",
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": [
+                    null
+                  ],
+                  "description": "Recorded"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
             "description": "Default Response",
             "content": {
               "application/json": {
