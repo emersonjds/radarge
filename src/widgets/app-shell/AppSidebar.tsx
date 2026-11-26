@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "@tailadmin/context/SidebarContext";
+import { tourTarget } from "@/features/product-tour";
 import { navForRole, type NavIcon } from "@/shared/config/navigation";
 import type { Role } from "@/entities/profile/model";
 import {
@@ -63,6 +64,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              data-tour={tourTarget(item.href)}
               className={`group menu-item ${
                 active ? "menu-item-active" : "menu-item-inactive"
               } ${showText ? "" : "justify-center"}`}

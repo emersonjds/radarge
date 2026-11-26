@@ -395,6 +395,10 @@ const settlePassword = async (adminAccessToken: string, account: TestAccount): P
     currentPassword: provisionalPassword,
     newPassword: account.password,
   });
+
+  // A seeded account that met the first-access tour would have it cover every other spec.
+  const settledToken = await signIn(account.username, account.password);
+  if (settledToken !== null) await apiRequest("/auth/me/tour-completed", "POST", settledToken);
 };
 
 export const seedAccounts = async (): Promise<string> => {
@@ -893,7 +897,7 @@ const STALE_GROUP = /^Redação E2E \d+$/;
 const STALE_SUBJECT = /^Filosofia E2E \d+$/;
 const STALE_EVALUATION = /^P[23] \d+$/;
 const STALE_STUDENT = /^Aluno Teste E2E \d+$/;
-const STALE_PROFILE_USERNAME = /^perfil\.(teste|papel|inativo|ciclo)\.\d+$/;
+const STALE_PROFILE_USERNAME = /^perfil\.(teste|papel|inativo|ciclo|tour)\.\d+$/;
 
 const deleteRow = async (
   token: string,

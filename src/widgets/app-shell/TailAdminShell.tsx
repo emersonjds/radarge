@@ -10,6 +10,7 @@ import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
 import { AppBreadcrumb } from "./AppBreadcrumb";
 import { Backdrop } from "./Backdrop";
+import { useFirstAccessTour } from "./use-first-access-tour";
 
 export interface TailAdminShellProps {
   children: ReactNode;
@@ -19,6 +20,7 @@ export function TailAdminShell({ children }: TailAdminShellProps) {
   const router = useRouter();
   const { status, profile, mustChangePassword, logout } = useSession();
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
+  const { replay } = useFirstAccessTour();
 
   useEffect(() => {
     if (status === "loading") return;
@@ -50,7 +52,12 @@ export function TailAdminShell({ children }: TailAdminShellProps) {
       <div
         className={`flex min-h-screen flex-col transition-all duration-300 ease-in-out ${mainMargin}`}
       >
-        <AppHeader name={profile.name} jobTitle={jobTitle} onLogout={logout} />
+        <AppHeader
+          name={profile.name}
+          jobTitle={jobTitle}
+          onLogout={logout}
+          onReplayTour={replay}
+        />
         <main className="mx-auto w-full max-w-(--breakpoint-2xl) flex-1 p-4 md:p-6">
           <PageTitleProvider>
             <AppBreadcrumb />

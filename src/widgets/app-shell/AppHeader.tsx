@@ -1,15 +1,17 @@
 "use client";
 
 import { useSidebar } from "@tailadmin/context/SidebarContext";
+import { REPLAY_TOUR_TARGET } from "@/features/product-tour";
 import { AvatarText } from "@/shared/ui/avatar-text";
 
 export interface AppHeaderProps {
   name: string;
   jobTitle: string;
   onLogout: () => void;
+  onReplayTour: () => void;
 }
 
-export function AppHeader({ name, jobTitle, onLogout }: AppHeaderProps) {
+export function AppHeader({ name, jobTitle, onLogout, onReplayTour }: AppHeaderProps) {
   const { toggleSidebar, toggleMobileSidebar } = useSidebar();
 
   // lg breakpoint (1024px) controls which sidebar the toggle drives: the
@@ -52,6 +54,13 @@ export function AppHeader({ name, jobTitle, onLogout }: AppHeaderProps) {
             <p className="text-xs text-muted-foreground">{jobTitle}</p>
           </div>
           <AvatarText name={name} />
+          <button
+            data-tour={REPLAY_TOUR_TARGET}
+            onClick={onReplayTour}
+            className="h-11 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-muted lg:h-auto lg:py-2"
+          >
+            Rever tour
+          </button>
           <button
             onClick={onLogout}
             className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
