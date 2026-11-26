@@ -74,4 +74,4 @@ default popover is restyled in `globals.css` with the theme tokens; no raw hex.
   `Content-Type`.
 - Playwright against the live API, 375 and 1440: first sign-in shows the tour;
   skipping and reloading does not show it again; "Rever tour" opens it. Evidence
-  in `e2e/product-tour/evidencias/`.
+  in `e2e/product-tour/evidence/`.
