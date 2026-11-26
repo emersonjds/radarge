@@ -6,8 +6,8 @@
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": ["serena", "context-mode", "context7"],
   "permissions": {
+    "allow": ["Bash(git push origin developer)", "Bash(git push origin main)"],
     "deny": [
-      "Bash(git push*)",
       "Bash(git push --force*)",
       "Bash(git push -f*)",
       "Bash(git commit --amend*)",

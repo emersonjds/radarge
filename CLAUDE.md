@@ -31,7 +31,7 @@ Regras de ouro para todo desenvolvimento assistido por IA neste projeto. Leia e 
 - Mensagens em **inglês**, imperativo curto: `add X`, `fix Y`, `translate Z`
 - **Proibido mencionar** Claude, Anthropic, IA, agent ou qualquer ferramenta de IA em mensagens de commit, PRs ou comentários
 - **Proibido** rodapé `Co-Authored-By: Claude` ou similar
-- **O push final é sempre do desenvolvedor humano** — nunca `git push` sem confirmação explícita
+- **Push de `developer` e `main` liberado para o agente** (Emerson, 2026-11-25), só fast-forward; qualquer outra branch e todo force push continuam sendo do desenvolvedor humano. O `.githooks/pre-push` aplica essa regra
 - Hooks: `git config --local core.hooksPath .githooks` (uma vez por clone)
 - Versionados: `.claude/agents/`, `.claude/skills/`, `.claude/settings.json`, `.mcp.json`. Nunca commitar `.claude/settings.local.json`, `.serena/`, sessões/credenciais de IA
 

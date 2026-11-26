@@ -1,14 +1,26 @@
 #!/usr/bin/env bash
-# Bloqueia push executado por agentes de IA (Claude Code, Cursor etc.).
-# Apenas o desenvolvedor humano faz push.
+# Agentes de IA (Claude Code, Cursor etc.) so fazem push de developer e main.
+# Qualquer outro push e do desenvolvedor humano.
 
 set -e
 
 # Claude Code define CLAUDECODE=1 e CLAUDE_CODE_ENTRYPOINT no ambiente
 if [ -n "$CLAUDECODE" ] || [ -n "$CLAUDE_CODE_ENTRYPOINT" ] || [ -n "$ANTHROPIC_API_KEY" ] || [ -n "$CURSOR_AGENT" ] || [ -n "$AIDER_AUTO" ]; then
-  echo "ERRO pre-push: push bloqueado para agentes de IA." >&2
-  echo "Apenas o desenvolvedor humano executa 'git push' neste repositorio." >&2
-  exit 1
+  # Autorizado pelo Emerson em 2026-11-25: developer e main, sempre fast-forward.
+  while read -r local_ref local_sha remote_ref remote_sha; do
+    case "$remote_ref" in
+      refs/heads/developer|refs/heads/main) ;;
+      *)
+        echo "ERRO pre-push: agente so faz push de developer e main (recebido $remote_ref)." >&2
+        exit 1
+        ;;
+    esac
+    if [ "$remote_sha" != "0000000000000000000000000000000000000000" ] && ! git merge-base --is-ancestor "$remote_sha" "$local_sha"; then
+      echo "ERRO pre-push: agente nao reescreve historico de $remote_ref." >&2
+      exit 1
+    fi
+  done
+  exit 0
 fi
 
 # Override explicito do humano (exporte HUMAN_PUSH=1 para autorizar)
