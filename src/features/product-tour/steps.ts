@@ -10,7 +10,10 @@ const selector = (target: string): string => `[data-tour="${target}"]`;
 
 const navCopy: Record<string, { title: string; description: string }> = {
   "/": { title: "Painel", description: "Frequência, faltas e alunos em risco num só lugar." },
-  "/attendance": { title: "Chamada", description: "Escolha a aula e marque quem veio. Salva tudo de uma vez." },
+  "/attendance": {
+    title: "Chamada",
+    description: "Escolha a aula e marque quem veio. Salva tudo de uma vez.",
+  },
   "/students": { title: "Alunos", description: "Fichas dos alunos, com responsável e telefone." },
   "/grades": { title: "Notas", description: "Lance as notas de cada avaliação da aula." },
   "/events": { title: "Eventos", description: "Datas e atividades da ONG." },

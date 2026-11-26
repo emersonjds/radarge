@@ -17,6 +17,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@tailadmin": fileURLToPath(new URL("./src/shared/tailadmin", import.meta.url)),
     },
   },
 });
