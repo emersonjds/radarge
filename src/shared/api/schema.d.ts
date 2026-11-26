@@ -309,6 +309,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/me/tour-completed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record that the caller finished or skipped the first-access tour */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Recorded */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/profiles": {
         parameters: {
             query?: never;
@@ -3550,6 +3604,7 @@ export interface components {
             email: string | null;
             jobTitle: string | null;
             mustChangePassword: boolean;
+            tourCompleted: boolean;
         };
         SessionInput: {
             accessToken: string;
@@ -3922,6 +3977,7 @@ export interface components {
             email: string | null;
             jobTitle: string | null;
             mustChangePassword: boolean;
+            tourCompleted: boolean;
         };
         Session: {
             accessToken: string;
