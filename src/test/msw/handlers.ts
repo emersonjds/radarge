@@ -8,6 +8,7 @@ const defaultProfile = {
   email: null,
   jobTitle: null,
   mustChangePassword: false,
+  tourCompleted: true,
 };
 
 /**
@@ -23,4 +24,5 @@ export const handlers = [
       profile: defaultProfile,
     }),
   ),
+  http.post("*/auth/me/tour-completed", () => new HttpResponse(null, { status: 204 })),
 ];

@@ -4,7 +4,7 @@ import { server } from "../../test/msw/server";
 import { ApiError } from "@/shared/lib/api/errors";
 import { resetApiClient } from "@/shared/lib/api/instance";
 import { getAccessToken, setAccessToken } from "@/shared/lib/api/token-store";
-import { changePassword, signIn, signOut } from "./api";
+import { changePassword, completeTour, signIn, signOut } from "./api";
 
 const API_URL = "http://api.test";
 
@@ -61,6 +61,26 @@ describe("signOut", () => {
 
     await expect(signOut()).rejects.toThrow();
     expect(getAccessToken()).toBeNull();
+  });
+});
+
+describe("completeTour", () => {
+  it("posts to the tour route with no body and no Content-Type", async () => {
+    let sent: { method: string; contentType: string | null; body: string } | null = null;
+    server.use(
+      http.post("*/auth/me/tour-completed", async ({ request }) => {
+        sent = {
+          method: request.method,
+          contentType: request.headers.get("content-type"),
+          body: await request.text(),
+        };
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    await completeTour();
+
+    expect(sent).toEqual({ method: "POST", contentType: null, body: "" });
   });
 });
 

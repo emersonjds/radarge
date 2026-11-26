@@ -38,6 +38,10 @@ export const signOut = async (): Promise<void> => {
   }
 };
 
+export const completeTour = async (): Promise<void> => {
+  await apiClient().request("/auth/me/tour-completed", { method: "POST" });
+};
+
 export interface PasswordChange {
   currentPassword: string;
   newPassword: string;
